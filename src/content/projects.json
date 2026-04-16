@@ -1,0 +1,325 @@
+[
+  {
+    "id": "atlas",
+    "slug": "atlas",
+    "featured": true,
+    "core": {
+      "title": "RESILIAGE Atlas",
+      "tagline": "Interactive geospatial platform for resilience mapping and decision support.",
+      "status": "live",
+      "dateLabel": "2025 - present",
+      "role": "Full-stack engineer",
+      "teamContext": "EU Horizon project with an international 18-partner consortium",
+      "stack": ["React", "Vite", "TypeScript", "FastAPI", "MongoDB", "MapLibre", "AWS"],
+      "categories": ["geospatial", "frontend", "backend", "public-tech"],
+      "links": [
+        {
+          "label": "Live platform",
+          "url": "https://atlas.resiliage-ecosystem.eu",
+          "type": "live"
+        }
+      ]
+    },
+    "story": {
+      "summary": "An interactive geospatial platform for resilience mapping, layered exploration, and practical decision support.",
+      "problem": "The project needed a usable way to explore complex resilience data across multiple layers, stakeholders, and regions without overwhelming the interface.",
+      "solution": "I helped shape a map-driven platform that supports many content types in one interface, with synchronized map and sidebar behavior, guided onboarding, and a dedicated panel for managing open layers.",
+      "outcome": "The result is a rich geospatial product where complex content remains explorable and understandable, even when users are navigating many overlapping datasets and views.",
+      "highlights": [
+        "Supports varied geospatial content including points, lines, vector layers, raster layers, historical cartography overlays, and video content",
+        "Synchronized the map and sidebar so browsing categories and exploring spatial content feel connected",
+        "Built an onboarding tour to help users enter a complex map experience with less friction",
+        "Added a layer-management panel so users can manage all active content in one place"
+      ],
+      "metrics": [
+        { "label": "Consortium", "value": "18 partners" },
+        { "label": "Scope", "value": "Full-stack + cloud" },
+        { "label": "Mode", "value": "Interactive geospatial product" }
+      ],
+      "lessons": [
+        "Complex information becomes much more approachable when spatial structure and UI clarity support each other."
+      ],
+      "nextSteps": []
+    },
+    "media": {
+      "cover": {
+        "type": "image",
+        "title": "Atlas cover",
+        "caption": "Main visual for the Atlas project section.",
+        "src": "assets/projects/atlas/cover/atlas-cover-placeholder.png",
+        "alt": "Placeholder cover for the RESILIAGE Atlas project"
+      },
+      "gallery": [
+        {
+          "type": "image",
+          "title": "Map interface",
+          "caption": "Placeholder visual for the main map experience with mixed spatial content and overlays.",
+          "src": "assets/projects/atlas/gallery/atlas-map-interface-placeholder.png",
+          "alt": "Atlas map interface placeholder"
+        },
+        {
+          "type": "image",
+          "title": "Layer management",
+          "caption": "Placeholder visual for the sidebar, category syncing, and layer management interactions.",
+          "src": "assets/projects/atlas/gallery/atlas-layer-management-placeholder.png",
+          "alt": "Atlas layer management placeholder"
+        }
+      ],
+      "visualStyle": {
+        "accent": "#87e7b8",
+        "tone": "clean, spatial, precise"
+      }
+    }
+  },
+  {
+    "id": "kartino",
+    "slug": "kartino",
+    "featured": true,
+    "core": {
+      "title": "Kartino",
+      "tagline": "AI-powered Telegram flashcards rebuilt into a production-ready learning system.",
+      "status": "live",
+      "dateLabel": "2025 - present",
+      "role": "Founder / product engineer",
+      "teamContext": "Solo-led product with end-to-end ownership",
+      "stack": ["Python", "FastAPI", "aiogram", "MongoDB", "Telegram"],
+      "categories": ["ai", "backend", "product", "learning"],
+      "links": [
+        {
+          "label": "Live product",
+          "url": "https://kartino.it",
+          "type": "live"
+        }
+      ]
+    },
+    "story": {
+      "summary": "An AI-powered Telegram flashcard product rebuilt from a prototype into a modular and production-ready learning system.",
+      "problem": "The original idea needed to move beyond a rough prototype into something fast, maintainable, observable, and reliable enough to behave like a real product.",
+      "solution": "I reworked the system around a more modular backend, improved core learning flows, and added testing and observability so the product could scale with more confidence.",
+      "outcome": "Kartino became a stronger product technically and operationally, with large performance gains in the most important user flows.",
+      "highlights": [
+        "Migrated from workflow prototype to modular production backend",
+        "Improved flashcard creation, lookup, and rating performance",
+        "Added stronger reliability, observability, and test coverage"
+      ],
+      "metrics": [
+        { "label": "Creation speed", "value": "77-84%" },
+        { "label": "Rating flow", "value": "89-92%" },
+        { "label": "Test suite", "value": "286 tests" }
+      ],
+      "lessons": [
+        "Good AI products are not just about the model feature; they depend on system quality, speed, trust, and iteration loops."
+      ],
+      "nextSteps": []
+    },
+    "media": {
+      "cover": {
+        "type": "image",
+        "title": "Kartino cover",
+        "caption": "Main visual for the Kartino project section.",
+        "src": "assets/projects/kartino/cover/kartino-cover-placeholder.png",
+        "alt": "Placeholder cover for the Kartino project"
+      },
+      "gallery": [
+        {
+          "type": "image",
+          "title": "Product loop",
+          "caption": "Flashcard generation and review flow visuals.",
+          "src": "assets/projects/kartino/gallery/kartino-product-loop-placeholder.png",
+          "alt": "Kartino product loop placeholder"
+        },
+        {
+          "type": "video",
+          "title": "System walkthrough",
+          "caption": "A short clip explaining architecture and performance decisions.",
+          "src": "",
+          "poster": "",
+          "alt": "Kartino walkthrough video placeholder"
+        }
+      ],
+      "visualStyle": {
+        "accent": "#c59dff",
+        "tone": "smart, focused, high-signal"
+      }
+    }
+  },
+  {
+    "id": "recore",
+    "slug": "recore",
+    "featured": true,
+    "core": {
+      "title": "RECORE",
+      "tagline": "A resilience platform growing into its full case study.",
+      "status": "in-progress",
+      "dateLabel": "2025 - present",
+      "role": "Full-stack engineer",
+      "teamContext": "Connected platform work within the wider resilience ecosystem",
+      "stack": ["React", "TypeScript", "FastAPI", "MongoDB"],
+      "categories": ["platform", "resilience", "full-stack"],
+      "links": []
+    },
+    "story": {
+      "summary": "A companion platform inside the resilience space, prepared as a first-class project even while its case study is still evolving.",
+      "problem": "Some projects are important enough to represent early, even before every screenshot and written detail is finalized.",
+      "solution": "This entry is structured so the project can appear confidently in the portfolio now and expand naturally as its story becomes sharper.",
+      "outcome": "The portfolio stays future-friendly and honest about work that is active, real, and still taking shape.",
+      "highlights": [
+        "Prepared as a first-class project slot instead of a temporary placeholder",
+        "Leaves room for future screenshots, metrics, and technical writing"
+      ],
+      "metrics": [
+        { "label": "State", "value": "Growing dossier" },
+        { "label": "Mode", "value": "Ready to expand" }
+      ],
+      "lessons": [
+        "A portfolio can feel more alive when some work is shown as active and evolving instead of pretending everything is already complete."
+      ],
+      "nextSteps": [
+        "Add concrete product screenshots",
+        "Write the challenge, architecture, and impact story in more detail"
+      ]
+    },
+    "media": {
+      "cover": {
+        "type": "image",
+        "title": "RECORE cover",
+        "caption": "Main visual for the RECORE project section.",
+        "src": "assets/projects/recore/cover/recore-cover-placeholder.png",
+        "alt": "Placeholder cover for the RECORE project"
+      },
+      "gallery": [
+        {
+          "type": "image",
+          "title": "Interface preview",
+          "caption": "Reserved for future screenshots and system diagrams.",
+          "src": "assets/projects/recore/gallery/recore-interface-preview-placeholder.png",
+          "alt": "RECORE interface preview placeholder"
+        }
+      ],
+      "visualStyle": {
+        "accent": "#ffb47d",
+        "tone": "active, warm, under construction"
+      }
+    }
+  },
+  {
+    "id": "replication-toolbox",
+    "slug": "replication-toolbox",
+    "featured": false,
+    "core": {
+      "title": "Replication Toolbox",
+      "tagline": "A future research and tooling project slot.",
+      "status": "planned",
+      "dateLabel": "Upcoming",
+      "role": "Engineer / system builder",
+      "teamContext": "Planned future portfolio case study",
+      "stack": ["TBD"],
+      "categories": ["research", "tooling", "upcoming"],
+      "links": []
+    },
+    "story": {
+      "summary": "A reserved slot for an upcoming project so the portfolio grows like an active workshop instead of a closed archive.",
+      "problem": "A static portfolio can feel finished even when real work is still on the way.",
+      "solution": "This entry reserves narrative and visual space for a serious next build without forcing fake detail too early.",
+      "outcome": "The portfolio can signal momentum and direction while remaining honest about what is still ahead.",
+      "highlights": [
+        "Keeps the project system extensible",
+        "Signals future work without pretending it already exists"
+      ],
+      "metrics": [
+        { "label": "Status", "value": "Planned chamber" }
+      ],
+      "lessons": [],
+      "nextSteps": [
+        "Replace placeholder content once the project direction is confirmed"
+      ]
+    },
+    "media": {
+      "cover": {
+        "type": "image",
+        "title": "Replication Toolbox cover",
+        "caption": "Main visual for the Replication Toolbox project section.",
+        "src": "",
+        "alt": "Placeholder cover for the Replication Toolbox project"
+      },
+      "gallery": [
+        {
+          "type": "image",
+          "title": "Future artifact slot",
+          "caption": "Reserved for screenshots, diagrams, or a short demo.",
+          "src": "",
+          "alt": "Replication Toolbox placeholder"
+        }
+      ],
+      "visualStyle": {
+        "accent": "#8fd4ff",
+        "tone": "reserved, technical, anticipatory"
+      }
+    }
+  },
+  {
+    "id": "smart-plant-care",
+    "slug": "smart-plant-care",
+    "featured": false,
+    "core": {
+      "title": "Smart Plant Care",
+      "tagline": "An IoT monitoring system with sensors, automation, and Telegram interaction.",
+      "status": "archived",
+      "dateLabel": "2024 - 2025",
+      "role": "Product / software engineer",
+      "teamContext": "Project connecting hardware, interfaces, automation, and messaging",
+      "stack": ["Flask", "MQTT", "REST", "Docker", "Telegram", "LLM reporting"],
+      "categories": ["iot", "automation", "hardware", "bot"],
+      "links": []
+    },
+    "story": {
+      "summary": "An IoT monitoring system combining sensors, actuators, Telegram interaction, and LLM-powered reporting.",
+      "problem": "The system had to connect physical devices, remote control, and useful monitoring in a way that stayed practical and understandable.",
+      "solution": "I built a project spanning device communication, dashboards, automation flows, and remote interaction through Telegram.",
+      "outcome": "The project proved range beyond standard web work and tied together software, hardware, messaging, and operations into one usable system.",
+      "highlights": [
+        "Built a monitoring interface for five sensor and actuator types",
+        "Enabled real-time remote interaction via Telegram",
+        "Improved efficiency with Docker-managed control logic"
+      ],
+      "metrics": [
+        { "label": "Device types", "value": "5" },
+        { "label": "Efficiency", "value": "~25%" }
+      ],
+      "lessons": [
+        "Projects that bridge software and hardware tell a richer story about systems thinking and adaptability."
+      ],
+      "nextSteps": []
+    },
+    "media": {
+      "cover": {
+        "type": "image",
+        "title": "Smart Plant Care cover",
+        "caption": "Main visual for the Smart Plant Care project section.",
+        "src": "assets/projects/smart-plant-care/cover/smart-plant-care-cover-placeholder.png",
+        "alt": "Placeholder cover for the Smart Plant Care project"
+      },
+      "gallery": [
+        {
+          "type": "image",
+          "title": "Monitoring dashboard",
+          "caption": "System controls, device state, and sensor dashboard views.",
+          "src": "assets/projects/smart-plant-care/gallery/smart-plant-care-dashboard-placeholder.png",
+          "alt": "Smart Plant Care dashboard placeholder"
+        },
+        {
+          "type": "video",
+          "title": "Project demo",
+          "caption": "Short walkthrough of the remote interaction and reporting flow.",
+          "src": "",
+          "poster": "",
+          "alt": "Smart Plant Care demo placeholder"
+        }
+      ],
+      "visualStyle": {
+        "accent": "#b8f289",
+        "tone": "organic, responsive, experimental"
+      }
+    }
+  }
+]

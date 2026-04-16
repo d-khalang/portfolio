@@ -1,0 +1,72 @@
+{
+  "projects": [
+    {
+      "id": "atlas",
+      "folders": {
+        "cover": "src/assets/projects/atlas/cover",
+        "gallery": "src/assets/projects/atlas/gallery",
+        "video": "src/assets/projects/atlas/video"
+      },
+      "expectedFiles": [
+        "cover/atlas-cover-placeholder.png",
+        "gallery/atlas-map-interface-placeholder.png",
+        "gallery/atlas-layer-management-placeholder.png",
+        "video/atlas-walkthrough-placeholder.mp4"
+      ]
+    },
+    {
+      "id": "kartino",
+      "folders": {
+        "cover": "src/assets/projects/kartino/cover",
+        "gallery": "src/assets/projects/kartino/gallery",
+        "video": "src/assets/projects/kartino/video"
+      },
+      "expectedFiles": [
+        "cover/kartino-cover-placeholder.png",
+        "gallery/kartino-product-loop-placeholder.png",
+        "video/kartino-system-walkthrough-placeholder.mp4"
+      ]
+    },
+    {
+      "id": "recore",
+      "folders": {
+        "cover": "src/assets/projects/recore/cover",
+        "gallery": "src/assets/projects/recore/gallery",
+        "video": "src/assets/projects/recore/video"
+      },
+      "expectedFiles": [
+        "cover/recore-cover-placeholder.png",
+        "gallery/recore-interface-preview-placeholder.png"
+      ]
+    },
+    {
+      "id": "replication-toolbox",
+      "folders": {
+        "cover": "src/assets/projects/replication-toolbox/cover",
+        "gallery": "src/assets/projects/replication-toolbox/gallery",
+        "video": "src/assets/projects/replication-toolbox/video"
+      },
+      "expectedFiles": [
+        "cover/replication-toolbox-cover-placeholder.png",
+        "gallery/replication-toolbox-artifact-slot-placeholder.png"
+      ]
+    },
+    {
+      "id": "smart-plant-care",
+      "folders": {
+        "cover": "src/assets/projects/smart-plant-care/cover",
+        "gallery": "src/assets/projects/smart-plant-care/gallery",
+        "video": "src/assets/projects/smart-plant-care/video"
+      },
+      "expectedFiles": [
+        "cover/smart-plant-care-cover-placeholder.png",
+        "gallery/smart-plant-care-dashboard-placeholder.png",
+        "video/smart-plant-care-demo-placeholder.mp4"
+      ]
+    }
+  ],
+  "shared": {
+    "textures": "src/assets/common/textures",
+    "icons": "src/assets/common/icons"
+  }
+}
