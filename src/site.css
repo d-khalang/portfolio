@@ -34,7 +34,7 @@ a {
   font: inherit;
 }
 
-img,
+img:not(.jj-layer-img),
 video {
   display: block;
   max-width: 100%;
@@ -786,3 +786,191 @@ main,
     padding: 1.15rem;
   }
 }
+
+/* =============================================
+   JUNGLE JOURNEY — Parallax Engine
+   ============================================= */
+
+.jj-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  cursor: default;
+}
+
+
+
+/* ---- Sky (CSS gradient, no image) ---- */
+.jj-sky {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 120% 60% at 50% 15%, #b6d8e8 0%, transparent 55%),
+    radial-gradient(circle at 25% 30%, rgba(200, 220, 210, 0.35) 0%, transparent 30%),
+    radial-gradient(circle at 80% 20%, rgba(210, 195, 170, 0.3) 0%, transparent 25%),
+    linear-gradient(180deg,
+      #d4e4e0 0%,
+      #e2ebe4 18%,
+      #eae5da 42%,
+      #f3eadf 70%,
+      #f5efe6 100%
+    );
+}
+
+/* ---- Parallax layers ---- */
+.jj-layer {
+  position: absolute;
+  left: 0;
+  display: flex;
+  align-items: flex-end;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.jj-layer-img {
+  display: block;
+  height: 100%;
+  width: auto;
+  flex-shrink: 0;
+  object-fit: contain;
+  object-position: bottom;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* ---- Project card (sandwiched) ---- */
+.jj-project {
+  position: absolute;
+  top: 38%;
+  left: 80%;
+  transform: translateY(-50%);
+  will-change: transform;
+  pointer-events: auto;
+}
+
+.jj-card {
+  width: 420px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #faf7f2;
+  border: 2.5px solid #1a3a3a;
+  box-shadow:
+    0 24px 80px rgba(15, 40, 45, 0.22),
+    0 8px 24px rgba(15, 40, 45, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  font-family: "Manrope", "Inter", sans-serif;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.jj-card:hover {
+  transform: translateY(-6px) scale(1.01);
+}
+
+/* Browser chrome bar */
+.jj-card__chrome {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  background: #1a3a3a;
+}
+
+.jj-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.jj-dot--red   { background: #e06050; }
+.jj-dot--yellow { background: #e8b84a; }
+.jj-dot--green  { background: #5aac6e; }
+
+.jj-card__url {
+  margin-left: 10px;
+  padding: 3px 12px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.7rem;
+  font-family: "IBM Plex Mono", monospace;
+  letter-spacing: 0.04em;
+}
+
+/* Card body */
+.jj-card__body {
+  padding: 0;
+}
+
+/* Hero section inside the card */
+.jj-card__hero {
+  padding: 28px 28px 22px;
+  background:
+    linear-gradient(145deg, rgba(200, 180, 160, 0.15), transparent),
+    linear-gradient(180deg, #f0ece4 0%, #e8e2d8 100%);
+  border-bottom: 1px solid rgba(26, 58, 58, 0.1);
+}
+
+.jj-card__hero-title {
+  margin: 0;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: #1a3a3a;
+  line-height: 1;
+}
+
+.jj-card__hero-sub {
+  margin: 6px 0 0;
+  font-size: 0.85rem;
+  color: #6b7b72;
+  letter-spacing: 0.02em;
+}
+
+/* Info strip */
+.jj-card__info {
+  padding: 22px 28px 28px;
+}
+
+.jj-card__label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #b35a44;
+  margin-bottom: 6px;
+}
+
+.jj-card__title {
+  margin: 0 0 10px;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.7rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: #1a3a3a;
+  line-height: 1.1;
+}
+
+.jj-card__desc {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.65;
+  color: #5a6b62;
+  padding-top: 10px;
+  border-top: 1px solid rgba(26, 58, 58, 0.08);
+}
+
+/* ---- Animations ---- */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.shimmer-effect {
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
