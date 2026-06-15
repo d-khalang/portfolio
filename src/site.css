@@ -32,25 +32,27 @@ body {
   height: 100vh;
   overflow: hidden;
   isolation: isolate;
-}
-
-.jj-sky {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  background:
-    radial-gradient(ellipse 120% 65% at 50% 10%, #b6d8e8 0%, transparent 58%),
-    linear-gradient(180deg, #d4e4e0 0%, #e2ebe4 42%, #f3eadf 100%);
+  background: #203f35;
 }
 
 .jj-layer {
   position: absolute;
   inset: 0;
+  overflow: hidden;
+  contain: layout paint;
+  pointer-events: none;
+}
+
+.jj-layer-track {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
   background-position: 0 bottom;
   background-repeat: repeat-x;
-  background-size: auto 100%;
-  pointer-events: none;
-  will-change: background-position;
+  backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
 }
 
 .jj-project {
@@ -137,13 +139,13 @@ body {
   letter-spacing: -0.04em;
 }
 
-.jj-card__hero > p:last-child,
+.jj-card__hero>p:last-child,
 .jj-card__info p {
   color: #5a6b62;
   line-height: 1.6;
 }
 
-.jj-card__hero > p:last-child {
+.jj-card__hero>p:last-child {
   margin: 8px 0 0;
   font-size: 0.9rem;
 }
@@ -161,7 +163,7 @@ body {
   position: absolute;
   bottom: 4%;
   left: 50%;
-  z-index: 4;
+  z-index: 6;
   display: block;
   width: clamp(210px, 24vw, 390px);
   max-width: none;
@@ -172,10 +174,6 @@ body {
 }
 
 @media (max-width: 720px) {
-  .jj-layer {
-    background-size: auto 82%;
-  }
-
   .jj-project {
     top: 32%;
     width: min(82vw, 360px);

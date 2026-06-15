@@ -2,29 +2,97 @@ import { useLayoutEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-import mountainLayer from '../assets/jungle/l1_montain_tile.png';
-import greenLayer from '../assets/jungle/l2_green_tile.png';
-import biker from '../assets/jungle_old/biker.png';
+import mountainLayer from '../assets/jungle/web/l1_mountain.webp';
+import greenLayer from '../assets/jungle/web/l2_green.webp';
+import treeLayer from '../assets/jungle/web/l3_trees.webp';
+import roadLayer from '../assets/jungle/web/l4_road.webp';
+import foregroundLayer from '../assets/jungle/web/l5_foreground_blurred.webp';
+import biker from '../assets/jungle/web/biker.webp';
 import projectsData from '../content/projects.json';
+import JourneyEnvironment from './JourneyEnvironment';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const SCROLL_DISTANCE = 5000;
 const CONTENT_TRAVEL = 300;
+const BIKER_RIDE = {
+  startYOffset: -15,
+  bumpAmplitude: 9,
+  bumpWavelength: 850,
+  vibrationAmplitude: 0.1,
+  vibrationWavelength: 48,
+};
 
 interface LayerDefinition {
   id: string;
   src: string;
   speed: number;
   zIndex: number;
+  x: number;
+  y: number;
+  size: number;
+  opacity?: number;
 }
 
 const layers: LayerDefinition[] = [
-  { id: 'mountains', src: mountainLayer, speed: 0.12, zIndex: 1 },
-  { id: 'green-hills', src: greenLayer, speed: 0.28, zIndex: 2 },
+  {
+    id: 'mountains',
+    src: mountainLayer,
+    speed: 0.12,
+    zIndex: 1,
+    x: 0,
+    y: 215,
+    size: 70,
+  },
+  {
+    id: 'green-hills',
+    src: greenLayer,
+    speed: 0.28,
+    zIndex: 2,
+    x: 0,
+    y: 130,
+    size: 85,
+  },
+  {
+    id: 'close-trees',
+    src: treeLayer,
+    speed: 0.45,
+    zIndex: 4,
+    x: 0,
+    y: 72,
+    size: 62,
+  },
+  {
+    id: 'road',
+    src: roadLayer,
+    speed: 0.62,
+    zIndex: 5,
+    x: 0,
+    y: -70,
+    size: 76,
+  },
+  {
+    id: 'foreground',
+    src: foregroundLayer,
+    speed: 0.85,
+    zIndex: 7,
+    x: 0,
+    y: -88,
+    size: 70,
+    opacity: 0.8,
+  },
 ];
 
-const bikerBob = [0, -8, 4, -12, 2, -6, 8, -10, 3, -5, 0];
+function getBikerRideY(distance: number) {
+  const bump =
+    Math.sin((distance / BIKER_RIDE.bumpWavelength) * Math.PI * 2) *
+    BIKER_RIDE.bumpAmplitude;
+  const vibration =
+    Math.sin((distance / BIKER_RIDE.vibrationWavelength) * Math.PI * 2) *
+    BIKER_RIDE.vibrationAmplitude;
+
+  return BIKER_RIDE.startYOffset + bump + vibration;
+}
 
 export default function JungleJourney() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -40,45 +108,52 @@ export default function JungleJourney() {
     }
 
     const context = gsap.context(() => {
-      const scrollTrigger = {
-        trigger: container,
-        start: 'top top',
-        end: `+=${SCROLL_DISTANCE}`,
-        scrub: 0.5,
-      };
-
-      gsap.utils.toArray<HTMLElement>('.jj-layer').forEach((layer) => {
-        const speed = Number(layer.dataset.speed);
-
-        gsap.to(layer, {
-          backgroundPositionX: -SCROLL_DISTANCE * speed,
-          ease: 'none',
-          scrollTrigger,
-        });
-      });
-
-      gsap.to('.jj-project', {
-        x: `-${CONTENT_TRAVEL}vw`,
-        ease: 'none',
-        scrollTrigger,
-      });
-
       gsap.set(bikerElement, { xPercent: -50 });
+      const setBikerY = gsap.quickSetter(bikerElement, 'y', 'px');
+      const reduceMotion = window.matchMedia(
+        '(prefers-reduced-motion: reduce)',
+      ).matches;
 
-      const bobTimeline = gsap.timeline({ scrollTrigger });
-      bikerBob.slice(1).forEach((y) => {
-        bobTimeline.to(bikerElement, {
-          y,
-          duration: 1,
-          ease: 'sine.inOut',
-        });
+      const timeline = gsap.timeline({
+        scrollTrigger: {
+          trigger: container,
+          start: 'top top',
+          end: `+=${SCROLL_DISTANCE}`,
+          scrub: 0.5,
+          pin: true,
+          invalidateOnRefresh: true,
+          onUpdate: (self) => {
+            if (!reduceMotion) {
+              const travelledDistance = self.progress * SCROLL_DISTANCE;
+              setBikerY(getBikerRideY(travelledDistance));
+            }
+          },
+        },
       });
 
-      ScrollTrigger.create({
-        ...scrollTrigger,
-        pin: true,
-        invalidateOnRefresh: true,
+      gsap.utils.toArray<HTMLElement>('.jj-layer-track').forEach((track) => {
+        const travel = Number(track.dataset.travel);
+
+        timeline.to(
+          track,
+          {
+            x: -travel,
+            ease: 'none',
+            force3D: true,
+          },
+          0,
+        );
       });
+
+      timeline.to(
+        '.jj-project',
+        {
+          x: `-${CONTENT_TRAVEL}vw`,
+          ease: 'none',
+          force3D: true,
+        },
+        0,
+      );
     }, container);
 
     return () => context.revert();
@@ -86,20 +161,35 @@ export default function JungleJourney() {
 
   return (
     <main ref={containerRef} className="jj-container">
-      <div className="jj-sky" aria-hidden="true" />
+      <JourneyEnvironment />
 
-      {layers.map((layer) => (
-        <div
-          key={layer.id}
-          className="jj-layer"
-          data-speed={layer.speed}
-          style={{
-            backgroundImage: `url(${layer.src})`,
-            zIndex: layer.zIndex,
-          }}
-          aria-hidden="true"
-        />
-      ))}
+      {layers.map((layer) => {
+        const travel = Math.ceil(SCROLL_DISTANCE * layer.speed);
+
+        return (
+          <div
+            key={layer.id}
+            className="jj-layer"
+            style={{
+              opacity: layer.opacity,
+              zIndex: layer.zIndex,
+            }}
+            aria-hidden="true"
+          >
+            <div
+              className="jj-layer-track"
+              data-travel={travel}
+              style={{
+                width: `calc(100% + ${travel + 4}px)`,
+                backgroundImage: `url(${layer.src})`,
+                backgroundPositionX: `${layer.x}px`,
+                backgroundPositionY: `calc(100% - ${layer.y}px)`,
+                backgroundSize: `auto ${layer.size}%`,
+              }}
+            />
+          </div>
+        );
+      })}
 
       {featuredProjects.map((project, index) => {
         const journeyPosition = project.journeyPosition ?? 0.5;
@@ -141,6 +231,8 @@ export default function JungleJourney() {
         src={biker}
         alt="Biker travelling through the project landscape"
         className="jj-biker"
+        decoding="async"
+        fetchPriority="high"
         draggable={false}
       />
     </main>
