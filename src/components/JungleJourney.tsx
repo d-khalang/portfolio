@@ -13,7 +13,7 @@ import JourneyEnvironment from './JourneyEnvironment';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const SCROLL_DISTANCE = 5000;
+const SCROLL_DISTANCE = 10000;
 const CONTENT_TRAVEL = 300;
 const BIKER_RIDE = {
   startYOffset: -15,
