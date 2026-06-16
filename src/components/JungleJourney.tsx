@@ -22,6 +22,12 @@ const PROJECT_CARD_MOTION = {
   focusDistanceVw: 5,
   transitionDistanceVw: 45,
 };
+const PROJECT_CARD_REVEAL = {
+  minMaskAlpha: 0.22,
+  maxMaskAlpha: 1,
+  widthRatio: 0.66,
+  heightRatio: 0.62,
+};
 const BIKER_RIDE = {
   startYOffset: -15,
   bumpAmplitude: 9,
@@ -90,6 +96,8 @@ const layers: LayerDefinition[] = [
   },
 ];
 
+const cardOccludingLayerIds = new Set(['close-trees', 'foreground']);
+
 function getBikerRideY(distance: number) {
   const bump =
     Math.sin((distance / BIKER_RIDE.bumpWavelength) * Math.PI * 2) *
@@ -128,6 +136,8 @@ export default function JungleJourney() {
           viewportHeight * PROJECT_CARD_MOTION.hiddenYOffsetRatio;
         const activeYOffset =
           viewportHeight * PROJECT_CARD_MOTION.activeYOffsetRatio;
+        let activeProjectElement: HTMLElement | undefined;
+        let activeProjectProgress = 0;
 
         projectElements.forEach((projectElement) => {
           const baseLeft = Number(projectElement.dataset.journeyLeft);
@@ -156,7 +166,44 @@ export default function JungleJourney() {
             ),
             force3D: true,
           });
+
+          if (focusProgress > activeProjectProgress) {
+            activeProjectProgress = focusProgress;
+            activeProjectElement = projectElement;
+          }
         });
+
+        const readableProjectElement = activeProjectElement;
+
+        if (!readableProjectElement) {
+          container.style.setProperty('--jj-card-mask-alpha', '1');
+          return;
+        }
+
+        const cardBounds = readableProjectElement.getBoundingClientRect();
+        const maskAlpha = gsap.utils.interpolate(
+          PROJECT_CARD_REVEAL.maxMaskAlpha,
+          PROJECT_CARD_REVEAL.minMaskAlpha,
+          activeProjectProgress,
+        );
+
+        container.style.setProperty(
+          '--jj-card-mask-x',
+          `${cardBounds.left + cardBounds.width / 2}px`,
+        );
+        container.style.setProperty(
+          '--jj-card-mask-y',
+          `${cardBounds.top + cardBounds.height / 2}px`,
+        );
+        container.style.setProperty(
+          '--jj-card-mask-radius-x',
+          `${cardBounds.width * PROJECT_CARD_REVEAL.widthRatio}px`,
+        );
+        container.style.setProperty(
+          '--jj-card-mask-radius-y',
+          `${cardBounds.height * PROJECT_CARD_REVEAL.heightRatio}px`,
+        );
+        container.style.setProperty('--jj-card-mask-alpha', `${maskAlpha}`);
       };
       const reduceMotion = window.matchMedia(
         '(prefers-reduced-motion: reduce)',
@@ -210,14 +257,15 @@ export default function JungleJourney() {
 
       {layers.map((layer) => {
         const travel = Math.ceil(SCROLL_DISTANCE * layer.speed);
+        const isCardOccluder = cardOccludingLayerIds.has(layer.id);
 
         return (
           <div
             key={layer.id}
-            className="jj-layer"
+            className={`jj-layer${isCardOccluder ? ' jj-layer--card-occluder-base' : ''}`}
             style={{
               opacity: layer.opacity,
-              zIndex: layer.zIndex,
+              zIndex: isCardOccluder ? 2.5 : layer.zIndex,
             }}
             aria-hidden="true"
           >
@@ -271,6 +319,36 @@ export default function JungleJourney() {
           </section>
         );
       })}
+
+      {layers
+        .filter((layer) => cardOccludingLayerIds.has(layer.id))
+        .map((layer) => {
+          const travel = Math.ceil(SCROLL_DISTANCE * layer.speed);
+
+          return (
+            <div
+              key={`${layer.id}-card-reveal`}
+              className="jj-layer jj-layer--card-reveal"
+              style={{
+                opacity: layer.opacity,
+                zIndex: layer.zIndex,
+              }}
+              aria-hidden="true"
+            >
+              <div
+                className="jj-layer-track"
+                data-travel={travel}
+                style={{
+                  width: `calc(100% + ${travel + 4}px)`,
+                  backgroundImage: `url(${layer.src})`,
+                  backgroundPositionX: `${layer.x}px`,
+                  backgroundPositionY: `calc(100% - ${layer.y}px)`,
+                  backgroundSize: `auto ${layer.size}%`,
+                }}
+              />
+            </div>
+          );
+        })}
 
       <img
         ref={bikerRef}

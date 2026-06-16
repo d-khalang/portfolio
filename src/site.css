@@ -27,6 +27,12 @@ body {
 }
 
 .jj-container {
+  --jj-card-mask-alpha: 1;
+  --jj-card-mask-radius-x: 0px;
+  --jj-card-mask-radius-y: 0px;
+  --jj-card-mask-x: -100vw;
+  --jj-card-mask-y: -100vh;
+
   position: relative;
   width: 100%;
   height: 100vh;
@@ -53,6 +59,23 @@ body {
   backface-visibility: hidden;
   transform: translate3d(0, 0, 0);
   will-change: transform;
+}
+
+.jj-layer--card-occluder-base {
+  opacity: 1;
+}
+
+.jj-layer--card-reveal {
+  mask-image: radial-gradient(
+    ellipse var(--jj-card-mask-radius-x) var(--jj-card-mask-radius-y)
+      at var(--jj-card-mask-x) var(--jj-card-mask-y),
+    rgb(0 0 0 / var(--jj-card-mask-alpha)) 0%,
+    rgb(0 0 0 / var(--jj-card-mask-alpha)) 52%,
+    rgb(0 0 0 / 0.7) 78%,
+    #000 100%
+  );
+  mask-repeat: no-repeat;
+  mask-size: 100% 100%;
 }
 
 .jj-project {
