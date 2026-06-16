@@ -292,10 +292,11 @@ export default function JungleJourney() {
           'in-progress';
 
         return (
-          <section
+          <a
             key={project.id}
             className="jj-project"
             data-journey-left={left}
+            href={`/projects/${project.slug}`}
             style={{ left: `${left}vw` }}
           >
             <article className="jj-card">
@@ -316,7 +317,7 @@ export default function JungleJourney() {
                 <p>{project.story.summary}</p>
               </div>
             </article>
-          </section>
+          </a>
         );
       })}
 
