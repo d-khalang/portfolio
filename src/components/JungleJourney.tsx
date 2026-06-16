@@ -15,6 +15,13 @@ gsap.registerPlugin(ScrollTrigger);
 
 const SCROLL_DISTANCE = 10000;
 const CONTENT_TRAVEL = 300;
+const PROJECT_CARD_MOTION = {
+  hiddenScale: 0.5,
+  hiddenYOffsetRatio: 0.25,
+  activeYOffsetRatio: -0.22,
+  focusDistanceVw: 5,
+  transitionDistanceVw: 45,
+};
 const BIKER_RIDE = {
   startYOffset: -15,
   bumpAmplitude: 9,
@@ -94,6 +101,10 @@ function getBikerRideY(distance: number) {
   return BIKER_RIDE.startYOffset + bump + vibration;
 }
 
+function smoothProjectFocus(progress: number) {
+  return progress * progress * (3 - 2 * progress);
+}
+
 export default function JungleJourney() {
   const containerRef = useRef<HTMLDivElement>(null);
   const bikerRef = useRef<HTMLImageElement>(null);
@@ -110,9 +121,51 @@ export default function JungleJourney() {
     const context = gsap.context(() => {
       gsap.set(bikerElement, { xPercent: -50 });
       const setBikerY = gsap.quickSetter(bikerElement, 'y', 'px');
+      const projectElements = gsap.utils.toArray<HTMLElement>('.jj-project');
+      const setProjectStates = (scrollProgress: number) => {
+        const viewportHeight = window.innerHeight;
+        const hiddenYOffset =
+          viewportHeight * PROJECT_CARD_MOTION.hiddenYOffsetRatio;
+        const activeYOffset =
+          viewportHeight * PROJECT_CARD_MOTION.activeYOffsetRatio;
+
+        projectElements.forEach((projectElement) => {
+          const baseLeft = Number(projectElement.dataset.journeyLeft);
+          const currentLeft = baseLeft - CONTENT_TRAVEL * scrollProgress;
+          const distanceFromFocus = Math.abs(currentLeft - 50);
+          const rawProgress =
+            1 -
+            (distanceFromFocus - PROJECT_CARD_MOTION.focusDistanceVw) /
+            (PROJECT_CARD_MOTION.transitionDistanceVw -
+              PROJECT_CARD_MOTION.focusDistanceVw);
+          const focusProgress = smoothProjectFocus(
+            gsap.utils.clamp(0, 1, rawProgress),
+          );
+
+          gsap.set(projectElement, {
+            x: `-${CONTENT_TRAVEL * scrollProgress}vw`,
+            y: gsap.utils.interpolate(
+              hiddenYOffset,
+              activeYOffset,
+              focusProgress,
+            ),
+            scale: gsap.utils.interpolate(
+              PROJECT_CARD_MOTION.hiddenScale,
+              1,
+              focusProgress,
+            ),
+            force3D: true,
+          });
+        });
+      };
       const reduceMotion = window.matchMedia(
         '(prefers-reduced-motion: reduce)',
       ).matches;
+
+      gsap.set(projectElements, {
+        transformOrigin: '50% 78%',
+      });
+      setProjectStates(0);
 
       const timeline = gsap.timeline({
         scrollTrigger: {
@@ -123,6 +176,8 @@ export default function JungleJourney() {
           pin: true,
           invalidateOnRefresh: true,
           onUpdate: (self) => {
+            setProjectStates(self.progress);
+
             if (!reduceMotion) {
               const travelledDistance = self.progress * SCROLL_DISTANCE;
               setBikerY(getBikerRideY(travelledDistance));
@@ -144,16 +199,6 @@ export default function JungleJourney() {
           0,
         );
       });
-
-      timeline.to(
-        '.jj-project',
-        {
-          x: `-${CONTENT_TRAVEL}vw`,
-          ease: 'none',
-          force3D: true,
-        },
-        0,
-      );
     }, container);
 
     return () => context.revert();
@@ -202,6 +247,7 @@ export default function JungleJourney() {
           <section
             key={project.id}
             className="jj-project"
+            data-journey-left={left}
             style={{ left: `${left}vw` }}
           >
             <article className="jj-card">

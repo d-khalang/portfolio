@@ -11,8 +11,21 @@
       "dateLabel": "2025 - present",
       "role": "Full-stack engineer",
       "teamContext": "EU Horizon project with an international 18-partner consortium",
-      "stack": ["React", "Vite", "TypeScript", "FastAPI", "MongoDB", "MapLibre", "AWS"],
-      "categories": ["geospatial", "frontend", "backend", "public-tech"],
+      "stack": [
+        "React",
+        "Vite",
+        "TypeScript",
+        "FastAPI",
+        "MongoDB",
+        "MapLibre",
+        "AWS"
+      ],
+      "categories": [
+        "geospatial",
+        "frontend",
+        "backend",
+        "public-tech"
+      ],
       "links": [
         {
           "label": "Live platform",
@@ -33,9 +46,18 @@
         "Added a layer-management panel so users can manage all active content in one place"
       ],
       "metrics": [
-        { "label": "Consortium", "value": "18 partners" },
-        { "label": "Scope", "value": "Full-stack + cloud" },
-        { "label": "Mode", "value": "Interactive geospatial product" }
+        {
+          "label": "Consortium",
+          "value": "18 partners"
+        },
+        {
+          "label": "Scope",
+          "value": "Full-stack + cloud"
+        },
+        {
+          "label": "Mode",
+          "value": "Interactive geospatial product"
+        }
       ],
       "lessons": [
         "Complex information becomes much more approachable when spatial structure and UI clarity support each other."
@@ -84,8 +106,19 @@
       "dateLabel": "2025 - present",
       "role": "Founder / product engineer",
       "teamContext": "Solo-led product with end-to-end ownership",
-      "stack": ["Python", "FastAPI", "aiogram", "MongoDB", "Telegram"],
-      "categories": ["ai", "backend", "product", "learning"],
+      "stack": [
+        "Python",
+        "FastAPI",
+        "aiogram",
+        "MongoDB",
+        "Telegram"
+      ],
+      "categories": [
+        "ai",
+        "backend",
+        "product",
+        "learning"
+      ],
       "links": [
         {
           "label": "Live product",
@@ -105,9 +138,18 @@
         "Added stronger reliability, observability, and test coverage"
       ],
       "metrics": [
-        { "label": "Creation speed", "value": "77-84%" },
-        { "label": "Rating flow", "value": "89-92%" },
-        { "label": "Test suite", "value": "286 tests" }
+        {
+          "label": "Creation speed",
+          "value": "77-84%"
+        },
+        {
+          "label": "Rating flow",
+          "value": "89-92%"
+        },
+        {
+          "label": "Test suite",
+          "value": "286 tests"
+        }
       ],
       "lessons": [
         "Good AI products are not just about the model feature; they depend on system quality, speed, trust, and iteration loops."
@@ -157,8 +199,17 @@
       "dateLabel": "2025 - present",
       "role": "Full-stack engineer",
       "teamContext": "Connected platform work within the wider resilience ecosystem",
-      "stack": ["React", "TypeScript", "FastAPI", "MongoDB"],
-      "categories": ["platform", "resilience", "full-stack"],
+      "stack": [
+        "React",
+        "TypeScript",
+        "FastAPI",
+        "MongoDB"
+      ],
+      "categories": [
+        "platform",
+        "resilience",
+        "full-stack"
+      ],
       "links": []
     },
     "story": {
@@ -171,8 +222,14 @@
         "Leaves room for future screenshots, metrics, and technical writing"
       ],
       "metrics": [
-        { "label": "State", "value": "Growing dossier" },
-        { "label": "Mode", "value": "Ready to expand" }
+        {
+          "label": "State",
+          "value": "Growing dossier"
+        },
+        {
+          "label": "Mode",
+          "value": "Ready to expand"
+        }
       ],
       "lessons": [
         "A portfolio can feel more alive when some work is shown as active and evolving instead of pretending everything is already complete."
@@ -216,8 +273,14 @@
       "dateLabel": "Upcoming",
       "role": "Engineer / system builder",
       "teamContext": "Planned future portfolio case study",
-      "stack": ["TBD"],
-      "categories": ["research", "tooling", "upcoming"],
+      "stack": [
+        "TBD"
+      ],
+      "categories": [
+        "research",
+        "tooling",
+        "upcoming"
+      ],
       "links": []
     },
     "story": {
@@ -230,7 +293,10 @@
         "Signals future work without pretending it already exists"
       ],
       "metrics": [
-        { "label": "Status", "value": "Planned chamber" }
+        {
+          "label": "Status",
+          "value": "Planned chamber"
+        }
       ],
       "lessons": [],
       "nextSteps": [
@@ -271,8 +337,20 @@
       "dateLabel": "2024 - 2025",
       "role": "Product / software engineer",
       "teamContext": "Project connecting hardware, interfaces, automation, and messaging",
-      "stack": ["Flask", "MQTT", "REST", "Docker", "Telegram", "LLM reporting"],
-      "categories": ["iot", "automation", "hardware", "bot"],
+      "stack": [
+        "Flask",
+        "MQTT",
+        "REST",
+        "Docker",
+        "Telegram",
+        "LLM reporting"
+      ],
+      "categories": [
+        "iot",
+        "automation",
+        "hardware",
+        "bot"
+      ],
       "links": []
     },
     "story": {
@@ -286,8 +364,14 @@
         "Improved efficiency with Docker-managed control logic"
       ],
       "metrics": [
-        { "label": "Device types", "value": "5" },
-        { "label": "Efficiency", "value": "~25%" }
+        {
+          "label": "Device types",
+          "value": "5"
+        },
+        {
+          "label": "Efficiency",
+          "value": "~25%"
+        }
       ],
       "lessons": [
         "Projects that bridge software and hardware tell a richer story about systems thinking and adaptability."

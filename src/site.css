@@ -57,7 +57,7 @@ body {
 
 .jj-project {
   position: absolute;
-  top: 38%;
+  top: 50%;
   z-index: 3;
   width: 420px;
   translate: -50% -50%;
@@ -175,7 +175,7 @@ body {
 
 @media (max-width: 720px) {
   .jj-project {
-    top: 32%;
+    top: 50%;
     width: min(82vw, 360px);
   }
 
