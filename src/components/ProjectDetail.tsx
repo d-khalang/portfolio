@@ -34,6 +34,8 @@ interface ProjectTile {
   rows: number;
   asset?: ProjectAsset;
   priority?: boolean;
+  hasBackground?: boolean;
+  hasBorder?: boolean;
 }
 
 interface ProjectAssetMeta {
@@ -175,9 +177,9 @@ function getProjectAssets(project: Project): ProjectAsset[] {
     });
 }
 
-function getTextRows(title = '', body = '', cols = 3, base = 5) {
-  const titleWeight = title.length / (cols * 8);
-  const bodyWeight = body.length / (cols * 18);
+function getTextRows(title = '', body = '', cols = 3, base = 1) {
+  const titleWeight = title.length / (cols * 20);
+  const bodyWeight = body.length / (cols * 52);
   return Math.max(base, Math.ceil(base + titleWeight + bodyWeight));
 }
 
@@ -199,12 +201,16 @@ function createFactTile(
     body,
     tone,
     cols,
-    rows: getTextRows(title, body, cols, tone === 'red' ? 7 : 6),
+    rows: getTextRows(title, body, cols, tone === 'red' ? 2 : 1),
+    hasBackground: tone !== 'ghost',
+    hasBorder: true,
   };
 }
 
 function createStoryTile(id: string, eyebrow: string, title: string, body: string): ProjectTile {
-  const cols = body.length > 170 ? 5 : 4;
+  const length = title.length + body.length;
+  const cols = length > 240 ? 6 : length > 150 ? 5 : length > 85 ? 4 : 3;
+  const rows = length > 300 ? 4 : length > 130 ? 3 : 2;
 
   return {
     id,
@@ -212,9 +218,11 @@ function createStoryTile(id: string, eyebrow: string, title: string, body: strin
     eyebrow,
     title,
     body,
-    tone: 'white',
+    tone: 'ghost',
     cols,
-    rows: getTextRows(title, body, cols, 8),
+    rows,
+    hasBackground: true,
+    hasBorder: false,
   };
 }
 
@@ -236,11 +244,10 @@ function getMediaCols(asset: ProjectAsset) {
 
 function getMediaRows(asset: ProjectAsset, cols: number) {
   const ratio = asset.width / asset.height;
-  const captionRows = Math.ceil((asset.title.length + asset.description.length) / (cols * 28)) + 3;
-  const visualRows = Math.ceil((cols * 2.35) / ratio);
-  const safetyRows = asset.shape === 'wide' ? 1 : 3;
+  const imageRows = (cols * 0.72) / ratio;
+  const captionRows = asset.description.length > cols * 62 ? 0.75 : 0.55;
 
-  return Math.max(9, visualRows + captionRows + safetyRows);
+  return Math.max(3, Math.ceil(imageRows + captionRows));
 }
 
 function getProjectTiles(project: Project, assets: ProjectAsset[], seed: number): ProjectTile[] {
@@ -260,12 +267,17 @@ function getProjectTiles(project: Project, assets: ProjectAsset[], seed: number)
       rows: getMediaRows(asset, cols),
       asset,
       priority: index === 0,
+      hasBackground: true,
+      hasBorder: false,
     };
   });
   const supportingTiles: ProjectTile[] = [
     { ...createFactTile('role', 'role', project.core.role, project.core.teamContext, 'soft'), priority: true },
     createFactTile('status', 'status', project.core.status, project.core.dateLabel, 'red'),
-    createFactTile('domain', 'domain', categoryPreview, project.core.links[0]?.label ?? 'private artifact', 'line'),
+    {
+      ...createFactTile('domain', 'domain', categoryPreview, project.core.links[0]?.label ?? 'private artifact', 'line'),
+      cols: 3,
+    },
     createStoryTile('summary', 'summary', project.story.summary, project.story.highlights[0] ?? project.story.outcome),
     createStoryTile('challenge', 'challenge', 'Why it exists', project.story.problem),
     createStoryTile('response', 'response', 'How it works', project.story.solution),
@@ -278,14 +290,18 @@ function getProjectTiles(project: Project, assets: ProjectAsset[], seed: number)
       body: `${project.core.stack.length} tools in the build`,
       tone: 'line',
       cols: project.core.stack.length > 5 ? 4 : 3,
-      rows: getTextRows(stackPreview, `${project.core.stack.length} tools in the build`, 4, 8),
+      rows: getTextRows(stackPreview, `${project.core.stack.length} tools in the build`, 4, 2),
+      hasBackground: true,
+      hasBorder: false,
     },
     {
       id: 'glyph',
       kind: 'glyph',
       tone: 'dark',
       cols: 3,
-      rows: 10,
+      rows: 3,
+      hasBackground: true,
+      hasBorder: true,
     },
     ...project.story.metrics.map<ProjectTile>((metric, index) => ({
       id: `metric-${metric.label}`,
@@ -295,8 +311,10 @@ function getProjectTiles(project: Project, assets: ProjectAsset[], seed: number)
       body: index === 0 && primaryMetric ? 'primary signal' : undefined,
       tone: index === 0 ? 'red' : 'white',
       cols: metric.value.length > 24 ? 4 : 3,
-      rows: getTextRows(metric.value, metric.label, metric.value.length > 24 ? 4 : 3, 9),
+      rows: getTextRows(metric.value, metric.label, metric.value.length > 24 ? 4 : 3, 2),
       priority: index === 0,
+      hasBackground: true,
+      hasBorder: index === 0,
     })),
     ...project.story.highlights.slice(1).map<ProjectTile>((highlight, index) => (
       createStoryTile(`highlight-${index}`, 'signal', `0${index + 1}`, highlight)
@@ -312,7 +330,9 @@ function getProjectTiles(project: Project, assets: ProjectAsset[], seed: number)
       body: link.url.replace(/^https?:\/\//, ''),
       tone: 'dark',
       cols: 3,
-      rows: 7,
+      rows: 2,
+      hasBackground: true,
+      hasBorder: true,
     })),
     ...project.story.nextSteps.map<ProjectTile>((step, index) => (
       createStoryTile(`next-${index}`, 'next input', 'Needs detail', step)
@@ -324,7 +344,9 @@ function getProjectTiles(project: Project, assets: ProjectAsset[], seed: number)
         kind: 'empty',
         tone: 'ghost',
         cols: index % 4 === 0 ? 4 : index % 3 === 0 ? 2 : 3,
-        rows: index % 3 === 0 ? 6 : index % 2 === 0 ? 5 : 4,
+        rows: index % 3 === 0 ? 2 : 1,
+        hasBackground: false,
+        hasBorder: index % 4 !== 1,
       }),
     ),
   ];
@@ -362,7 +384,11 @@ function MediaTile({ tile, project }: { tile: ProjectTile; project: Project }) {
     return null;
   }
 
-  const mediaClasses = `pd-tile pd-tile--media pd-tile--${asset.shape}`;
+  const chromeClasses = [
+    tile.hasBackground === false ? 'pd-tile--no-bg' : '',
+    tile.hasBorder === false ? 'pd-tile--no-border' : '',
+  ].filter(Boolean).join(' ');
+  const mediaClasses = `pd-tile pd-tile--media pd-tile--${asset.shape} ${chromeClasses}`;
   const style = {
     '--media-ratio': asset.width / asset.height,
     '--tile-cols': tile.cols,
@@ -404,13 +430,17 @@ function MediaTile({ tile, project }: { tile: ProjectTile; project: Project }) {
 }
 
 function ProjectTileView({ tile, project }: { tile: ProjectTile; project: Project }) {
+  const chromeClasses = [
+    tile.hasBackground === false ? 'pd-tile--no-bg' : '',
+    tile.hasBorder === false ? 'pd-tile--no-border' : '',
+  ].filter(Boolean).join(' ');
   const style = {
     '--tile-cols': tile.cols,
     '--tile-rows': tile.rows,
   } as CSSProperties;
 
   if (tile.kind === 'empty') {
-    return <div className="pd-tile pd-tile--empty" style={style} aria-hidden="true" />;
+    return <div className={`pd-tile pd-tile--empty ${chromeClasses}`} style={style} aria-hidden="true" />;
   }
 
   if (tile.kind === 'glyph') {
@@ -426,7 +456,7 @@ function ProjectTileView({ tile, project }: { tile: ProjectTile; project: Projec
   }
 
   return (
-    <article className={`pd-tile pd-tile--${tile.kind} pd-tile--${tile.tone}`} style={style}>
+    <article className={`pd-tile pd-tile--${tile.kind} pd-tile--${tile.tone} ${chromeClasses}`} style={style}>
       {tile.eyebrow && <span>{tile.eyebrow}</span>}
       {tile.title && <strong>{tile.title}</strong>}
       {tile.body && <p>{tile.body}</p>}
