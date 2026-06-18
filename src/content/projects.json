@@ -6,7 +6,7 @@
     "journeyPosition": 0.2,
     "core": {
       "title": "RESILIAGE Atlas",
-      "tagline": "Interactive geospatial platform for resilience mapping and decision support.",
+      "tagline": "Full-stack geospatial decision-support platform for exploring layered resilience and cultural heritage data.",
       "status": "live",
       "dateLabel": "2025 - present",
       "role": "Full-stack engineer",
@@ -35,15 +35,15 @@
       ]
     },
     "story": {
-      "summary": "An interactive geospatial platform for resilience mapping, layered exploration, and practical decision support.",
-      "problem": "The project needed a usable way to explore complex resilience data across multiple layers, stakeholders, and regions without overwhelming the interface.",
-      "solution": "I helped shape a map-driven platform that supports many content types in one interface, with synchronized map and sidebar behavior, guided onboarding, and a dedicated panel for managing open layers.",
-      "outcome": "The result is a rich geospatial product where complex content remains explorable and understandable, even when users are navigating many overlapping datasets and views.",
+      "summary": "A live geospatial product built for an 18-partner EU Horizon consortium, combining interactive maps, structured content, and layered exploration into one decision-support workspace.",
+      "problem": "Stakeholders needed to explore resilience and heritage information across regions, map layers, media types, and project categories without losing spatial context or being buried inside a dense interface.",
+      "solution": "I built and refined core full-stack product flows: a MapLibre-based map experience, synchronized sidebar and map interactions, guided onboarding, mixed content rendering, and a layer-management panel for active spatial data.",
+      "outcome": "The platform turns a complex collection of spatial and contextual material into a usable public-facing interface where users can browse, compare, and inspect overlapping datasets with less friction.",
       "highlights": [
-        "Supports varied geospatial content including points, lines, vector layers, raster layers, historical cartography overlays, and video content",
-        "Synchronized the map and sidebar so browsing categories and exploring spatial content feel connected",
-        "Built an onboarding tour to help users enter a complex map experience with less friction",
-        "Added a layer-management panel so users can manage all active content in one place"
+        "Built support for points, lines, vector layers, raster layers, historical cartography overlays, and video content in one map-driven interface",
+        "Connected category browsing with map behavior so users can move between narrative content and spatial context without switching modes",
+        "Designed onboarding and progressive disclosure patterns for a complex map product with many possible entry points",
+        "Added active-layer management so users can inspect and control overlapping spatial content from one place"
       ],
       "metrics": [
         {
@@ -51,16 +51,16 @@
           "value": "18 partners"
         },
         {
-          "label": "Scope",
+          "label": "Ownership",
           "value": "Full-stack + cloud"
         },
         {
-          "label": "Mode",
-          "value": "Interactive geospatial product"
+          "label": "Interface",
+          "value": "MapLibre workspace"
         }
       ],
       "lessons": [
-        "Complex information becomes much more approachable when spatial structure and UI clarity support each other."
+        "Complex datasets become more useful when the interface preserves spatial context, makes active layers visible, and gives users clear paths into the material."
       ],
       "nextSteps": []
     },
