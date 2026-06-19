@@ -6,7 +6,7 @@
     "journeyPosition": 0.2,
     "core": {
       "title": "RESILIAGE Atlas",
-      "tagline": "Full-stack geospatial decision-support platform delivering high-performance, cloud-native vector layers and dynamic raster simulations.",
+      "tagline": "WebGIS-based MultiAtlas for exploring spatial and non-spatial resilience, risk, and cultural-natural heritage data.",
       "status": "live",
       "dateLabel": "2025 - present",
       "role": "Lead Full-Stack Engineer",
@@ -39,10 +39,10 @@
       ]
     },
     "story": {
-      "summary": "A full-stack, cloud-native geospatial dashboard designed for an 18-partner EU Horizon Europe consortium to explore regional vulnerability, heritage overlays, and hazard simulations in a single unified workspace.",
-      "problem": "Consortium stakeholders needed to evaluate regional resilience by overlapping high-resolution historical cartography, environmental datasets, and climate hazard simulations without sacrificing web-browser performance or losing spatial context.",
-      "solution": "I architected a dual-format mapping pipeline: utilizing PMTiles for lightweight vector overlays and an async FastAPI tile proxy for Cloud-Optimized GeoTIFFs (COGs). I coupled this with state-synchronized legends, an event-driven interactive onboarding guide, and secure AWS S3 asset delivery.",
-      "outcome": "The application turns raw, disparate regional datasets into a fluid, performant client-side workspace. Users can instantly overlay vector boundaries, style and contrast-stretch dynamic rasters, and view localized simulations with minimal friction.",
+      "summary": "A full-stack, cloud-native Atlas designed for an 18-partner EU Horizon Europe consortium to explore community-environment relationships through cultural, environmental, agricultural, demographic, heritage, DRR, crowdsourced, and simulation-based data.",
+      "problem": "Stakeholders needed one geographic workspace for interpreting resilience across many evidence types, from cultural-natural assets and historical routes to risk areas, local living heritage, survey testimonies, crowdsourced media, and 3D simulations.",
+      "solution": "A flexible WebGIS platform around structured Atlas content, synchronized exploration flows, and a dual-format mapping pipeline: PMTiles for lightweight vector overlays and an async FastAPI tile proxy for Cloud-Optimized GeoTIFFs (COGs). I coupled this with state-synchronized legends, an event-driven onboarding guide, and secure AWS S3 asset delivery.",
+      "outcome": "A multidimensional resilience material into a navigable WebGIS workspace where users can explore heritage, environment, risk, community narratives, and simulations through a shared geographic lens.",
       "highlights": [
         "Architected a dynamic raster tile proxy using FastAPI and TiTiler to stream, style, and project Cloud-Optimized GeoTIFFs (COGs) hosted on S3 on-the-fly.",
         "Engineered client-side vector styling with MapLibre GL by generating dynamic 'match' expressions compiled directly from database-configured symbology configurations.",
@@ -53,7 +53,7 @@
       "metrics": [
         {
           "label": "Scale",
-          "value": "5 international pilot sites"
+          "value": "5 international collaboration sites"
         },
         {
           "label": "Data pipeline",
