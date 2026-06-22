@@ -817,11 +817,11 @@ function InteractiveProjectGrid({
     setMoveBlocked(
       movedSteps === 0
         ? {
-            id: drag.id,
-            direction: drag.axis === 'horizontal'
-              ? (requestedSteps > 0 ? 'e' : 'w')
-              : (requestedSteps > 0 ? 's' : 'n'),
-          }
+          id: drag.id,
+          direction: drag.axis === 'horizontal'
+            ? (requestedSteps > 0 ? 'e' : 'w')
+            : (requestedSteps > 0 ? 's' : 'n'),
+        }
         : null,
     );
   };
@@ -890,8 +890,8 @@ function InteractiveProjectGrid({
     resize.appliedRows += resized.rows;
     setResizeBlocked(
       resized.columns === 0
-      && resized.rows === 0
-      && (requestedColumns !== 0 || requestedRows !== 0)
+        && resized.rows === 0
+        && (requestedColumns !== 0 || requestedRows !== 0)
         ? { id: resize.id, direction: resize.direction }
         : null,
     );
@@ -1095,7 +1095,7 @@ export default function ProjectDetail({ project }: ProjectDetailProps) {
   return (
     <main className="pd-page">
       <nav className="pd-nav" aria-label="Project navigation">
-        <a href="/">Nothing (portfolio)</a>
+        <a href="/">portfolio</a>
         <span>{project.core.dateLabel}</span>
       </nav>
 
