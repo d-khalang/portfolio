@@ -14,6 +14,7 @@ import {
   moveTile,
   resizeTile,
   type GridLayout,
+  type GridPosition,
   type ResizeDirection,
 } from './projectGrid';
 import './ProjectDetail.css';
@@ -500,6 +501,7 @@ interface ResizeDragState {
 }
 
 const resizeDirections: ResizeDirection[] = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw'];
+type CardinalDirection = 'n' | 'e' | 's' | 'w';
 
 function getTileMinimumSize(tile: ProjectTile, columns: number) {
   if (tile.kind === 'media') {
@@ -563,8 +565,11 @@ function InteractiveProjectGrid({
   const [board, setBoard] = useState(initialBoard);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [moveOrigin, setMoveOrigin] = useState<GridPosition | null>(null);
+  const [moveBlocked, setMoveBlocked] = useState<{ id: string; direction: CardinalDirection } | null>(null);
   const [resizingId, setResizingId] = useState<string | null>(null);
-  const [resizeBlockedId, setResizeBlockedId] = useState<string | null>(null);
+  const [resizingDirection, setResizingDirection] = useState<ResizeDirection | null>(null);
+  const [resizeBlocked, setResizeBlocked] = useState<{ id: string; direction: ResizeDirection } | null>(null);
   const boardRef = useRef<HTMLDivElement>(null);
   const layoutRef = useRef<GridLayout>(initialBoard.layout);
   const dragRef = useRef<DragState | null>(null);
@@ -575,8 +580,11 @@ function InteractiveProjectGrid({
     setBoard(initialBoard);
     setActiveId(null);
     setDraggingId(null);
+    setMoveOrigin(null);
+    setMoveBlocked(null);
     setResizingId(null);
-    setResizeBlockedId(null);
+    setResizingDirection(null);
+    setResizeBlocked(null);
   }, [initialBoard]);
 
   // Every drag distance is replayed as one-cell moves so tiles cannot skip blockers.
@@ -696,6 +704,8 @@ function InteractiveProjectGrid({
     };
     setActiveId(id);
     setDraggingId(id);
+    setMoveOrigin(layoutRef.current[id] ? { ...layoutRef.current[id] } : null);
+    setMoveBlocked(null);
   };
 
   const handlePointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
@@ -739,12 +749,24 @@ function InteractiveProjectGrid({
       requestedSteps,
     );
     drag.appliedSteps += movedSteps;
+    setMoveBlocked(
+      movedSteps === 0
+        ? {
+            id: drag.id,
+            direction: drag.axis === 'horizontal'
+              ? (requestedSteps > 0 ? 'e' : 'w')
+              : (requestedSteps > 0 ? 's' : 'n'),
+          }
+        : null,
+    );
   };
 
   const endDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (dragRef.current?.pointerId === event.pointerId) {
       dragRef.current = null;
       setDraggingId(null);
+      setMoveOrigin(null);
+      setMoveBlocked(null);
     }
   };
 
@@ -766,7 +788,8 @@ function InteractiveProjectGrid({
     };
     setActiveId(id);
     setResizingId(id);
-    setResizeBlockedId(null);
+    setResizingDirection(direction);
+    setResizeBlocked(null);
   };
 
   const handleResizePointerMove = (event: ReactPointerEvent<HTMLElement>) => {
@@ -800,11 +823,11 @@ function InteractiveProjectGrid({
     const resized = resizeBySteps(resize.id, resize.direction, requestedColumns, requestedRows);
     resize.appliedColumns += resized.columns;
     resize.appliedRows += resized.rows;
-    setResizeBlockedId(
+    setResizeBlocked(
       resized.columns === 0
       && resized.rows === 0
       && (requestedColumns !== 0 || requestedRows !== 0)
-        ? resize.id
+        ? { id: resize.id, direction: resize.direction }
         : null,
     );
   };
@@ -813,7 +836,8 @@ function InteractiveProjectGrid({
     if (resizeRef.current?.pointerId === event.pointerId) {
       resizeRef.current = null;
       setResizingId(null);
-      setResizeBlockedId(null);
+      setResizingDirection(null);
+      setResizeBlocked(null);
     }
   };
 
@@ -826,7 +850,8 @@ function InteractiveProjectGrid({
     }
 
     setActiveId(null);
-    setResizeBlockedId(null);
+    setMoveBlocked(null);
+    setResizeBlocked(null);
 
     if (document.activeElement instanceof HTMLElement && event.currentTarget.contains(document.activeElement)) {
       document.activeElement.blur();
@@ -863,6 +888,14 @@ function InteractiveProjectGrid({
     moveBySteps(id, movement[0], movement[1], 1);
   };
 
+  const draggingPosition = draggingId ? board.layout[draggingId] : undefined;
+  const resizingPosition = resizingId ? board.layout[resizingId] : undefined;
+  const hasMovedFromOrigin = Boolean(
+    moveOrigin
+    && draggingPosition
+    && (moveOrigin.col !== draggingPosition.col || moveOrigin.row !== draggingPosition.row),
+  );
+
   return (
     <section className="pd-board-section" aria-labelledby="board-instructions">
       <p id="board-instructions" className="pd-board-instructions">
@@ -877,6 +910,36 @@ function InteractiveProjectGrid({
         {Array.from({ length: columns * board.rows }).map((_, index) => (
           <span key={index} className="pd-board__cell" aria-hidden="true" />
         ))}
+        {moveOrigin && draggingId && (
+          <span
+            className="pd-board__move-origin"
+            style={{
+              gridColumn: `${moveOrigin.col} / span ${moveOrigin.cols}`,
+              gridRow: `${moveOrigin.row} / span ${moveOrigin.rows}`,
+            }}
+            aria-hidden="true"
+          />
+        )}
+        {hasMovedFromOrigin && draggingPosition && (
+          <span
+            className="pd-board__move-destination"
+            style={{
+              gridColumn: `${draggingPosition.col} / span ${draggingPosition.cols}`,
+              gridRow: `${draggingPosition.row} / span ${draggingPosition.rows}`,
+            }}
+            aria-hidden="true"
+          />
+        )}
+        {resizingPosition && (
+          <span
+            className="pd-board__resize-preview"
+            style={{
+              gridColumn: `${resizingPosition.col} / span ${resizingPosition.cols}`,
+              gridRow: `${resizingPosition.row} / span ${resizingPosition.rows}`,
+            }}
+            aria-hidden="true"
+          />
+        )}
         {movableTiles.map((tile) => {
           const position = board.layout[tile.id];
 
@@ -887,12 +950,18 @@ function InteractiveProjectGrid({
           const directions = getMoveOptions(board.layout, tile.id, columns, board.rows);
           const isActive = activeId === tile.id;
           const isResizing = resizingId === tile.id;
-          const isResizeBlocked = resizeBlockedId === tile.id;
+          const blockedResizeDirection = resizeBlocked?.id === tile.id ? resizeBlocked.direction : null;
+          const blockedMoveDirection = moveBlocked?.id === tile.id ? moveBlocked.direction : null;
+          const blockedDirection = blockedResizeDirection ?? blockedMoveDirection;
+          const blockedEdges = (['n', 'e', 's', 'w'] as CardinalDirection[]).filter(
+            (edge) => blockedDirection?.includes(edge),
+          );
+          const hasBlockedEdge = blockedEdges.length > 0;
 
           return (
             <div
               key={tile.id}
-              className={`pd-board__item${isActive ? ' is-active' : ''}${draggingId === tile.id ? ' is-dragging' : ''}${isResizing ? ' is-resizing' : ''}${isResizeBlocked ? ' is-resize-blocked' : ''}`}
+              className={`pd-board__item${isActive ? ' is-active' : ''}${draggingId === tile.id ? ' is-dragging' : ''}${isResizing ? ' is-resizing' : ''}${hasBlockedEdge ? ' is-interaction-blocked' : ''}`}
               style={{
                 gridColumn: `${position.col} / span ${position.cols}`,
                 gridRow: `${position.row} / span ${position.rows}`,
@@ -916,16 +985,23 @@ function InteractiveProjectGrid({
                 endResize(event);
               }}
             >
-              <span className="pd-drag-grip" aria-hidden="true">⠿</span>
+              <span className="pd-move-affordance" aria-hidden="true">
+                <span>↕</span>
+                <span>↔</span>
+                <small>drag</small>
+              </span>
               <span className={`pd-move-hint pd-move-hint--up${directions.up ? ' is-valid' : ''}`} aria-hidden="true">↑</span>
               <span className={`pd-move-hint pd-move-hint--right${directions.right ? ' is-valid' : ''}`} aria-hidden="true">→</span>
               <span className={`pd-move-hint pd-move-hint--down${directions.down ? ' is-valid' : ''}`} aria-hidden="true">↓</span>
               <span className={`pd-move-hint pd-move-hint--left${directions.left ? ' is-valid' : ''}`} aria-hidden="true">←</span>
               <span className="pd-size-readout" aria-hidden="true">{position.cols} × {position.rows}</span>
+              {blockedEdges.map((edge) => (
+                <span key={edge} className={`pd-blocked-edge pd-blocked-edge--${edge}`} aria-hidden="true" />
+              ))}
               {resizeDirections.map((direction) => (
                 <span
                   key={direction}
-                  className={`pd-resize-handle pd-resize-handle--${direction}`}
+                  className={`pd-resize-handle pd-resize-handle--${direction}${isResizing && resizingDirection === direction ? ' is-current' : ''}${blockedResizeDirection === direction ? ' is-blocked' : ''}`}
                   data-resize-handle={direction}
                   aria-hidden="true"
                   onPointerDown={(event) => handleResizePointerDown(event, tile.id, direction)}
