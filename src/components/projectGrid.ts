@@ -11,6 +11,13 @@ export interface GridPosition extends GridTileShape {
 
 export type GridLayout = Record<string, GridPosition>;
 
+export type ResizeDirection = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
+
+export interface GridMinimumSize {
+  minCols: number;
+  minRows: number;
+}
+
 // --- Deterministic layout helpers -------------------------------------------------
 
 function createRandom(seed: number) {
@@ -122,6 +129,56 @@ export function moveTile(
     col: current.col + deltaColumn,
     row: current.row + deltaRow,
   };
+
+  if (!canPlace(candidate, layout, columns, rows, id)) {
+    return layout;
+  }
+
+  return {
+    ...layout,
+    [id]: candidate,
+  };
+}
+
+export function resizeTile(
+  layout: GridLayout,
+  id: string,
+  direction: ResizeDirection,
+  deltaColumn: number,
+  deltaRow: number,
+  minimum: GridMinimumSize,
+  columns: number,
+  rows: number,
+) {
+  const current = layout[id];
+
+  if (!current) {
+    return layout;
+  }
+
+  const candidate = { ...current };
+
+  if (direction.includes('e')) {
+    candidate.cols += deltaColumn;
+  }
+
+  if (direction.includes('w')) {
+    candidate.col += deltaColumn;
+    candidate.cols -= deltaColumn;
+  }
+
+  if (direction.includes('s')) {
+    candidate.rows += deltaRow;
+  }
+
+  if (direction.includes('n')) {
+    candidate.row += deltaRow;
+    candidate.rows -= deltaRow;
+  }
+
+  if (candidate.cols < minimum.minCols || candidate.rows < minimum.minRows) {
+    return layout;
+  }
 
   if (!canPlace(candidate, layout, columns, rows, id)) {
     return layout;

@@ -8,7 +8,14 @@ import {
   useState,
 } from 'react';
 import projectsData from '../content/projects.json';
-import { createGridLayout, getMoveOptions, moveTile, type GridLayout } from './projectGrid';
+import {
+  createGridLayout,
+  getMoveOptions,
+  moveTile,
+  resizeTile,
+  type GridLayout,
+  type ResizeDirection,
+} from './projectGrid';
 import './ProjectDetail.css';
 
 type Project = (typeof projectsData)[number];
@@ -482,6 +489,38 @@ interface DragState {
   axis: 'horizontal' | 'vertical' | null;
 }
 
+interface ResizeDragState {
+  id: string;
+  pointerId: number;
+  startX: number;
+  startY: number;
+  appliedColumns: number;
+  appliedRows: number;
+  direction: ResizeDirection;
+}
+
+const resizeDirections: ResizeDirection[] = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw'];
+
+function getTileMinimumSize(tile: ProjectTile, columns: number) {
+  if (tile.kind === 'media') {
+    const isPortrait = tile.asset?.shape === 'portrait';
+    return {
+      minCols: Math.min(columns, isPortrait ? 2 : 3),
+      minRows: isPortrait ? 3 : 2,
+    };
+  }
+
+  if (tile.kind === 'story' || tile.kind === 'glyph') {
+    return { minCols: Math.min(columns, 2), minRows: 2 };
+  }
+
+  return { minCols: Math.min(columns, 2), minRows: 1 };
+}
+
+function snapDistanceToGridStep(distance: number, cellSize: number) {
+  return Math.sign(distance) * Math.floor(Math.abs(distance) / cellSize + 0.5);
+}
+
 // --- Responsive board configuration ----------------------------------------------
 
 function useBoardColumns() {
@@ -524,15 +563,20 @@ function InteractiveProjectGrid({
   const [board, setBoard] = useState(initialBoard);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [resizingId, setResizingId] = useState<string | null>(null);
+  const [resizeBlockedId, setResizeBlockedId] = useState<string | null>(null);
   const boardRef = useRef<HTMLDivElement>(null);
   const layoutRef = useRef<GridLayout>(initialBoard.layout);
   const dragRef = useRef<DragState | null>(null);
+  const resizeRef = useRef<ResizeDragState | null>(null);
 
   useEffect(() => {
     layoutRef.current = initialBoard.layout;
     setBoard(initialBoard);
     setActiveId(null);
     setDraggingId(null);
+    setResizingId(null);
+    setResizeBlockedId(null);
   }, [initialBoard]);
 
   // Every drag distance is replayed as one-cell moves so tiles cannot skip blockers.
@@ -567,10 +611,77 @@ function InteractiveProjectGrid({
     return movedSteps;
   };
 
+  const resizeBySteps = (
+    id: string,
+    direction: ResizeDirection,
+    requestedColumns: number,
+    requestedRows: number,
+  ) => {
+    const tile = movableTiles.find((item) => item.id === id);
+
+    if (!tile) {
+      return { columns: 0, rows: 0 };
+    }
+
+    const minimum = getTileMinimumSize(tile, columns);
+    let resizedColumns = 0;
+    let resizedRows = 0;
+    let nextLayout = layoutRef.current;
+    const columnDirection = Math.sign(requestedColumns);
+    const rowDirection = Math.sign(requestedRows);
+
+    for (let step = 0; step < Math.abs(requestedColumns); step += 1) {
+      const resizedLayout = resizeTile(
+        nextLayout,
+        id,
+        direction,
+        columnDirection,
+        0,
+        minimum,
+        columns,
+        board.rows,
+      );
+
+      if (resizedLayout === nextLayout) {
+        break;
+      }
+
+      nextLayout = resizedLayout;
+      resizedColumns += columnDirection;
+    }
+
+    for (let step = 0; step < Math.abs(requestedRows); step += 1) {
+      const resizedLayout = resizeTile(
+        nextLayout,
+        id,
+        direction,
+        0,
+        rowDirection,
+        minimum,
+        columns,
+        board.rows,
+      );
+
+      if (resizedLayout === nextLayout) {
+        break;
+      }
+
+      nextLayout = resizedLayout;
+      resizedRows += rowDirection;
+    }
+
+    if (nextLayout !== layoutRef.current) {
+      layoutRef.current = nextLayout;
+      setBoard((current) => ({ ...current, layout: nextLayout }));
+    }
+
+    return { columns: resizedColumns, rows: resizedRows };
+  };
+
   const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>, id: string) => {
     const target = event.target as HTMLElement;
 
-    if (target.closest('a, button, video, input, textarea, select')) {
+    if (target.closest('a, button, video, input, textarea, select, [data-resize-handle]')) {
       return;
     }
 
@@ -614,7 +725,7 @@ function InteractiveProjectGrid({
     const rowStep = Number.parseFloat(styles.gridAutoRows) + rowGap;
     const pointerDelta = drag.axis === 'horizontal' ? deltaX : deltaY;
     const cellStep = drag.axis === 'horizontal' ? columnStep : rowStep;
-    const desiredSteps = Math.trunc(pointerDelta / cellStep);
+    const desiredSteps = snapDistanceToGridStep(pointerDelta, cellStep);
     const requestedSteps = desiredSteps - drag.appliedSteps;
 
     if (requestedSteps === 0) {
@@ -637,6 +748,91 @@ function InteractiveProjectGrid({
     }
   };
 
+  const handleResizePointerDown = (
+    event: ReactPointerEvent<HTMLSpanElement>,
+    id: string,
+    direction: ResizeDirection,
+  ) => {
+    event.stopPropagation();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    resizeRef.current = {
+      id,
+      direction,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      appliedColumns: 0,
+      appliedRows: 0,
+    };
+    setActiveId(id);
+    setResizingId(id);
+    setResizeBlockedId(null);
+  };
+
+  const handleResizePointerMove = (event: ReactPointerEvent<HTMLElement>) => {
+    const resize = resizeRef.current;
+    const element = boardRef.current;
+
+    if (!resize || resize.pointerId !== event.pointerId || !element) {
+      return;
+    }
+
+    const styles = window.getComputedStyle(element);
+    const columnGap = Number.parseFloat(styles.columnGap) || 0;
+    const rowGap = Number.parseFloat(styles.rowGap) || 0;
+    const columnStep = (element.clientWidth - columnGap * (columns - 1)) / columns + columnGap;
+    const rowStep = Number.parseFloat(styles.gridAutoRows) + rowGap;
+    const usesColumns = resize.direction.includes('e') || resize.direction.includes('w');
+    const usesRows = resize.direction.includes('n') || resize.direction.includes('s');
+    const desiredColumns = usesColumns
+      ? snapDistanceToGridStep(event.clientX - resize.startX, columnStep)
+      : 0;
+    const desiredRows = usesRows
+      ? snapDistanceToGridStep(event.clientY - resize.startY, rowStep)
+      : 0;
+    const requestedColumns = desiredColumns - resize.appliedColumns;
+    const requestedRows = desiredRows - resize.appliedRows;
+
+    if (requestedColumns === 0 && requestedRows === 0) {
+      return;
+    }
+
+    const resized = resizeBySteps(resize.id, resize.direction, requestedColumns, requestedRows);
+    resize.appliedColumns += resized.columns;
+    resize.appliedRows += resized.rows;
+    setResizeBlockedId(
+      resized.columns === 0
+      && resized.rows === 0
+      && (requestedColumns !== 0 || requestedRows !== 0)
+        ? resize.id
+        : null,
+    );
+  };
+
+  const endResize = (event: ReactPointerEvent<HTMLElement>) => {
+    if (resizeRef.current?.pointerId === event.pointerId) {
+      resizeRef.current = null;
+      setResizingId(null);
+      setResizeBlockedId(null);
+    }
+  };
+
+  const handleBoardPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const target = event.target as HTMLElement;
+    const clickedEmptyCell = target.classList.contains('pd-board__cell');
+
+    if (target !== event.currentTarget && !clickedEmptyCell) {
+      return;
+    }
+
+    setActiveId(null);
+    setResizeBlockedId(null);
+
+    if (document.activeElement instanceof HTMLElement && event.currentTarget.contains(document.activeElement)) {
+      document.activeElement.blur();
+    }
+  };
+
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>, id: string) => {
     const movement = {
       ArrowUp: [0, -1],
@@ -651,18 +847,32 @@ function InteractiveProjectGrid({
 
     event.preventDefault();
     setActiveId(id);
+
+    if (event.shiftKey || event.altKey) {
+      const resizeInput: Record<string, [ResizeDirection, number, number]> = {
+        ArrowUp: ['n', 0, event.altKey ? 1 : -1],
+        ArrowRight: ['e', event.altKey ? -1 : 1, 0],
+        ArrowDown: ['s', 0, event.altKey ? -1 : 1],
+        ArrowLeft: ['w', event.altKey ? 1 : -1, 0],
+      };
+      const [direction, deltaColumn, deltaRow] = resizeInput[event.key];
+      resizeBySteps(id, direction, deltaColumn, deltaRow);
+      return;
+    }
+
     moveBySteps(id, movement[0], movement[1], 1);
   };
 
   return (
     <section className="pd-board-section" aria-labelledby="board-instructions">
       <p id="board-instructions" className="pd-board-instructions">
-        Drag a tile along one axis. Occupied cells block movement. Focus a tile and use arrow keys for precise moves.
+        Drag tiles to move. Pull an edge or corner to resize by grid cells. Arrow keys move; Shift + arrow grows and Alt + arrow shrinks.
       </p>
       <div
         ref={boardRef}
         className="pd-board"
         style={{ '--board-columns': columns, '--board-rows': board.rows } as CSSProperties}
+        onPointerDown={handleBoardPointerDown}
       >
         {Array.from({ length: columns * board.rows }).map((_, index) => (
           <span key={index} className="pd-board__cell" aria-hidden="true" />
@@ -676,30 +886,55 @@ function InteractiveProjectGrid({
 
           const directions = getMoveOptions(board.layout, tile.id, columns, board.rows);
           const isActive = activeId === tile.id;
+          const isResizing = resizingId === tile.id;
+          const isResizeBlocked = resizeBlockedId === tile.id;
 
           return (
             <div
               key={tile.id}
-              className={`pd-board__item${isActive ? ' is-active' : ''}${draggingId === tile.id ? ' is-dragging' : ''}`}
+              className={`pd-board__item${isActive ? ' is-active' : ''}${draggingId === tile.id ? ' is-dragging' : ''}${isResizing ? ' is-resizing' : ''}${isResizeBlocked ? ' is-resize-blocked' : ''}`}
               style={{
                 gridColumn: `${position.col} / span ${position.cols}`,
                 gridRow: `${position.row} / span ${position.rows}`,
               }}
               tabIndex={0}
-              aria-label={`${tile.eyebrow ?? tile.kind} tile. Use arrow keys to move.`}
-              aria-roledescription="movable grid tile"
+              aria-label={`${tile.eyebrow ?? tile.kind} tile, ${position.cols} by ${position.rows} cells. Arrow keys move; Shift grows; Alt shrinks.`}
+              aria-roledescription="movable and resizable grid tile"
               onFocus={() => setActiveId(tile.id)}
               onKeyDown={(event) => handleKeyDown(event, tile.id)}
               onPointerDown={(event) => handlePointerDown(event, tile.id)}
-              onPointerMove={handlePointerMove}
-              onPointerUp={endDrag}
-              onPointerCancel={endDrag}
+              onPointerMove={(event) => {
+                handlePointerMove(event);
+                handleResizePointerMove(event);
+              }}
+              onPointerUp={(event) => {
+                endDrag(event);
+                endResize(event);
+              }}
+              onPointerCancel={(event) => {
+                endDrag(event);
+                endResize(event);
+              }}
             >
               <span className="pd-drag-grip" aria-hidden="true">⠿</span>
               <span className={`pd-move-hint pd-move-hint--up${directions.up ? ' is-valid' : ''}`} aria-hidden="true">↑</span>
               <span className={`pd-move-hint pd-move-hint--right${directions.right ? ' is-valid' : ''}`} aria-hidden="true">→</span>
               <span className={`pd-move-hint pd-move-hint--down${directions.down ? ' is-valid' : ''}`} aria-hidden="true">↓</span>
               <span className={`pd-move-hint pd-move-hint--left${directions.left ? ' is-valid' : ''}`} aria-hidden="true">←</span>
+              <span className="pd-size-readout" aria-hidden="true">{position.cols} × {position.rows}</span>
+              {resizeDirections.map((direction) => (
+                <span
+                  key={direction}
+                  className={`pd-resize-handle pd-resize-handle--${direction}`}
+                  data-resize-handle={direction}
+                  aria-hidden="true"
+                  onPointerDown={(event) => handleResizePointerDown(event, tile.id, direction)}
+                  onPointerMove={handleResizePointerMove}
+                  onPointerUp={endResize}
+                  onPointerCancel={endResize}
+                  onLostPointerCapture={endResize}
+                />
+              ))}
               <ProjectTileView tile={tile} project={project} />
             </div>
           );

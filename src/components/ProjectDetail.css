@@ -191,6 +191,8 @@
   cursor: grab;
   outline: none;
   touch-action: pan-y;
+  container-name: project-tile;
+  container-type: size;
   transition: filter 160ms ease, transform 160ms ease;
 }
 
@@ -209,6 +211,20 @@
 
 .pd-board__item.is-dragging .pd-tile {
   border-color: var(--pd-red);
+}
+
+.pd-board__item.is-resizing {
+  z-index: 6;
+  filter: drop-shadow(0 18px 24px rgb(0 0 0 / 18%));
+}
+
+.pd-board__item.is-resizing .pd-tile {
+  border-color: var(--pd-red);
+}
+
+.pd-board__item.is-resize-blocked .pd-tile {
+  outline-color: var(--pd-ink);
+  box-shadow: inset 0 0 0 3px rgb(215 25 32 / 22%), 0 22px 60px rgb(0 0 0 / 7%);
 }
 
 .pd-drag-grip {
@@ -286,6 +302,126 @@
 
 .pd-move-hint--left {
   top: 50%;
+  left: 0;
+}
+
+.pd-size-readout {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 8;
+  border-radius: 6px;
+  padding: 4px 7px;
+  background: rgb(11 11 11 / 84%);
+  color: #fff;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.64rem;
+  line-height: 1;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+
+.pd-board__item.is-active .pd-size-readout,
+.pd-board__item.is-resizing .pd-size-readout,
+.pd-board__item:focus-visible .pd-size-readout {
+  opacity: 1;
+}
+
+.pd-resize-handle {
+  position: absolute;
+  z-index: 9;
+  border: 1px solid #fff;
+  border-radius: 999px;
+  background: var(--pd-red);
+  box-shadow: 0 0 0 2px rgb(215 25 32 / 18%);
+  opacity: 0;
+  pointer-events: none;
+  touch-action: none;
+  transition: opacity 120ms ease, scale 120ms ease;
+}
+
+.pd-board__item.is-active .pd-resize-handle,
+.pd-board__item:focus-visible .pd-resize-handle,
+.pd-board__item.is-resizing .pd-resize-handle {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.pd-resize-handle:hover {
+  scale: 1.2;
+}
+
+.pd-resize-handle--n,
+.pd-resize-handle--s {
+  left: 50%;
+  width: 38px;
+  height: 8px;
+  translate: -50% -50%;
+  cursor: ns-resize;
+}
+
+.pd-resize-handle--n {
+  top: 0;
+}
+
+.pd-resize-handle--s {
+  top: 100%;
+}
+
+.pd-resize-handle--e,
+.pd-resize-handle--w {
+  top: 50%;
+  width: 8px;
+  height: 38px;
+  translate: -50% -50%;
+  cursor: ew-resize;
+}
+
+.pd-resize-handle--e {
+  left: 100%;
+}
+
+.pd-resize-handle--w {
+  left: 0;
+}
+
+.pd-resize-handle--ne,
+.pd-resize-handle--se,
+.pd-resize-handle--sw,
+.pd-resize-handle--nw {
+  width: 13px;
+  height: 13px;
+  translate: -50% -50%;
+}
+
+.pd-resize-handle--ne,
+.pd-resize-handle--sw {
+  cursor: nesw-resize;
+}
+
+.pd-resize-handle--se,
+.pd-resize-handle--nw {
+  cursor: nwse-resize;
+}
+
+.pd-resize-handle--ne {
+  top: 0;
+  left: 100%;
+}
+
+.pd-resize-handle--se {
+  top: 100%;
+  left: 100%;
+}
+
+.pd-resize-handle--sw {
+  top: 100%;
+  left: 0;
+}
+
+.pd-resize-handle--nw {
+  top: 0;
   left: 0;
 }
 
@@ -445,7 +581,9 @@
 }
 
 .pd-tile--media figure {
-  display: block;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  height: 100%;
   margin: 0;
 }
 
@@ -453,9 +591,8 @@
 .pd-tile--media video {
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
   min-height: 0;
-  aspect-ratio: var(--media-ratio);
   object-fit: cover;
   background: transparent;
 }
@@ -489,6 +626,64 @@
 
 .pd-tile--media.pd-tile--no-border figcaption {
   border-top-color: transparent;
+}
+
+/* Content progressively compacts as a tile approaches its minimum footprint. */
+
+@container project-tile (max-width: 280px) {
+  .pd-tile {
+    padding: 14px;
+  }
+
+  .pd-tile strong,
+  .pd-tile--metric strong,
+  .pd-tile--story strong {
+    font-size: clamp(1rem, 8cqw, 1.55rem);
+  }
+
+  .pd-tile p {
+    margin-top: 8px;
+    font-size: 0.8rem;
+    line-height: 1.35;
+  }
+}
+
+@container project-tile (max-height: 220px) {
+  .pd-tile {
+    padding: 12px 14px;
+  }
+
+  .pd-tile strong {
+    margin-top: 6px;
+  }
+
+  .pd-tile--media {
+    padding: 0;
+  }
+
+  .pd-tile--media figcaption p {
+    display: none;
+  }
+}
+
+@container project-tile (max-height: 150px) {
+  .pd-tile p {
+    display: none;
+  }
+
+  .pd-tile strong,
+  .pd-tile--metric strong,
+  .pd-tile--story strong {
+    font-size: clamp(0.92rem, 7cqw, 1.35rem);
+  }
+
+  .pd-tile--media figcaption {
+    padding: 7px 10px;
+  }
+
+  .pd-tile--media figcaption span {
+    display: none;
+  }
 }
 
 @media (max-width: 1180px) {
@@ -541,7 +736,9 @@
 @media (prefers-reduced-motion: reduce) {
   .pd-board__item,
   .pd-drag-grip,
-  .pd-move-hint {
+  .pd-move-hint,
+  .pd-size-readout,
+  .pd-resize-handle {
     transition: none;
   }
 }
