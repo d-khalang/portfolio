@@ -225,3 +225,191 @@ body {
     transition: none;
   }
 }
+
+/* ==========================================================================
+   Hero Section / Intro Overlay
+   ========================================================================== */
+
+.jj-hero {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 44px 50px;
+  color: #123b45;
+  pointer-events: auto;
+  will-change: transform, opacity;
+}
+
+.jj-hero__backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(219, 232, 228, 0.85) 0%,
+    rgba(219, 232, 228, 0.96) 65%,
+    #dbe8e4 100%
+  );
+  backdrop-filter: blur(3px);
+  will-change: opacity;
+  pointer-events: none;
+}
+
+.jj-hero__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+}
+
+.jj-hero__meta {
+  opacity: 0.82;
+}
+
+.jj-hero__meta--center {
+  color: #b35a44;
+}
+
+.jj-hero__meta--right {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.jj-hero__meta--right::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #5aac6e;
+}
+
+.jj-hero__content {
+  align-self: center;
+  text-align: center;
+  max-width: 860px;
+  margin: auto 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.jj-hero__eyebrow {
+  margin: 0;
+  color: #b35a44;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.88rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.jj-hero__title {
+  margin: 0;
+  color: #123b45;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: clamp(2.2rem, 6.2vw, 4.4rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+}
+
+.jj-hero__tagline {
+  margin: 6px 0 0;
+  color: #4a5c56;
+  font-family: "Manrope", sans-serif;
+  font-size: clamp(0.95rem, 1.8vw, 1.25rem);
+  font-weight: 500;
+  line-height: 1.62;
+  max-width: 680px;
+}
+
+.jj-hero__footer {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.jj-hero__scroll {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.jj-hero__scroll-indicator {
+  position: relative;
+  width: 22px;
+  height: 36px;
+  border: 2px solid #123b45;
+  border-radius: 11px;
+}
+
+.jj-hero__scroll-indicator::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  width: 4px;
+  height: 6px;
+  background: #123b45;
+  border-radius: 2px;
+  translate: -50% 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .jj-hero__scroll-indicator::after {
+    animation: jj-scroll-dot-anim 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
+  }
+}
+
+@keyframes jj-scroll-dot-anim {
+  0% {
+    top: 6px;
+    opacity: 1;
+    height: 6px;
+  }
+  50% {
+    top: 18px;
+    opacity: 0.1;
+    height: 8px;
+  }
+  100% {
+    top: 6px;
+    opacity: 1;
+    height: 6px;
+  }
+}
+
+.jj-hero__scroll-text {
+  color: #123b45;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  opacity: 0.72;
+}
+
+@media (max-width: 640px) {
+  .jj-hero {
+    padding: 24px 20px;
+  }
+  
+  .jj-hero__meta--center {
+    display: none;
+  }
+
+  .jj-hero__content {
+    gap: 14px;
+  }
+}
+

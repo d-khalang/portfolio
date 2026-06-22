@@ -98,13 +98,14 @@ const layers: LayerDefinition[] = [
 
 const cardOccludingLayerIds = new Set(['close-trees', 'foreground']);
 
-function getBikerRideY(distance: number) {
+function getBikerRideY(distance: number, speedFactor: number = 1) {
   const bump =
     Math.sin((distance / BIKER_RIDE.bumpWavelength) * Math.PI * 2) *
-    BIKER_RIDE.bumpAmplitude;
+    BIKER_RIDE.bumpAmplitude *
+    speedFactor;
   const vibration =
     Math.sin((distance / BIKER_RIDE.vibrationWavelength) * Math.PI * 2) *
-    BIKER_RIDE.vibrationAmplitude;
+    (BIKER_RIDE.vibrationAmplitude * (0.3 + 0.7 * speedFactor));
 
   return BIKER_RIDE.startYOffset + bump + vibration;
 }
@@ -129,8 +130,22 @@ export default function JungleJourney() {
     const context = gsap.context(() => {
       gsap.set(bikerElement, { xPercent: -50 });
       const setBikerY = gsap.quickSetter(bikerElement, 'y', 'px');
+      
+      const reduceMotion = window.matchMedia(
+        '(prefers-reduced-motion: reduce)',
+      ).matches;
+
+      if (!reduceMotion) {
+        setBikerY(getBikerRideY(0, 0));
+      }
+
       const projectElements = gsap.utils.toArray<HTMLElement>('.jj-project');
       const setProjectStates = (scrollProgress: number) => {
+        const introThreshold = 0.15;
+        const journeyProgress = scrollProgress < introThreshold
+          ? 0
+          : (scrollProgress - introThreshold) / (1 - introThreshold);
+
         const viewportHeight = window.innerHeight;
         const hiddenYOffset =
           viewportHeight * PROJECT_CARD_MOTION.hiddenYOffsetRatio;
@@ -141,7 +156,7 @@ export default function JungleJourney() {
 
         projectElements.forEach((projectElement) => {
           const baseLeft = Number(projectElement.dataset.journeyLeft);
-          const currentLeft = baseLeft - CONTENT_TRAVEL * scrollProgress;
+          const currentLeft = baseLeft - CONTENT_TRAVEL * journeyProgress;
           const distanceFromFocus = Math.abs(currentLeft - 50);
           const rawProgress =
             1 -
@@ -153,7 +168,7 @@ export default function JungleJourney() {
           );
 
           gsap.set(projectElement, {
-            x: `-${CONTENT_TRAVEL * scrollProgress}vw`,
+            x: `-${CONTENT_TRAVEL * journeyProgress}vw`,
             y: gsap.utils.interpolate(
               hiddenYOffset,
               activeYOffset,
@@ -175,7 +190,7 @@ export default function JungleJourney() {
 
         const readableProjectElement = activeProjectElement;
 
-        if (!readableProjectElement) {
+        if (!readableProjectElement || scrollProgress < introThreshold) {
           container.style.setProperty('--jj-card-mask-alpha', '1');
           return;
         }
@@ -205,9 +220,6 @@ export default function JungleJourney() {
         );
         container.style.setProperty('--jj-card-mask-alpha', `${maskAlpha}`);
       };
-      const reduceMotion = window.matchMedia(
-        '(prefers-reduced-motion: reduce)',
-      ).matches;
 
       gsap.set(projectElements, {
         transformOrigin: '50% 78%',
@@ -226,13 +238,56 @@ export default function JungleJourney() {
             setProjectStates(self.progress);
 
             if (!reduceMotion) {
-              const travelledDistance = self.progress * SCROLL_DISTANCE;
-              setBikerY(getBikerRideY(travelledDistance));
+              const introThreshold = 0.15;
+              const journeyProgress = self.progress < introThreshold
+                ? 0
+                : (self.progress - introThreshold) / (1 - introThreshold);
+                
+              const speedFactor = self.progress < introThreshold
+                ? self.progress / introThreshold
+                : 1;
+
+              const travelledDistance = journeyProgress * SCROLL_DISTANCE;
+              setBikerY(getBikerRideY(travelledDistance, speedFactor));
             }
           },
         },
       });
 
+      // Intro animations: Fade/translate hero elements and fade fog backdrop
+      timeline.to('.jj-hero__backdrop', {
+        opacity: 0,
+        duration: 0.15,
+        ease: 'power2.inOut',
+      }, 0);
+
+      timeline.to('.jj-hero__header', {
+        y: -40,
+        opacity: 0,
+        duration: 0.1,
+        ease: 'power2.inOut',
+      }, 0);
+
+      timeline.to('.jj-hero__content', {
+        y: -60,
+        opacity: 0,
+        duration: 0.12,
+        ease: 'power2.inOut',
+      }, 0);
+
+      timeline.to('.jj-hero__footer', {
+        y: 30,
+        opacity: 0,
+        duration: 0.08,
+        ease: 'power2.inOut',
+      }, 0);
+
+      timeline.to('.jj-hero', {
+        pointerEvents: 'none',
+        duration: 0.01,
+      }, 0.12);
+
+      // Track animations: animate layers horizontally after the intro threshold
       gsap.utils.toArray<HTMLElement>('.jj-layer-track').forEach((track) => {
         const travel = Number(track.dataset.travel);
 
@@ -241,9 +296,10 @@ export default function JungleJourney() {
           {
             x: -travel,
             ease: 'none',
+            duration: 0.85,
             force3D: true,
           },
-          0,
+          0.15,
         );
       });
     }, container);
@@ -254,6 +310,30 @@ export default function JungleJourney() {
   return (
     <main ref={containerRef} className="jj-container">
       <JourneyEnvironment />
+
+      <div className="jj-hero" aria-label="Hero Introduction">
+        <div className="jj-hero__backdrop" />
+        <header className="jj-hero__header">
+          <span className="jj-hero__meta">DANIAL KHALILI</span>
+          <span className="jj-hero__meta jj-hero__meta--center">[PORTFOLIO // V3]</span>
+          <span className="jj-hero__meta jj-hero__meta--right">SYS_STATUS: ACTIVE</span>
+        </header>
+        
+        <div className="jj-hero__content">
+          <p className="jj-hero__eyebrow">Full-Stack Software Engineer</p>
+          <h1 className="jj-hero__title">Technical Product Engineer</h1>
+          <p className="jj-hero__tagline">
+            Building complex systems with engineering depth, product ownership, and technical taste.
+          </p>
+        </div>
+
+        <div className="jj-hero__footer">
+          <div className="jj-hero__scroll">
+            <span className="jj-hero__scroll-indicator" />
+            <span className="jj-hero__scroll-text">[00 // SCROLL TO RIDE]</span>
+          </div>
+        </div>
+      </div>
 
       {layers.map((layer) => {
         const travel = Math.ceil(SCROLL_DISTANCE * layer.speed);
