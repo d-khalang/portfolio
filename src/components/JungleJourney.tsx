@@ -320,11 +320,17 @@ export default function JungleJourney() {
         </header>
         
         <div className="jj-hero__content">
-          <p className="jj-hero__eyebrow">Full-Stack Software Engineer</p>
-          <h1 className="jj-hero__title">Technical Product Engineer</h1>
-          <p className="jj-hero__tagline">
-            Building complex systems with engineering depth, product ownership, and technical taste.
-          </p>
+          <h1 className="jj-hero__statement">
+            <span>BUILDING</span>
+            <span>COMPLEX</span>
+            <span>SYSTEMS</span>
+            <span className="jj-hero__statement--highlight">WITH TASTE</span>
+          </h1>
+          <div className="jj-hero__profile">
+            <span className="jj-hero__name">Danial Khalili</span>
+            <span className="jj-hero__divider">//</span>
+            <span className="jj-hero__role">Full-Stack Software Engineer</span>
+          </div>
         </div>
 
         <div className="jj-hero__footer">
