@@ -1,5 +1,14 @@
-import { type CSSProperties, useMemo, useState } from 'react';
+import {
+  type CSSProperties,
+  type KeyboardEvent,
+  type PointerEvent as ReactPointerEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import projectsData from '../content/projects.json';
+import { createGridLayout, getMoveOptions, moveTile, type GridLayout } from './projectGrid';
 import './ProjectDetail.css';
 
 type Project = (typeof projectsData)[number];
@@ -464,12 +473,246 @@ function ProjectTileView({ tile, project }: { tile: ProjectTile; project: Projec
   );
 }
 
+interface DragState {
+  id: string;
+  pointerId: number;
+  startX: number;
+  startY: number;
+  appliedSteps: number;
+  axis: 'horizontal' | 'vertical' | null;
+}
+
+// --- Responsive board configuration ----------------------------------------------
+
+function useBoardColumns() {
+  const getColumns = () => {
+    if (window.innerWidth <= 760) {
+      return 4;
+    }
+
+    if (window.innerWidth <= 1180) {
+      return 8;
+    }
+
+    return 12;
+  };
+  const [columns, setColumns] = useState(getColumns);
+
+  useEffect(() => {
+    const updateColumns = () => setColumns(getColumns());
+    window.addEventListener('resize', updateColumns);
+    return () => window.removeEventListener('resize', updateColumns);
+  }, []);
+
+  return columns;
+}
+
+// --- Board controller and renderer ------------------------------------------------
+
+function InteractiveProjectGrid({
+  tiles,
+  project,
+  seed,
+}: {
+  tiles: ProjectTile[];
+  project: Project;
+  seed: number;
+}) {
+  const columns = useBoardColumns();
+  const movableTiles = useMemo(() => tiles.filter((tile) => tile.kind !== 'empty'), [tiles]);
+  const initialBoard = useMemo(() => createGridLayout(movableTiles, columns, seed), [columns, movableTiles, seed]);
+  const [board, setBoard] = useState(initialBoard);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const boardRef = useRef<HTMLDivElement>(null);
+  const layoutRef = useRef<GridLayout>(initialBoard.layout);
+  const dragRef = useRef<DragState | null>(null);
+
+  useEffect(() => {
+    layoutRef.current = initialBoard.layout;
+    setBoard(initialBoard);
+    setActiveId(null);
+    setDraggingId(null);
+  }, [initialBoard]);
+
+  // Every drag distance is replayed as one-cell moves so tiles cannot skip blockers.
+  const moveBySteps = (id: string, deltaColumn: number, deltaRow: number, requestedSteps: number) => {
+    const direction = Math.sign(requestedSteps);
+    let movedSteps = 0;
+    let nextLayout = layoutRef.current;
+
+    for (let step = 0; step < Math.abs(requestedSteps); step += 1) {
+      const movedLayout = moveTile(
+        nextLayout,
+        id,
+        deltaColumn * direction,
+        deltaRow * direction,
+        columns,
+        board.rows,
+      );
+
+      if (movedLayout === nextLayout) {
+        break;
+      }
+
+      nextLayout = movedLayout;
+      movedSteps += direction;
+    }
+
+    if (nextLayout !== layoutRef.current) {
+      layoutRef.current = nextLayout;
+      setBoard((current) => ({ ...current, layout: nextLayout }));
+    }
+
+    return movedSteps;
+  };
+
+  const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>, id: string) => {
+    const target = event.target as HTMLElement;
+
+    if (target.closest('a, button, video, input, textarea, select')) {
+      return;
+    }
+
+    event.currentTarget.setPointerCapture(event.pointerId);
+    dragRef.current = {
+      id,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      appliedSteps: 0,
+      axis: null,
+    };
+    setActiveId(id);
+    setDraggingId(id);
+  };
+
+  const handlePointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const drag = dragRef.current;
+    const element = boardRef.current;
+
+    if (!drag || drag.pointerId !== event.pointerId || !element) {
+      return;
+    }
+
+    const deltaX = event.clientX - drag.startX;
+    const deltaY = event.clientY - drag.startY;
+
+    // Lock each gesture to its first dominant axis, matching Tetris-style movement.
+    if (!drag.axis && Math.max(Math.abs(deltaX), Math.abs(deltaY)) >= 8) {
+      drag.axis = Math.abs(deltaX) >= Math.abs(deltaY) ? 'horizontal' : 'vertical';
+    }
+
+    if (!drag.axis) {
+      return;
+    }
+
+    const styles = window.getComputedStyle(element);
+    const columnGap = Number.parseFloat(styles.columnGap) || 0;
+    const rowGap = Number.parseFloat(styles.rowGap) || 0;
+    const columnStep = (element.clientWidth - columnGap * (columns - 1)) / columns + columnGap;
+    const rowStep = Number.parseFloat(styles.gridAutoRows) + rowGap;
+    const pointerDelta = drag.axis === 'horizontal' ? deltaX : deltaY;
+    const cellStep = drag.axis === 'horizontal' ? columnStep : rowStep;
+    const desiredSteps = Math.trunc(pointerDelta / cellStep);
+    const requestedSteps = desiredSteps - drag.appliedSteps;
+
+    if (requestedSteps === 0) {
+      return;
+    }
+
+    const movedSteps = moveBySteps(
+      drag.id,
+      drag.axis === 'horizontal' ? 1 : 0,
+      drag.axis === 'vertical' ? 1 : 0,
+      requestedSteps,
+    );
+    drag.appliedSteps += movedSteps;
+  };
+
+  const endDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (dragRef.current?.pointerId === event.pointerId) {
+      dragRef.current = null;
+      setDraggingId(null);
+    }
+  };
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>, id: string) => {
+    const movement = {
+      ArrowUp: [0, -1],
+      ArrowRight: [1, 0],
+      ArrowDown: [0, 1],
+      ArrowLeft: [-1, 0],
+    }[event.key];
+
+    if (!movement) {
+      return;
+    }
+
+    event.preventDefault();
+    setActiveId(id);
+    moveBySteps(id, movement[0], movement[1], 1);
+  };
+
+  return (
+    <section className="pd-board-section" aria-labelledby="board-instructions">
+      <p id="board-instructions" className="pd-board-instructions">
+        Drag a tile along one axis. Occupied cells block movement. Focus a tile and use arrow keys for precise moves.
+      </p>
+      <div
+        ref={boardRef}
+        className="pd-board"
+        style={{ '--board-columns': columns, '--board-rows': board.rows } as CSSProperties}
+      >
+        {Array.from({ length: columns * board.rows }).map((_, index) => (
+          <span key={index} className="pd-board__cell" aria-hidden="true" />
+        ))}
+        {movableTiles.map((tile) => {
+          const position = board.layout[tile.id];
+
+          if (!position) {
+            return null;
+          }
+
+          const directions = getMoveOptions(board.layout, tile.id, columns, board.rows);
+          const isActive = activeId === tile.id;
+
+          return (
+            <div
+              key={tile.id}
+              className={`pd-board__item${isActive ? ' is-active' : ''}${draggingId === tile.id ? ' is-dragging' : ''}`}
+              style={{
+                gridColumn: `${position.col} / span ${position.cols}`,
+                gridRow: `${position.row} / span ${position.rows}`,
+              }}
+              tabIndex={0}
+              aria-label={`${tile.eyebrow ?? tile.kind} tile. Use arrow keys to move.`}
+              aria-roledescription="movable grid tile"
+              onFocus={() => setActiveId(tile.id)}
+              onKeyDown={(event) => handleKeyDown(event, tile.id)}
+              onPointerDown={(event) => handlePointerDown(event, tile.id)}
+              onPointerMove={handlePointerMove}
+              onPointerUp={endDrag}
+              onPointerCancel={endDrag}
+            >
+              <span className="pd-drag-grip" aria-hidden="true">⠿</span>
+              <span className={`pd-move-hint pd-move-hint--up${directions.up ? ' is-valid' : ''}`} aria-hidden="true">↑</span>
+              <span className={`pd-move-hint pd-move-hint--right${directions.right ? ' is-valid' : ''}`} aria-hidden="true">→</span>
+              <span className={`pd-move-hint pd-move-hint--down${directions.down ? ' is-valid' : ''}`} aria-hidden="true">↓</span>
+              <span className={`pd-move-hint pd-move-hint--left${directions.left ? ' is-valid' : ''}`} aria-hidden="true">←</span>
+              <ProjectTileView tile={tile} project={project} />
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 export default function ProjectDetail({ project }: ProjectDetailProps) {
   const [seed, setSeed] = useState(() => getInitialSeed(project));
   const assets = useMemo(() => getProjectAssets(project), [project]);
   const tiles = useMemo(() => getProjectTiles(project, assets, seed), [assets, project, seed]);
-  const priorityTiles = tiles.filter((tile) => tile.priority);
-  const freeTiles = tiles.filter((tile) => !tile.priority);
   const visualLabel = visualLabels[project.id] ?? 'project signal';
 
   return (
@@ -479,7 +722,7 @@ export default function ProjectDetail({ project }: ProjectDetailProps) {
         <span>{project.core.dateLabel}</span>
       </nav>
 
-      <section className="pd-field pd-field--priority" aria-labelledby="project-title">
+      <header className="pd-hero" aria-labelledby="project-title">
         <div className="pd-title-lockup">
           <p className="pd-kicker">Project ( {visualLabel} )</p>
           <h1 id="project-title">{project.core.title}</h1>
@@ -495,17 +738,9 @@ export default function ProjectDetail({ project }: ProjectDetailProps) {
             ))}
           </div>
         </div>
+      </header>
 
-        {priorityTiles.map((tile) => (
-          <ProjectTileView key={tile.id} tile={tile} project={project} />
-        ))}
-      </section>
-
-      <section className="pd-field pd-field--free" aria-label={`${project.core.title} project details`}>
-        {freeTiles.map((tile) => (
-          <ProjectTileView key={tile.id} tile={tile} project={project} />
-        ))}
-      </section>
+      <InteractiveProjectGrid tiles={tiles} project={project} seed={seed} />
     </main>
   );
 }
