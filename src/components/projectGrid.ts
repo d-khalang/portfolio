@@ -18,6 +18,13 @@ export interface GridMinimumSize {
   minRows: number;
 }
 
+export interface GridLayoutOverride {
+  col?: number;
+  row?: number;
+  cols?: number;
+  rows?: number;
+}
+
 // --- Deterministic layout helpers -------------------------------------------------
 
 function createRandom(seed: number) {
@@ -61,7 +68,131 @@ export function canPlace(
   ));
 }
 
-// --- Initial board packing --------------------------------------------------------
+// --- Curated default board --------------------------------------------------------
+
+function getEditorialAnchor(columns: number, tileColumns: number, index: number) {
+  const right = columns - tileColumns + 1;
+  const center = Math.floor((columns - tileColumns) / 2) + 1;
+  const nearLeft = Math.min(2, right);
+  const nearRight = Math.max(1, right - 1);
+  const anchors = columns <= 4
+    ? [1, right, center]
+    : [1, right, center, nearLeft, nearRight];
+
+  return anchors[index % anchors.length];
+}
+
+export function createDefaultGridLayout(
+  tileGroups: GridTileShape[][],
+  columns: number,
+  overrides: Record<string, GridLayoutOverride> = {},
+) {
+  const layout: GridLayout = {};
+  const tilesById = new Map(tileGroups.flat().map((tile) => [tile.id, tile]));
+  const configuredOverrides = Object.entries(overrides).filter(([, override]) => (
+    override.col !== undefined
+    || override.row !== undefined
+    || override.cols !== undefined
+    || override.rows !== undefined
+  ));
+  const inheritedLayout = configuredOverrides.length > 0
+    ? createDefaultGridLayout(tileGroups, columns).layout
+    : {};
+  let groupStartRow = 1;
+
+  configuredOverrides.forEach(([id, override]) => {
+    const tile = tilesById.get(id);
+    const inherited = inheritedLayout[id];
+
+    if (!tile || !inherited) {
+      return;
+    }
+
+    const candidate: GridPosition = {
+      ...tile,
+      col: override.col ?? inherited.col,
+      row: override.row ?? inherited.row,
+      cols: Math.min(override.cols ?? tile.cols, columns),
+      rows: override.rows ?? tile.rows,
+    };
+
+    if (!canPlace(candidate, layout, columns, 500)) {
+      throw new Error(`Invalid default grid override for "${id}": outside the board or overlapping another override.`);
+    }
+
+    layout[id] = candidate;
+  });
+
+  tileGroups.filter((group) => group.length > 0).forEach((group) => {
+    const groupIds = new Set(group.map((tile) => tile.id));
+
+    group.forEach((tile, index) => {
+      if (layout[tile.id]) {
+        return;
+      }
+
+      const shape = {
+        ...tile,
+        cols: Math.min(tile.cols, columns),
+      };
+      const preferredColumn = getEditorialAnchor(columns, shape.cols, index);
+      let selected: GridPosition | undefined;
+      let selectedScore = Number.POSITIVE_INFINITY;
+
+      for (let row = groupStartRow; row <= 500; row += 1) {
+        for (let col = 1; col <= columns - shape.cols + 1; col += 1) {
+          const candidate = { ...shape, col, row };
+
+          if (!canPlace(candidate, layout, columns, 500)) {
+            continue;
+          }
+
+          const score = (row - groupStartRow) * 100 + Math.abs(col - preferredColumn) * 4 + col * 0.01;
+
+          if (score < selectedScore) {
+            selected = candidate;
+            selectedScore = score;
+          }
+        }
+
+        if (selected && row > selected.row) {
+          break;
+        }
+      }
+
+      layout[tile.id] = selected ?? {
+        ...shape,
+        col: 1,
+        row: Object.values(layout).reduce(
+          (lastRow, position) => Math.max(lastRow, position.row + position.rows),
+          groupStartRow,
+        ),
+      };
+    });
+
+    const groupBottom = Object.values(layout)
+      .filter((position) => groupIds.has(position.id))
+      .reduce(
+        (lastRow, position) => Math.max(lastRow, position.row + position.rows - 1),
+        groupStartRow,
+      );
+
+    // One completely empty grid row separates editorial sections.
+    groupStartRow = groupBottom + 2;
+  });
+
+  const occupiedRows = Object.values(layout).reduce(
+    (lastRow, position) => Math.max(lastRow, position.row + position.rows - 1),
+    1,
+  );
+
+  return {
+    layout,
+    rows: occupiedRows + 2,
+  };
+}
+
+// --- Random remix board -----------------------------------------------------------
 
 export function createGridLayout(tiles: GridTileShape[], columns: number, seed: number) {
   const random = createRandom(seed + columns * 101);

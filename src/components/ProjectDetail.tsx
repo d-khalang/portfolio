@@ -8,7 +8,9 @@ import {
   useState,
 } from 'react';
 import projectsData from '../content/projects.json';
+import { getProjectLayoutOverrides } from '../content/projectLayouts';
 import {
+  createDefaultGridLayout,
   createGridLayout,
   getMoveOptions,
   moveTile,
@@ -267,7 +269,7 @@ function getMediaRows(asset: ProjectAsset, cols: number) {
   return Math.max(3, Math.ceil(imageRows + captionRows));
 }
 
-function getProjectTiles(project: Project, assets: ProjectAsset[], seed: number): ProjectTile[] {
+function getProjectTiles(project: Project, assets: ProjectAsset[], seed: number | null): ProjectTile[] {
   const primaryMetric = project.story.metrics[0];
   const categoryPreview = project.core.categories.slice(0, 3).join(' + ');
   const stackPreview = project.core.stack.join(' / ');
@@ -369,10 +371,10 @@ function getProjectTiles(project: Project, assets: ProjectAsset[], seed: number)
   ];
 
   const priorityTiles = supportingTiles.filter((tile) => tile.priority);
-  const freeTiles = shuffleWithSeed(
-    supportingTiles.filter((tile) => !tile.priority),
-    seed + 29,
-  );
+  const unprioritizedTiles = supportingTiles.filter((tile) => !tile.priority);
+  const freeTiles = seed === null
+    ? unprioritizedTiles
+    : shuffleWithSeed(unprioritizedTiles, seed + 29);
 
   return [...priorityTiles, ...freeTiles];
 }
@@ -519,6 +521,59 @@ function getTileMinimumSize(tile: ProjectTile, columns: number) {
   return { minCols: Math.min(columns, 2), minRows: 1 };
 }
 
+function interleaveTiles(left: ProjectTile[], right: ProjectTile[]) {
+  const interleaved: ProjectTile[] = [];
+  const length = Math.max(left.length, right.length);
+
+  for (let index = 0; index < length; index += 1) {
+    if (left[index]) {
+      interleaved.push(left[index]);
+    }
+
+    if (right[index]) {
+      interleaved.push(right[index]);
+    }
+  }
+
+  return interleaved;
+}
+
+function createEditorialTileGroups(tiles: ProjectTile[]) {
+  const primaryMetrics = tiles.filter((tile) => tile.kind === 'metric' && tile.priority);
+  const supportingMetrics = tiles.filter((tile) => tile.kind === 'metric' && !tile.priority);
+  const media = tiles.filter((tile) => tile.kind === 'media');
+  const highlights = tiles.filter((tile) => tile.id.startsWith('highlight-'));
+  const groups = [
+    [
+      tiles.find((tile) => tile.id === 'role'),
+      ...primaryMetrics,
+      tiles.find((tile) => tile.id === 'status'),
+      tiles.find((tile) => tile.id === 'domain'),
+    ].filter((tile): tile is ProjectTile => Boolean(tile)),
+    [
+      tiles.find((tile) => tile.id === 'summary'),
+      tiles.find((tile) => tile.id === 'glyph'),
+    ].filter((tile): tile is ProjectTile => Boolean(tile)),
+    ['challenge', 'response', 'result']
+      .map((id) => tiles.find((tile) => tile.id === id))
+      .filter((tile): tile is ProjectTile => Boolean(tile)),
+    [
+      ...supportingMetrics,
+      ...tiles.filter((tile) => tile.id === 'stack'),
+      ...interleaveTiles(media, highlights),
+    ],
+    [
+      ...tiles.filter((tile) => tile.id.startsWith('lesson-')),
+      ...tiles.filter((tile) => tile.id.startsWith('next-')),
+      ...tiles.filter((tile) => tile.kind === 'links'),
+    ],
+  ];
+  const groupedIds = new Set(groups.flat().map((tile) => tile.id));
+  const remainingTiles = tiles.filter((tile) => !groupedIds.has(tile.id));
+
+  return remainingTiles.length > 0 ? [...groups, remainingTiles] : groups;
+}
+
 function snapDistanceToGridStep(distance: number, cellSize: number) {
   return Math.sign(distance) * Math.floor(Math.abs(distance) / cellSize + 0.5);
 }
@@ -557,11 +612,21 @@ function InteractiveProjectGrid({
 }: {
   tiles: ProjectTile[];
   project: Project;
-  seed: number;
+  seed: number | null;
 }) {
   const columns = useBoardColumns();
   const movableTiles = useMemo(() => tiles.filter((tile) => tile.kind !== 'empty'), [tiles]);
-  const initialBoard = useMemo(() => createGridLayout(movableTiles, columns, seed), [columns, movableTiles, seed]);
+  const editorialGroups = useMemo(() => createEditorialTileGroups(movableTiles), [movableTiles]);
+  const defaultOverrides = useMemo(
+    () => getProjectLayoutOverrides(project.id, columns),
+    [columns, project.id],
+  );
+  const initialBoard = useMemo(
+    () => seed === null
+      ? createDefaultGridLayout(editorialGroups, columns, defaultOverrides)
+      : createGridLayout(movableTiles, columns, seed),
+    [columns, defaultOverrides, editorialGroups, movableTiles, seed],
+  );
   const [board, setBoard] = useState(initialBoard);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
@@ -961,6 +1026,7 @@ function InteractiveProjectGrid({
           return (
             <div
               key={tile.id}
+              data-tile-id={tile.id}
               className={`pd-board__item${isActive ? ' is-active' : ''}${draggingId === tile.id ? ' is-dragging' : ''}${isResizing ? ' is-resizing' : ''}${hasBlockedEdge ? ' is-interaction-blocked' : ''}`}
               style={{
                 gridColumn: `${position.col} / span ${position.cols}`,
@@ -1021,7 +1087,7 @@ function InteractiveProjectGrid({
 }
 
 export default function ProjectDetail({ project }: ProjectDetailProps) {
-  const [seed, setSeed] = useState(() => getInitialSeed(project));
+  const [seed, setSeed] = useState<number | null>(null);
   const assets = useMemo(() => getProjectAssets(project), [project]);
   const tiles = useMemo(() => getProjectTiles(project, assets, seed), [assets, project, seed]);
   const visualLabel = visualLabels[project.id] ?? 'project signal';
