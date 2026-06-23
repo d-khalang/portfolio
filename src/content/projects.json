@@ -39,7 +39,7 @@
       ]
     },
     "story": {
-      "summary": "A full-stack, cloud-native Atlas designed for an 18-partner EU Horizon Europe consortium to explore community-environment relationships through cultural, environmental, agricultural, demographic, heritage, DRR, crowdsourced, and simulation-based data.",
+      "summary": "A full-stack Atlas designed for an EU Horizon Europe consortium to explore community-environment relationships through cultural, environmental, agricultural, demographic, heritage, DRR, crowdsourced, and simulation-based data.",
       "problem": "Stakeholders needed one geographic workspace for interpreting resilience across many evidence types, from cultural-natural assets and historical routes to risk areas, local living heritage, survey testimonies, crowdsourced media, and 3D simulations.",
       "solution": "A flexible WebGIS platform around structured Atlas content, synchronized exploration flows, and a dual-format mapping pipeline: PMTiles for lightweight vector overlays and an async FastAPI tile proxy for Cloud-Optimized GeoTIFFs (COGs). I coupled this with state-synchronized legends, an event-driven onboarding guide, and secure AWS S3 asset delivery.",
       "outcome": "A multidimensional resilience material into a navigable WebGIS workspace where users can explore heritage, environment, risk, community narratives, and simulations through a shared geographic lens.",
@@ -73,8 +73,7 @@
         "Highly complex scientific dashboards require active progressive disclosure; connecting tutorial events directly to application state ensures users are onboarded naturally without getting overwhelmed by the map workspace."
       ],
       "nextSteps": [
-        "Implement a side-by-side comparison slider overlay to allow stakeholders to swipe between historical georeferenced cartography and modern satellite layers.",
-        "Develop custom client-side drawing tools to let field coordinators sketch hazard annotations and export them directly as GeoJSON features to MongoDB."
+        "Implement a side-by-side comparison slider overlay to allow stakeholders to swipe between historical georeferenced cartography and modern satellite layers."
       ]
     },
     "media": {
