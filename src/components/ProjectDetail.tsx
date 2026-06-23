@@ -84,10 +84,10 @@ const projectAssetMeta: Record<string, Record<string, ProjectAssetMeta>> = {
       title: 'Map and heritage inspector',
       width: 2731,
       height: 1517,
-      description: 'Map view combining heritage markers with a contextual content panel.',
+      description: 'Basic full map view of heritage markers and features.',
     },
     'image02.png': {
-      title: 'Regional map detail',
+      title: 'Feature selection and active details',
       width: 1429,
       height: 1518,
       description: 'A closer map state showing clustered points, routes, and an active content card.',
@@ -96,25 +96,31 @@ const projectAssetMeta: Record<string, Record<string, ProjectAssetMeta>> = {
       title: 'Layered map workspace',
       width: 2726,
       height: 1512,
-      description: 'Full-width map workspace with spatial overlays and project navigation.',
+      description: 'Collaboration area map workspace showing spatial overlays and active layer detail card with simbolisation and opacity bar.',
     },
     'image04.png': {
-      title: 'Mobile map state',
+      title: 'Layer management',
       width: 666,
       height: 1438,
-      description: 'Tall mobile capture proving the map interface can compress into a narrow viewport.',
+      description: 'Layer controls showing how the UI stacks active cards dynamically on the interface.',
     },
     'image05.png': {
-      title: 'Layer management',
+      title: 'Vector layer rendering',
       width: 1311,
       height: 1343,
-      description: 'Layer controls for toggling active map items without leaving the map context.',
+      description: 'Visualizing vector layer details on the map, showcasing high-performance PMTiles streaming.',
     },
     'image06.png': {
-      title: 'Content drawer',
+      title: 'Historical map georeferencing',
       width: 1510,
       height: 1336,
-      description: 'Drawer interaction for reading mapped cultural content while keeping location visible.',
+      description: 'Traditional map overlay with adjustable visibility, bridging historical context with modern layouts.',
+    },
+    'image07.png': {
+      title: 'Geospatial taxonomy panel',
+      width: 1028,
+      height: 1451,
+      description: 'Hierarchical directory displaying categorized layers, from cultural heritage to disaster risk reduction features.',
     },
   },
 };
@@ -229,7 +235,7 @@ function createFactTile(
 function createStoryTile(id: string, eyebrow: string, title: string, body: string): ProjectTile {
   const length = title.length + body.length;
   const cols = length > 240 ? 6 : length > 150 ? 5 : length > 85 ? 4 : 3;
-  const rows = length > 300 ? 4 : length > 130 ? 3 : 2;
+  const rows = length > 300 ? 3 : length > 130 ? 2 : 1;
 
   return {
     id,
