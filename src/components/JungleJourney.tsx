@@ -58,23 +58,23 @@ const layers: LayerDefinition[] = [
     speed: 0.28,
     zIndex: 2,
     x: 0,
-    y: 130,
+    y: 100,
     size: 85,
   },
   {
     id: 'close-trees',
     src: treeLayer,
     speed: 0.45,
-    zIndex: 4,
+    zIndex: 5,
     x: 0,
-    y: 72,
-    size: 62,
+    y: 90,
+    size: 65,
   },
   {
     id: 'road',
     src: roadLayer,
     speed: 0.62,
-    zIndex: 5,
+    zIndex: 6,
     x: 0,
     y: -70,
     size: 76,
@@ -85,13 +85,13 @@ const layers: LayerDefinition[] = [
     speed: 0.85,
     zIndex: 7,
     x: 0,
-    y: -88,
+    y: 0,
     size: 70,
-    opacity: 0.8,
+    opacity: 0.7,
   },
 ];
 
-const cardOccludingLayerIds = new Set(['close-trees', 'foreground']);
+const cardOccludingLayerIds = new Set(['close-trees']);
 
 function getBikerRideY(distance: number, speedFactor: number = 1) {
   const bump =
@@ -125,7 +125,7 @@ export default function JungleJourney() {
     const context = gsap.context(() => {
       gsap.set(bikerElement, { xPercent: -50 });
       const setBikerY = gsap.quickSetter(bikerElement, 'y', 'px');
-      
+
       const reduceMotion = window.matchMedia(
         '(prefers-reduced-motion: reduce)',
       ).matches;
@@ -135,6 +135,9 @@ export default function JungleJourney() {
       }
 
       const projectElements = gsap.utils.toArray<HTMLElement>('.jj-project');
+      const cardRevealElements = gsap.utils.toArray<HTMLElement>(
+        '.jj-layer--card-reveal',
+      );
 
       gsap.set(projectElements, {
         xPercent: -50,
@@ -161,18 +164,18 @@ export default function JungleJourney() {
       );
       const progressHudSegments = progressHud
         ? Array.from(
-            progressHud.querySelectorAll<HTMLElement>(
-              '.jj-progress-hud__segment',
-            ),
-          )
+          progressHud.querySelectorAll<HTMLElement>(
+            '.jj-progress-hud__segment',
+          ),
+        )
         : [];
       let activeHudProjectIndex = -1;
-      let viewportWidth = window.innerWidth;
-      let viewportHeight = window.innerHeight;
+      let viewportWidth = container.clientWidth;
+      let viewportHeight = container.clientHeight;
 
       const updateViewportSize = () => {
-        viewportWidth = window.innerWidth;
-        viewportHeight = window.innerHeight;
+        viewportWidth = container.clientWidth;
+        viewportHeight = container.clientHeight;
       };
 
       window.addEventListener('resize', updateViewportSize, { passive: true });
@@ -188,23 +191,23 @@ export default function JungleJourney() {
       ];
       const parallaxTargets = supportsPointerParallax
         ? parallaxDefinitions.flatMap(({ selector, xRange, yRange }) => {
-            const element = container.querySelector<HTMLElement>(selector);
+          const element = container.querySelector<HTMLElement>(selector);
 
-            return element
-              ? [{
-                  xRange,
-                  yRange,
-                  setX: gsap.quickTo(element, 'x', {
-                    duration: 0.45,
-                    ease: 'power3.out',
-                  }),
-                  setY: gsap.quickTo(element, 'y', {
-                    duration: 0.45,
-                    ease: 'power3.out',
-                  }),
-                }]
-              : [];
-          })
+          return element
+            ? [{
+              xRange,
+              yRange,
+              setX: gsap.quickTo(element, 'x', {
+                duration: 0.45,
+                ease: 'power3.out',
+              }),
+              setY: gsap.quickTo(element, 'y', {
+                duration: 0.45,
+                ease: 'power3.out',
+              }),
+            }]
+            : [];
+        })
         : [];
       let pointerParallaxEnabled = supportsPointerParallax;
 
@@ -310,7 +313,7 @@ export default function JungleJourney() {
           setX(projectX);
           setY(
             hiddenYOffset +
-              (activeYOffset - hiddenYOffset) * focusProgress,
+            (activeYOffset - hiddenYOffset) * focusProgress,
           );
           const scale =
             PROJECT_CARD_MOTION.hiddenScale +
@@ -319,6 +322,35 @@ export default function JungleJourney() {
           setScaleX(scale);
           setScaleY(scale);
         });
+
+        const activeProject = projectElements[nearestProjectIndex];
+
+        if (activeProject && cardRevealElements.length > 0) {
+          const cardBounds = activeProject.getBoundingClientRect();
+
+          cardRevealElements.forEach((element) => {
+            const layerBounds = element.getBoundingClientRect();
+            const cardLeft = cardBounds.left - layerBounds.left;
+            const cardTop = cardBounds.top - layerBounds.top;
+            const cardRight = cardBounds.right - layerBounds.left;
+            const cardBottom = cardBounds.bottom - layerBounds.top;
+            const intersectsLayer =
+              cardRight > 0 &&
+              cardLeft < layerBounds.width &&
+              cardBottom > 0 &&
+              cardTop < layerBounds.height;
+            const clipPath = intersectsLayer
+              ? `inset(${Math.max(0, cardTop)}px ${Math.max(0, layerBounds.width - cardRight)}px ${Math.max(0, layerBounds.height - cardBottom)}px ${Math.max(0, cardLeft)}px round ${Math.min(16, 16 * (cardBounds.width / 420))}px)`
+              : 'inset(50% 50% 50% 50%)';
+
+            element.style.clipPath = clipPath;
+            element.style.setProperty('-webkit-clip-path', clipPath);
+            element.style.setProperty('--card-mask-left', `${cardLeft}px`);
+            element.style.setProperty('--card-mask-top', `${cardTop}px`);
+            element.style.setProperty('--card-mask-width', `${cardBounds.width}px`);
+            element.style.setProperty('--card-mask-height', `${cardBounds.height}px`);
+          });
+        }
 
         updateProgressHud(nearestProjectIndex);
       };
@@ -355,7 +387,7 @@ export default function JungleJourney() {
               const journeyProgress = self.progress < introThreshold
                 ? 0
                 : (self.progress - introThreshold) / (1 - introThreshold);
-                
+
               const speedFactor = self.progress < introThreshold
                 ? self.progress / introThreshold
                 : 1;
@@ -448,7 +480,7 @@ export default function JungleJourney() {
             <span className="jj-hero__meta jj-hero__meta--right">SYS_STATUS: ACTIVE</span>
           </div>
         </header>
-        
+
         <div className="jj-hero__content">
           <div className="jj-hero__content-inner">
             <h1 className="jj-hero__statement">
@@ -511,7 +543,7 @@ export default function JungleJourney() {
             className={`jj-layer${isCardOccluder ? ' jj-layer--card-occluder-base' : ''}`}
             style={{
               opacity: layer.opacity,
-              zIndex: isCardOccluder ? 2.5 : layer.zIndex,
+              zIndex: isCardOccluder ? 3 : layer.zIndex,
             }}
             aria-hidden="true"
           >

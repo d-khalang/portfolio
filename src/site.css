@@ -41,6 +41,8 @@ body {
   overflow: hidden;
   contain: layout paint;
   pointer-events: none;
+  transform: translate3d(0, 0, 0);
+  /* Force GPU compositing to prevent subpixel misalignment with masked layers */
 }
 
 .jj-layer-track {
@@ -61,23 +63,49 @@ body {
 
 .jj-layer--card-reveal {
   /*
-   * Keep the reveal aperture static so scrolling only composites transforms.
-   * Recomputing this gradient around a measured card on every frame forced a
-   * layout read followed by a repaint of both wide occluding tracks.
+   * This copy is clipped in JavaScript to the active card's live bounds.
+   * The three masks combine a 20% center with a 10% ramp on the left,
+   * top, and bottom edges. No opacity ramp is drawn on the right edge.
    */
-  mask-image: radial-gradient(ellipse clamp(180px, 36vw, 300px) clamp(190px, 32vh, 245px) at 50% 52%,
-      rgb(0 0 0 / 0.22) 0%,
-      rgb(0 0 0 / 0.22) 52%,
-      rgb(0 0 0 / 0.7) 78%,
-      #000 100%);
+  --card-mask-left: 50%;
+  --card-mask-top: 50%;
+  --card-mask-width: 0px;
+  --card-mask-height: 0px;
+  clip-path: inset(50% 50% 50% 50%);
+  -webkit-mask-image:
+    linear-gradient(rgb(0 0 0 / 20%), rgb(0 0 0 / 20%)),
+    linear-gradient(90deg,
+      rgb(0 0 0 / 85.7%) 0%,
+      transparent 10%,
+      transparent 100%),
+    linear-gradient(180deg,
+      rgb(0 0 0 / 85.7%) 0%,
+      transparent 10%,
+      transparent 90%,
+      rgb(0 0 0 / 85.7%) 100%);
+  -webkit-mask-position: var(--card-mask-left) var(--card-mask-top);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: var(--card-mask-width) var(--card-mask-height);
+  mask-image:
+    linear-gradient(rgb(0 0 0 / 20%), rgb(0 0 0 / 20%)),
+    linear-gradient(90deg,
+      rgb(0 0 0 / 85.7%) 0%,
+      transparent 10%,
+      transparent 100%),
+    linear-gradient(180deg,
+      rgb(0 0 0 / 85.7%) 0%,
+      transparent 10%,
+      transparent 90%,
+      rgb(0 0 0 / 85.7%) 100%);
+  mask-position: var(--card-mask-left) var(--card-mask-top);
   mask-repeat: no-repeat;
-  mask-size: 100% 100%;
+  mask-size: var(--card-mask-width) var(--card-mask-height);
 }
 
 .jj-project {
   position: absolute;
   top: 52%;
-  z-index: 3;
+  z-index: 4;
   width: 420px;
   color: inherit;
   text-decoration: none;
