@@ -18,15 +18,9 @@ const CONTENT_TRAVEL = 300;
 const PROJECT_CARD_MOTION = {
   hiddenScale: 0.5,
   hiddenYOffsetRatio: 0.25,
-  activeYOffsetRatio: -0.22,
+  activeYOffsetRatio: 0,
   focusDistanceVw: 5,
   transitionDistanceVw: 45,
-};
-const PROJECT_CARD_REVEAL = {
-  minMaskAlpha: 0.22,
-  maxMaskAlpha: 1,
-  widthRatio: 0.66,
-  heightRatio: 0.62,
 };
 const BIKER_RIDE = {
   startYOffset: -15,
@@ -140,22 +134,48 @@ export default function JungleJourney() {
       }
 
       const projectElements = gsap.utils.toArray<HTMLElement>('.jj-project');
+
+      gsap.set(projectElements, {
+        xPercent: -50,
+        yPercent: -50,
+        transformOrigin: '50% 78%',
+        force3D: true,
+      });
+
+      const projectStates = projectElements.map((projectElement) => ({
+        baseLeft: Number(projectElement.dataset.journeyLeft),
+        setX: gsap.quickSetter(projectElement, 'x', 'vw'),
+        setY: gsap.quickSetter(projectElement, 'y', 'px'),
+        setScaleX: gsap.quickSetter(projectElement, 'scaleX'),
+        setScaleY: gsap.quickSetter(projectElement, 'scaleY'),
+      }));
+      let viewportHeight = window.innerHeight;
+
+      const updateViewportHeight = () => {
+        viewportHeight = window.innerHeight;
+      };
+
+      window.addEventListener('resize', updateViewportHeight, { passive: true });
+
       const setProjectStates = (scrollProgress: number) => {
         const introThreshold = 0.15;
         const journeyProgress = scrollProgress < introThreshold
           ? 0
           : (scrollProgress - introThreshold) / (1 - introThreshold);
 
-        const viewportHeight = window.innerHeight;
         const hiddenYOffset =
           viewportHeight * PROJECT_CARD_MOTION.hiddenYOffsetRatio;
         const activeYOffset =
           viewportHeight * PROJECT_CARD_MOTION.activeYOffsetRatio;
-        let activeProjectElement: HTMLElement | undefined;
-        let activeProjectProgress = 0;
+        const projectX = -CONTENT_TRAVEL * journeyProgress;
 
-        projectElements.forEach((projectElement) => {
-          const baseLeft = Number(projectElement.dataset.journeyLeft);
+        projectStates.forEach(({
+          baseLeft,
+          setX,
+          setY,
+          setScaleX,
+          setScaleY,
+        }) => {
           const currentLeft = baseLeft - CONTENT_TRAVEL * journeyProgress;
           const distanceFromFocus = Math.abs(currentLeft - 50);
           const rawProgress =
@@ -167,63 +187,20 @@ export default function JungleJourney() {
             gsap.utils.clamp(0, 1, rawProgress),
           );
 
-          gsap.set(projectElement, {
-            x: `-${CONTENT_TRAVEL * journeyProgress}vw`,
-            y: gsap.utils.interpolate(
-              hiddenYOffset,
-              activeYOffset,
-              focusProgress,
-            ),
-            scale: gsap.utils.interpolate(
-              PROJECT_CARD_MOTION.hiddenScale,
-              1,
-              focusProgress,
-            ),
-            force3D: true,
-          });
+          setX(projectX);
+          setY(
+            hiddenYOffset +
+              (activeYOffset - hiddenYOffset) * focusProgress,
+          );
+          const scale =
+            PROJECT_CARD_MOTION.hiddenScale +
+            (1 - PROJECT_CARD_MOTION.hiddenScale) * focusProgress;
 
-          if (focusProgress > activeProjectProgress) {
-            activeProjectProgress = focusProgress;
-            activeProjectElement = projectElement;
-          }
+          setScaleX(scale);
+          setScaleY(scale);
         });
-
-        const readableProjectElement = activeProjectElement;
-
-        if (!readableProjectElement || scrollProgress < introThreshold) {
-          container.style.setProperty('--jj-card-mask-alpha', '1');
-          return;
-        }
-
-        const cardBounds = readableProjectElement.getBoundingClientRect();
-        const maskAlpha = gsap.utils.interpolate(
-          PROJECT_CARD_REVEAL.maxMaskAlpha,
-          PROJECT_CARD_REVEAL.minMaskAlpha,
-          activeProjectProgress,
-        );
-
-        container.style.setProperty(
-          '--jj-card-mask-x',
-          `${cardBounds.left + cardBounds.width / 2}px`,
-        );
-        container.style.setProperty(
-          '--jj-card-mask-y',
-          `${cardBounds.top + cardBounds.height / 2}px`,
-        );
-        container.style.setProperty(
-          '--jj-card-mask-radius-x',
-          `${cardBounds.width * PROJECT_CARD_REVEAL.widthRatio}px`,
-        );
-        container.style.setProperty(
-          '--jj-card-mask-radius-y',
-          `${cardBounds.height * PROJECT_CARD_REVEAL.heightRatio}px`,
-        );
-        container.style.setProperty('--jj-card-mask-alpha', `${maskAlpha}`);
       };
 
-      gsap.set(projectElements, {
-        transformOrigin: '50% 78%',
-      });
       setProjectStates(0);
 
       const timeline = gsap.timeline({
@@ -302,6 +279,10 @@ export default function JungleJourney() {
           0.15,
         );
       });
+
+      return () => {
+        window.removeEventListener('resize', updateViewportHeight);
+      };
     }, container);
 
     return () => context.revert();

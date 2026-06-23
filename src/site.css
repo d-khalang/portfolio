@@ -27,12 +27,6 @@ body {
 }
 
 .jj-container {
-  --jj-card-mask-alpha: 1;
-  --jj-card-mask-radius-x: 0px;
-  --jj-card-mask-radius-y: 0px;
-  --jj-card-mask-x: -100vw;
-  --jj-card-mask-y: -100vh;
-
   position: relative;
   width: 100%;
   height: 100vh;
@@ -66,9 +60,14 @@ body {
 }
 
 .jj-layer--card-reveal {
-  mask-image: radial-gradient(ellipse var(--jj-card-mask-radius-x) var(--jj-card-mask-radius-y) at var(--jj-card-mask-x) var(--jj-card-mask-y),
-      rgb(0 0 0 / var(--jj-card-mask-alpha)) 0%,
-      rgb(0 0 0 / var(--jj-card-mask-alpha)) 52%,
+  /*
+   * Keep the reveal aperture static so scrolling only composites transforms.
+   * Recomputing this gradient around a measured card on every frame forced a
+   * layout read followed by a repaint of both wide occluding tracks.
+   */
+  mask-image: radial-gradient(ellipse clamp(180px, 36vw, 300px) clamp(190px, 32vh, 245px) at 50% 52%,
+      rgb(0 0 0 / 0.22) 0%,
+      rgb(0 0 0 / 0.22) 52%,
       rgb(0 0 0 / 0.7) 78%,
       #000 100%);
   mask-repeat: no-repeat;
@@ -77,12 +76,11 @@ body {
 
 .jj-project {
   position: absolute;
-  top: 50%;
+  top: 52%;
   z-index: 3;
   width: 420px;
   color: inherit;
   text-decoration: none;
-  translate: -50% -50%;
   will-change: transform;
 }
 
@@ -197,7 +195,7 @@ body {
 
 @media (max-width: 720px) {
   .jj-project {
-    top: 50%;
+    top: 52%;
     width: min(82vw, 360px);
   }
 
