@@ -13,8 +13,9 @@ import JourneyEnvironment from './JourneyEnvironment';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const SCROLL_DISTANCE = 10000;
-const CONTENT_TRAVEL = 300;
+const SCROLL_DISTANCE = 15000;
+const PARALLAX_TRAVEL_DISTANCE = 10000;
+const CONTENT_TRAVEL = 500;
 const PROJECT_CARD_MOTION = {
   hiddenScale: 0.5,
   hiddenYOffsetRatio: 0.25,
@@ -323,7 +324,7 @@ export default function JungleJourney() {
       </div>
 
       {layers.map((layer) => {
-        const travel = Math.ceil(SCROLL_DISTANCE * layer.speed);
+        const travel = Math.ceil(PARALLAX_TRAVEL_DISTANCE * layer.speed);
         const isCardOccluder = cardOccludingLayerIds.has(layer.id);
 
         return (
@@ -391,7 +392,7 @@ export default function JungleJourney() {
       {layers
         .filter((layer) => cardOccludingLayerIds.has(layer.id))
         .map((layer) => {
-          const travel = Math.ceil(SCROLL_DISTANCE * layer.speed);
+          const travel = Math.ceil(PARALLAX_TRAVEL_DISTANCE * layer.speed);
 
           return (
             <div

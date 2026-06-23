@@ -3,7 +3,7 @@
     "id": "atlas",
     "slug": "atlas",
     "featured": true,
-    "journeyPosition": 0.2,
+    "journeyPosition": 0.1,
     "core": {
       "title": "RESILIAGE Atlas",
       "tagline": "WebGIS-based MultiAtlas for exploring spatial and non-spatial resilience, risk, and cultural-natural heritage data.",
@@ -111,7 +111,7 @@
     "id": "kartino",
     "slug": "kartino",
     "featured": true,
-    "journeyPosition": 0.5,
+    "journeyPosition": 0.3,
     "core": {
       "title": "Kartino",
       "tagline": "AI-powered Telegram flashcards rebuilt into a production-ready learning system.",
@@ -204,7 +204,7 @@
     "id": "recore",
     "slug": "recore",
     "featured": true,
-    "journeyPosition": 0.8,
+    "journeyPosition": 0.5,
     "core": {
       "title": "RECORE",
       "tagline": "A resilience platform growing into its full case study.",
@@ -278,7 +278,8 @@
   {
     "id": "replication-toolbox",
     "slug": "replication-toolbox",
-    "featured": false,
+    "featured": true,
+    "journeyPosition": 0.7,
     "core": {
       "title": "Replication Toolbox",
       "tagline": "A future research and tooling project slot.",
@@ -342,7 +343,8 @@
   {
     "id": "smart-plant-care",
     "slug": "smart-plant-care",
-    "featured": false,
+    "featured": true,
+    "journeyPosition": 0.88,
     "core": {
       "title": "Smart Plant Care",
       "tagline": "An IoT monitoring system with sensors, automation, and Telegram interaction.",
