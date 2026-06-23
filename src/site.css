@@ -240,26 +240,31 @@ body {
 
 .jj-hero__backdrop {
   position: absolute;
-  inset: 0;
+  inset: -8px;
   z-index: -1;
   background: radial-gradient(circle at 50% 50%,
       rgba(219, 232, 228, 0.85) 0%,
       rgba(219, 232, 228, 0.96) 65%,
       #dbe8e4 100%);
   backdrop-filter: blur(3px);
-  will-change: opacity;
+  will-change: transform, opacity;
   pointer-events: none;
 }
 
 .jj-hero__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   width: 100%;
   font-family: "IBM Plex Mono", monospace;
   font-size: 0.78rem;
   font-weight: 500;
   letter-spacing: 0.14em;
+}
+
+.jj-hero__header-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  will-change: transform;
 }
 
 .jj-hero__meta {
@@ -290,13 +295,17 @@ body {
   text-align: left;
   max-width: 900px;
   margin: auto 0;
+  border-left: 2.5px solid #b35a44;
+  padding-left: 32px;
+  margin-left: 8vw;
+}
+
+.jj-hero__content-inner {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 16px;
-  border-left: 2.5px solid #b35a44;
-  padding-left: 32px;
-  margin-left: 8vw;
+  will-change: transform;
 }
 
 .jj-hero__statement {
@@ -316,7 +325,53 @@ body {
 }
 
 .jj-hero__statement--highlight {
+  position: relative;
+  width: fit-content;
+  isolation: isolate;
   color: #b35a44;
+  cursor: default;
+}
+
+.jj-hero__statement--highlight::before {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  color: #123b45;
+  clip-path: inset(0 100% 0 0);
+  content: attr(data-text);
+  pointer-events: none;
+}
+
+.jj-hero__statement--highlight::after {
+  position: absolute;
+  right: 0;
+  bottom: -0.08em;
+  left: 0;
+  height: 0.055em;
+  min-height: 3px;
+  content: "";
+  background: #b35a44;
+  transform: scaleX(0.12);
+  transform-origin: left center;
+  pointer-events: none;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .jj-hero__statement--highlight::before {
+    transition: clip-path 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .jj-hero__statement--highlight::after {
+    transition: transform 480ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .jj-hero__statement--highlight:hover::before {
+    clip-path: inset(0 0 0 0);
+  }
+
+  .jj-hero__statement--highlight:hover::after {
+    transform: scaleX(1);
+  }
 }
 
 .jj-hero__profile {
@@ -410,6 +465,75 @@ body {
   opacity: 0.72;
 }
 
+/* ==========================================================================
+   Journey progress HUD
+   ========================================================================== */
+
+.jj-progress-hud {
+  position: absolute;
+  top: 20px;
+  right: 50px;
+  left: 50px;
+  z-index: 9;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(180px, 28vw);
+  align-items: center;
+  gap: 18px;
+  min-height: 42px;
+  padding: 10px 14px;
+  border: 1px solid rgb(18 59 69 / 24%);
+  border-radius: 3px;
+  color: #123b45;
+  background: rgb(219 232 228 / 86%);
+  box-shadow: 0 8px 28px rgb(18 59 69 / 10%);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.jj-progress-hud__counter {
+  color: #b35a44;
+  white-space: nowrap;
+}
+
+.jj-progress-hud__title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.jj-progress-hud__track {
+  display: grid;
+  gap: 5px;
+  align-items: center;
+}
+
+.jj-progress-hud__segment {
+  display: block;
+  height: 3px;
+  background: rgb(18 59 69 / 20%);
+  transform-origin: center;
+  transition:
+    background-color 180ms ease,
+    transform 180ms ease;
+}
+
+.jj-progress-hud__segment[data-state="complete"] {
+  background: #123b45;
+}
+
+.jj-progress-hud__segment[data-state="active"] {
+  background: #b35a44;
+  transform: scaleY(1.75);
+}
+
 @media (max-width: 640px) {
   .jj-hero {
     padding: 24px 20px;
@@ -422,6 +546,9 @@ body {
   .jj-hero__content {
     margin-left: 0;
     padding-left: 20px;
+  }
+
+  .jj-hero__content-inner {
     gap: 12px;
   }
 
@@ -434,5 +561,29 @@ body {
 
   .jj-hero__divider {
     display: none;
+  }
+
+  .jj-progress-hud {
+    top: 12px;
+    right: 12px;
+    left: 12px;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 12px;
+    min-height: 38px;
+    padding: 8px 10px;
+  }
+
+  .jj-progress-hud__title {
+    display: none;
+  }
+
+  .jj-progress-hud__track {
+    gap: 3px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jj-progress-hud__segment {
+    transition: none;
   }
 }
