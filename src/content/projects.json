@@ -3,7 +3,7 @@
     "id": "atlas",
     "slug": "atlas",
     "featured": true,
-    "journeyPosition": 0.1,
+    "journeyPosition": 0.15,
     "core": {
       "title": "RESILIAGE Atlas",
       "tagline": "WebGIS-based MultiAtlas for exploring spatial and non-spatial resilience, risk, and cultural-natural heritage data.",
@@ -204,7 +204,7 @@
     "id": "recore",
     "slug": "recore",
     "featured": true,
-    "journeyPosition": 0.5,
+    "journeyPosition": 0.45,
     "core": {
       "title": "RECORE",
       "tagline": "A resilience platform growing into its full case study.",
@@ -279,7 +279,7 @@
     "id": "replication-toolbox",
     "slug": "replication-toolbox",
     "featured": true,
-    "journeyPosition": 0.7,
+    "journeyPosition": 0.67,
     "core": {
       "title": "Replication Toolbox",
       "tagline": "A future research and tooling project slot.",
