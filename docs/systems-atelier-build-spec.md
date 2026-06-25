@@ -184,6 +184,11 @@ Each project should support:
 - featured flag
 - accent color or visual identity
 
+### Project detail grid maintenance
+
+- Curated grid layout overrides use generated tile IDs. If project copy changes, update override keys that depend on content labels, especially `metric-<label>` entries, or those tiles will fall back to auto-placement.
+- Custom drag and resize interactions must suppress native browser pan, image drag, text selection, and scroll anchoring while a tile is active. Dense project layouts such as Kartino can otherwise jump the page when a tile moves by one cell.
+
 ## Initial project set
 
 - Kartino

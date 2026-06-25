@@ -484,6 +484,7 @@ function MediaTile({ tile, project }: { tile: ProjectTile; project: Project }) {
             alt={`${project.core.title} ${asset.title}`}
             width={asset.width}
             height={asset.height}
+            draggable={false}
             loading="lazy"
           />
         )}
@@ -523,6 +524,7 @@ function ProjectTileView({ tile, project }: { tile: ProjectTile; project: Projec
           <img
             src={stickerSrc}
             alt="Kartino mascot"
+            draggable={false}
             style={{
               width: '80%',
               height: '80%',
@@ -848,6 +850,8 @@ function InteractiveProjectGrid({
       return;
     }
 
+    event.preventDefault();
+    event.currentTarget.focus({ preventScroll: true });
     event.currentTarget.setPointerCapture(event.pointerId);
     dragRef.current = {
       id,
@@ -870,6 +874,8 @@ function InteractiveProjectGrid({
     if (!drag || drag.pointerId !== event.pointerId || !element) {
       return;
     }
+
+    event.preventDefault();
 
     const deltaX = event.clientX - drag.startX;
     const deltaY = event.clientY - drag.startY;
@@ -930,7 +936,9 @@ function InteractiveProjectGrid({
     id: string,
     direction: ResizeDirection,
   ) => {
+    event.preventDefault();
     event.stopPropagation();
+    event.currentTarget.parentElement?.focus({ preventScroll: true });
     event.currentTarget.setPointerCapture(event.pointerId);
     resizeRef.current = {
       id,
@@ -954,6 +962,8 @@ function InteractiveProjectGrid({
     if (!resize || resize.pointerId !== event.pointerId || !element) {
       return;
     }
+
+    event.preventDefault();
 
     const styles = window.getComputedStyle(element);
     const columnGap = Number.parseFloat(styles.columnGap) || 0;
@@ -1123,6 +1133,7 @@ function InteractiveProjectGrid({
                 gridRow: `${position.row} / span ${position.rows}`,
               }}
               tabIndex={0}
+              draggable={false}
               aria-label={`${tile.eyebrow ?? tile.kind} tile, ${position.cols} by ${position.rows} cells. Arrow keys move; Shift grows; Alt shrinks.`}
               aria-roledescription="movable and resizable grid tile"
               onFocus={() => setActiveId(tile.id)}
