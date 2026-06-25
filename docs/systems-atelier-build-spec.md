@@ -188,6 +188,7 @@ Each project should support:
 
 - Curated grid layout overrides use generated tile IDs. If project copy changes, update override keys that depend on content labels, especially `metric-<label>` entries, or those tiles will fall back to auto-placement.
 - Custom drag and resize interactions must suppress native browser pan, image drag, text selection, and scroll anchoring while a tile is active. Dense project layouts such as Kartino can otherwise jump the page when a tile moves by one cell.
+- Blank grid space is visual capacity from rendered board cells, not `empty-*` tile data. Do not add placeholder tiles for spacing; adjust content tile positions, editorial grouping, or board row padding constants in the grid helper instead.
 
 ## Initial project set
 

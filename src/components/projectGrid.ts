@@ -25,6 +25,9 @@ export interface GridLayoutOverride {
   rows?: number;
 }
 
+const MAX_LAYOUT_ROWS = 500;
+const TRAILING_BOARD_ROWS = 2;
+
 // --- Deterministic layout helpers -------------------------------------------------
 
 function createRandom(seed: number) {
@@ -45,7 +48,51 @@ function overlaps(left: GridPosition, right: GridPosition) {
   );
 }
 
+function normalizeTileShape(tile: GridTileShape, columns: number): GridTileShape {
+  return {
+    ...tile,
+    cols: Math.min(tile.cols, columns),
+  };
+}
+
+function getPositionBottom(position: GridPosition) {
+  return position.row + position.rows - 1;
+}
+
+function getLayoutBottomRow(layout: GridLayout, fallbackRow = 1) {
+  return Object.values(layout).reduce(
+    (lastRow, position) => Math.max(lastRow, getPositionBottom(position)),
+    fallbackRow,
+  );
+}
+
+function getNextOpenRow(layout: GridLayout, fallbackRow = 1) {
+  return getLayoutBottomRow(layout, fallbackRow - 1) + 1;
+}
+
+function createBoard(layout: GridLayout) {
+  return {
+    layout,
+    rows: getLayoutBottomRow(layout) + TRAILING_BOARD_ROWS,
+  };
+}
+
 // --- Collision rules --------------------------------------------------------------
+
+function isInsideBoard(candidate: GridPosition, columns: number, rows: number) {
+  return (
+    candidate.col >= 1
+    && candidate.row >= 1
+    && candidate.col + candidate.cols - 1 <= columns
+    && getPositionBottom(candidate) <= rows
+  );
+}
+
+function getOverlappingPositions(candidate: GridPosition, layout: GridLayout, ignoredId?: string) {
+  return Object.values(layout).filter((position) => (
+    position.id !== ignoredId && overlaps(candidate, position)
+  ));
+}
 
 export function canPlace(
   candidate: GridPosition,
@@ -54,18 +101,10 @@ export function canPlace(
   rows: number,
   ignoredId?: string,
 ) {
-  if (
-    candidate.col < 1
-    || candidate.row < 1
-    || candidate.col + candidate.cols - 1 > columns
-    || candidate.row + candidate.rows - 1 > rows
-  ) {
-    return false;
-  }
-
-  return Object.values(layout).every((position) => (
-    position.id === ignoredId || !overlaps(candidate, position)
-  ));
+  return (
+    isInsideBoard(candidate, columns, rows)
+    && getOverlappingPositions(candidate, layout, ignoredId).length === 0
+  );
 }
 
 // --- Curated default board --------------------------------------------------------
@@ -116,7 +155,7 @@ export function createDefaultGridLayout(
       rows: override.rows ?? tile.rows,
     };
 
-    if (!canPlace(candidate, layout, columns, 500)) {
+    if (!canPlace(candidate, layout, columns, MAX_LAYOUT_ROWS)) {
       throw new Error(`Invalid default grid override for "${id}": outside the board or overlapping another override.`);
     }
 
@@ -131,19 +170,16 @@ export function createDefaultGridLayout(
         return;
       }
 
-      const shape = {
-        ...tile,
-        cols: Math.min(tile.cols, columns),
-      };
+      const shape = normalizeTileShape(tile, columns);
       const preferredColumn = getEditorialAnchor(columns, shape.cols, index);
       let selected: GridPosition | undefined;
       let selectedScore = Number.POSITIVE_INFINITY;
 
-      for (let row = groupStartRow; row <= 500; row += 1) {
+      for (let row = groupStartRow; row <= MAX_LAYOUT_ROWS; row += 1) {
         for (let col = 1; col <= columns - shape.cols + 1; col += 1) {
           const candidate = { ...shape, col, row };
 
-          if (!canPlace(candidate, layout, columns, 500)) {
+          if (!canPlace(candidate, layout, columns, MAX_LAYOUT_ROWS)) {
             continue;
           }
 
@@ -163,17 +199,14 @@ export function createDefaultGridLayout(
       layout[tile.id] = selected ?? {
         ...shape,
         col: 1,
-        row: Object.values(layout).reduce(
-          (lastRow, position) => Math.max(lastRow, position.row + position.rows),
-          groupStartRow,
-        ),
+        row: getNextOpenRow(layout, groupStartRow),
       };
     });
 
     const groupBottom = Object.values(layout)
       .filter((position) => groupIds.has(position.id))
       .reduce(
-        (lastRow, position) => Math.max(lastRow, position.row + position.rows - 1),
+        (lastRow, position) => Math.max(lastRow, getPositionBottom(position)),
         groupStartRow,
       );
 
@@ -181,15 +214,7 @@ export function createDefaultGridLayout(
     groupStartRow = groupBottom + 2;
   });
 
-  const occupiedRows = Object.values(layout).reduce(
-    (lastRow, position) => Math.max(lastRow, position.row + position.rows - 1),
-    1,
-  );
-
-  return {
-    layout,
-    rows: occupiedRows + 2,
-  };
+  return createBoard(layout);
 }
 
 // --- Random remix board -----------------------------------------------------------
@@ -199,17 +224,14 @@ export function createGridLayout(tiles: GridTileShape[], columns: number, seed: 
   const layout: GridLayout = {};
 
   tiles.forEach((tile) => {
-    const shape = {
-      ...tile,
-      cols: Math.min(tile.cols, columns),
-    };
+    const shape = normalizeTileShape(tile, columns);
     const candidates: GridPosition[] = [];
 
-    for (let row = 1; row <= 500 && candidates.length < 12; row += 1) {
+    for (let row = 1; row <= MAX_LAYOUT_ROWS && candidates.length < 12; row += 1) {
       for (let col = 1; col <= columns - shape.cols + 1 && candidates.length < 12; col += 1) {
         const candidate = { ...shape, col, row };
 
-        if (canPlace(candidate, layout, columns, 500)) {
+        if (canPlace(candidate, layout, columns, MAX_LAYOUT_ROWS)) {
           candidates.push(candidate);
         }
       }
@@ -219,24 +241,13 @@ export function createGridLayout(tiles: GridTileShape[], columns: number, seed: 
     const selected = candidates[Math.floor(random() * choiceWindow)] ?? {
       ...shape,
       col: 1,
-      row: Object.values(layout).reduce(
-        (lastRow, position) => Math.max(lastRow, position.row + position.rows),
-        1,
-      ),
+      row: getNextOpenRow(layout),
     };
 
     layout[tile.id] = selected;
   });
 
-  const occupiedRows = Object.values(layout).reduce(
-    (lastRow, position) => Math.max(lastRow, position.row + position.rows - 1),
-    1,
-  );
-
-  return {
-    layout,
-    rows: occupiedRows + 2,
-  };
+  return createBoard(layout);
 }
 
 // --- Runtime movement -------------------------------------------------------------

@@ -691,16 +691,6 @@
   box-shadow: none;
 }
 
-.pd-tile--empty {
-  border-style: dashed;
-  background: transparent;
-  box-shadow: none;
-}
-
-.pd-tile--empty::after {
-  opacity: 0.08;
-}
-
 .pd-tile--glyph {
   display: grid;
   place-items: center;

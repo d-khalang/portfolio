@@ -23,7 +23,7 @@ import './ProjectDetail.css';
 
 type Project = (typeof projectsData)[number];
 type TileTone = 'white' | 'dark' | 'red' | 'soft' | 'line' | 'ghost';
-type TileKind = 'fact' | 'story' | 'metric' | 'stack' | 'media' | 'glyph' | 'empty' | 'links';
+type TileKind = 'fact' | 'story' | 'metric' | 'stack' | 'media' | 'glyph' | 'links';
 type MediaShape = 'wide' | 'landscape' | 'portrait' | 'square';
 
 interface ProjectDetailProps {
@@ -407,17 +407,6 @@ function getProjectTiles(project: Project, assets: ProjectAsset[], seed: number 
       createStoryTile(`next-${index}`, 'next input', 'Needs detail', step)
     )),
     ...mediaTiles,
-    ...Array.from({ length: Math.max(9, Math.ceil(supportingEmptyCount(project, assets))) }).map<ProjectTile>(
-      (_, index) => ({
-        id: `empty-${index}`,
-        kind: 'empty',
-        tone: 'ghost',
-        cols: index % 4 === 0 ? 4 : index % 3 === 0 ? 2 : 3,
-        rows: index % 3 === 0 ? 2 : 1,
-        hasBackground: false,
-        hasBorder: index % 4 !== 1,
-      }),
-    ),
   ];
 
   const priorityTiles = supportingTiles.filter((tile) => tile.priority);
@@ -427,11 +416,6 @@ function getProjectTiles(project: Project, assets: ProjectAsset[], seed: number 
     : shuffleWithSeed(unprioritizedTiles, seed + 29);
 
   return [...priorityTiles, ...freeTiles];
-}
-
-function supportingEmptyCount(project: Project, assets: ProjectAsset[]) {
-  const baseCount = project.id === 'kartino' ? 18 : 6;
-  return project.story.metrics.length + assets.length + baseCount;
 }
 
 function NothingGlyphMark({ label }: { label: string }) {
@@ -509,10 +493,6 @@ function ProjectTileView({ tile, project }: { tile: ProjectTile; project: Projec
     '--tile-cols': tile.cols,
     '--tile-rows': tile.rows,
   } as CSSProperties;
-
-  if (tile.kind === 'empty') {
-    return <div className={`pd-tile pd-tile--empty ${chromeClasses}`} style={style} aria-hidden="true" />;
-  }
 
   if (tile.kind === 'glyph') {
     const isKartino = project.id === 'kartino';
@@ -670,6 +650,17 @@ function snapDistanceToGridStep(distance: number, cellSize: number) {
   return Math.sign(distance) * Math.floor(Math.abs(distance) / cellSize + 0.5);
 }
 
+function getBoardCellSize(element: HTMLElement, columns: number) {
+  const styles = window.getComputedStyle(element);
+  const columnGap = Number.parseFloat(styles.columnGap) || 0;
+  const rowGap = Number.parseFloat(styles.rowGap) || 0;
+
+  return {
+    column: (element.clientWidth - columnGap * (columns - 1)) / columns + columnGap,
+    row: Number.parseFloat(styles.gridAutoRows) + rowGap,
+  };
+}
+
 // --- Responsive board configuration ----------------------------------------------
 
 function useBoardColumns() {
@@ -707,8 +698,7 @@ function InteractiveProjectGrid({
   seed: number | null;
 }) {
   const columns = useBoardColumns();
-  const movableTiles = useMemo(() => tiles.filter((tile) => tile.kind !== 'empty'), [tiles]);
-  const editorialGroups = useMemo(() => createEditorialTileGroups(movableTiles), [movableTiles]);
+  const editorialGroups = useMemo(() => createEditorialTileGroups(tiles), [tiles]);
   const defaultOverrides = useMemo(
     () => getProjectLayoutOverrides(project.id, columns),
     [columns, project.id],
@@ -716,8 +706,8 @@ function InteractiveProjectGrid({
   const initialBoard = useMemo(
     () => seed === null
       ? createDefaultGridLayout(editorialGroups, columns, defaultOverrides)
-      : createGridLayout(movableTiles, columns, seed),
-    [columns, defaultOverrides, editorialGroups, movableTiles, seed],
+      : createGridLayout(tiles, columns, seed),
+    [columns, defaultOverrides, editorialGroups, tiles, seed],
   );
   const [board, setBoard] = useState(initialBoard);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -782,7 +772,7 @@ function InteractiveProjectGrid({
     requestedColumns: number,
     requestedRows: number,
   ) => {
-    const tile = movableTiles.find((item) => item.id === id);
+    const tile = tiles.find((item) => item.id === id);
 
     if (!tile) {
       return { columns: 0, rows: 0 };
@@ -889,13 +879,9 @@ function InteractiveProjectGrid({
       return;
     }
 
-    const styles = window.getComputedStyle(element);
-    const columnGap = Number.parseFloat(styles.columnGap) || 0;
-    const rowGap = Number.parseFloat(styles.rowGap) || 0;
-    const columnStep = (element.clientWidth - columnGap * (columns - 1)) / columns + columnGap;
-    const rowStep = Number.parseFloat(styles.gridAutoRows) + rowGap;
+    const cellSize = getBoardCellSize(element, columns);
     const pointerDelta = drag.axis === 'horizontal' ? deltaX : deltaY;
-    const cellStep = drag.axis === 'horizontal' ? columnStep : rowStep;
+    const cellStep = drag.axis === 'horizontal' ? cellSize.column : cellSize.row;
     const desiredSteps = snapDistanceToGridStep(pointerDelta, cellStep);
     const requestedSteps = desiredSteps - drag.appliedSteps;
 
@@ -965,18 +951,14 @@ function InteractiveProjectGrid({
 
     event.preventDefault();
 
-    const styles = window.getComputedStyle(element);
-    const columnGap = Number.parseFloat(styles.columnGap) || 0;
-    const rowGap = Number.parseFloat(styles.rowGap) || 0;
-    const columnStep = (element.clientWidth - columnGap * (columns - 1)) / columns + columnGap;
-    const rowStep = Number.parseFloat(styles.gridAutoRows) + rowGap;
+    const cellSize = getBoardCellSize(element, columns);
     const usesColumns = resize.direction.includes('e') || resize.direction.includes('w');
     const usesRows = resize.direction.includes('n') || resize.direction.includes('s');
     const desiredColumns = usesColumns
-      ? snapDistanceToGridStep(event.clientX - resize.startX, columnStep)
+      ? snapDistanceToGridStep(event.clientX - resize.startX, cellSize.column)
       : 0;
     const desiredRows = usesRows
-      ? snapDistanceToGridStep(event.clientY - resize.startY, rowStep)
+      ? snapDistanceToGridStep(event.clientY - resize.startY, cellSize.row)
       : 0;
     const requestedColumns = desiredColumns - resize.appliedColumns;
     const requestedRows = desiredRows - resize.appliedRows;
@@ -1105,7 +1087,7 @@ function InteractiveProjectGrid({
             aria-hidden="true"
           />
         )}
-        {movableTiles.map((tile) => {
+        {tiles.map((tile) => {
           const position = board.layout[tile.id];
 
           if (!position) {
