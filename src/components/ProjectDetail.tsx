@@ -170,6 +170,32 @@ const projectAssetMeta: Record<string, Record<string, ProjectAssetMeta>> = {
       description: 'Showing how the Telegram bot parses verb infinitives and prints instant conjugation tables.',
     },
   },
+  recore: {
+    'image01.webp': {
+      title: 'Soft Solutions catalog',
+      width: 2616,
+      height: 1504,
+      description: 'A modular tile/card-based catalog view displaying available soft solutions with interactive hover effects and pagination.',
+    },
+    'image02.webp': {
+      title: 'Contact & Support portal',
+      width: 1852,
+      height: 1498,
+      description: 'A dynamic contact page showing custom contact visual components and the platform inquiry form.',
+    },
+    'RECORE-card-transition.mp4': {
+      title: 'Interactive hover transitions',
+      width: 808,
+      height: 1148,
+      description: 'Autoplaying demonstration showing smooth fluid hover transitions and detailed content reveals on hover cards.',
+    },
+    'RECORE-monitoring.mp4': {
+      title: 'Sticky monitoring board',
+      width: 1930,
+      height: 1072,
+      description: 'Live preview of the sticky monitoring tools of the ecosystem.',
+    },
+  },
 };
 
 function createRandom(seed: number) {

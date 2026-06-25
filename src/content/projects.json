@@ -198,71 +198,110 @@
     "journeyPosition": 0.45,
     "core": {
       "title": "RECORE",
-      "tagline": "A resilience platform growing into its full case study.",
-      "status": "in-progress",
+      "tagline": "Resource Ecosystem for Community Resilience, providing localized crisis tools and knowledge routing.",
+      "status": "live",
       "dateLabel": "2025 - present",
-      "role": "Full-stack engineer",
-      "teamContext": "Connected platform work within the wider resilience ecosystem",
+      "role": "Lead Full-Stack Engineer",
+      "teamContext": "Politecnico di Torino RESILIAGE team member; owned end-to-end implementation, platform architecture, and deployment from partner-provided initial design direction",
       "stack": [
         "React",
         "TypeScript",
-        "FastAPI",
-        "MongoDB"
+        "i18next",
+        "Docker",
+        "AWS EC2"
       ],
       "categories": [
         "platform",
-        "resilience",
-        "full-stack"
+        "localization",
+        "full-stack",
+        "public-tech"
       ],
-      "links": []
+      "links": [
+        {
+          "label": "Resource Hub",
+          "url": "https://resiliage-ecosystem.eu",
+          "type": "live"
+        }
+      ]
     },
     "story": {
-      "summary": "A companion platform inside the resilience space, prepared as a first-class project even while its case study is still evolving.",
-      "problem": "Some projects are important enough to represent early, even before every screenshot and written detail is finalized.",
-      "solution": "This entry is structured so the project can appear confidently in the portfolio now and expand naturally as its story becomes sharper.",
-      "outcome": "The portfolio stays future-friendly and honest about work that is active, real, and still taking shape.",
+      "summary": "An open platform and ecosystem router designed to empower local communities and citizens in real settings by providing free, multilingual access to resilience knowledge, tools, and crisis resources.",
+      "problem": "Communities and individuals in crisis situations lack a central, highly interactive gateway to locate and access essential resilience resources, tools, and documentation in their native languages.",
+      "solution": "A central routing platform that connects all tools in the broader resilience ecosystem. It provides complete native localization across 6 European languages and features a custom tile/card-based catalog with responsive pagination, and interactive hover micro-animations.",
+      "outcome": "RECORE serves as the unified entry portal for the resilience ecosystem, allowing diverse regional pilot sites to access critical knowledge and tools seamlessly.",
       "highlights": [
-        "Prepared as a first-class project slot instead of a temporary placeholder",
-        "Leaves room for future screenshots, metrics, and technical writing"
+        "Architected and deployed the central router and resource platform for the entire RESILIAGE ecosystem.",
+        "Engineered native localization supporting 6 European languages: English, Portuguese, Norwegian, Greek, Turkish, and French.",
+        "Designed a modular tile/card-based resource catalog with responsive grid pagination and dynamic content mapping.",
+        "Implemented interactive card hover micro-animations and fluid content transition effects to maximize community engagement.",
+        "Ensured visual and functional consistency across platform components to align with community design system expectations."
       ],
       "metrics": [
         {
-          "label": "State",
-          "value": "Growing dossier"
+          "label": "Localization",
+          "value": "6 languages"
         },
         {
-          "label": "Mode",
-          "value": "Ready to expand"
+          "label": "Ecosystem integration",
+          "value": "Central router & hub"
+        },
+        {
+          "label": "Resource access",
+          "value": "Paginated tile grid"
+        },
+        {
+          "label": "Consortium scale",
+          "value": "18 Horizon Europe partners"
         }
       ],
       "lessons": [
-        "A portfolio can feel more alive when some work is shown as active and evolving instead of pretending everything is already complete."
+        "Designing localized portals for emergency response requires deep decoupling of language assets, ensuring quick translation loading and consistent rendering across complex fluid card grid layouts."
       ],
       "nextSteps": [
-        "Add concrete product screenshots",
-        "Write the challenge, architecture, and impact story in more detail"
+        "Collaborate with colleagues and project partners to gather requirements, design, and implement the upcoming 'Heritage Drivers' workspace."
       ]
     },
     "media": {
       "cover": {
         "type": "image",
-        "title": "RECORE cover",
-        "caption": "Main visual for the RECORE project section.",
-        "src": "assets/projects/recore/cover/recore-cover-placeholder.png",
-        "alt": "Placeholder cover for the RECORE project"
+        "title": "RECORE Resource Hub",
+        "caption": "The central landing page and resource catalog of the RECORE platform.",
+        "src": "assets/projects/recore/image01.webp",
+        "alt": "RECORE Resource Ecosystem main entry point"
       },
       "gallery": [
         {
           "type": "image",
-          "title": "Interface preview",
-          "caption": "Reserved for future screenshots and system diagrams.",
-          "src": "assets/projects/recore/gallery/recore-interface-preview-placeholder.png",
-          "alt": "RECORE interface preview placeholder"
+          "title": "Soft Solutions catalog",
+          "caption": "Tile and card-based grid showcasing community solutions with pagination support.",
+          "src": "assets/projects/recore/image01.webp",
+          "alt": "Soft solutions grid with pagination"
+        },
+        {
+          "type": "image",
+          "title": "Contact & Support portal",
+          "caption": "Detailed section of the contact page showing custom visual forms and communication tools.",
+          "src": "assets/projects/recore/image02.webp",
+          "alt": "RECORE contact visual components"
+        },
+        {
+          "type": "video",
+          "title": "Interactive hover transitions",
+          "caption": "Interactive hover states of resource cards exhibiting smooth content transitions.",
+          "src": "assets/projects/recore/video/RECORE-card-transition.mp4",
+          "alt": "RECORE card hover transitions"
+        },
+        {
+          "type": "video",
+          "title": "Ecosystem monitoring panel",
+          "caption": "The main monitoring dashboard containing real-time sticky components.",
+          "src": "assets/projects/recore/video/RECORE-monitoring.mp4",
+          "alt": "RECORE monitoring page dashboard"
         }
       ],
       "visualStyle": {
         "accent": "#ffb47d",
-        "tone": "active, warm, under construction"
+        "tone": "active, warm, ecosystem"
       }
     }
   },
