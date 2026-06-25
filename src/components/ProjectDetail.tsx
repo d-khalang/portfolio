@@ -25,6 +25,9 @@ type Project = (typeof projectsData)[number];
 type TileTone = 'white' | 'dark' | 'red' | 'soft' | 'line' | 'ghost';
 type TileKind = 'fact' | 'story' | 'metric' | 'stack' | 'media' | 'glyph' | 'links';
 type MediaShape = 'wide' | 'landscape' | 'portrait' | 'square';
+type LayoutBreakpoint = 'desktop' | 'tablet' | 'mobile';
+
+const showLayoutExportTools = false;
 
 interface ProjectDetailProps {
   project: Project;
@@ -661,6 +664,60 @@ function getBoardCellSize(element: HTMLElement, columns: number) {
   };
 }
 
+function getLayoutBreakpoint(columns: number): LayoutBreakpoint {
+  if (columns <= 4) {
+    return 'mobile';
+  }
+
+  if (columns <= 8) {
+    return 'tablet';
+  }
+
+  return 'desktop';
+}
+
+function createLayoutOverrideSnapshot(
+  projectId: string,
+  breakpoint: LayoutBreakpoint,
+  layout: GridLayout,
+  tiles: ProjectTile[],
+) {
+  const tileLayout = tiles.reduce<Record<string, Pick<GridPosition, 'col' | 'row' | 'cols' | 'rows'>>>(
+    (snapshot, tile) => {
+      const position = layout[tile.id];
+
+      if (position) {
+        snapshot[tile.id] = {
+          col: position.col,
+          row: position.row,
+          cols: position.cols,
+          rows: position.rows,
+        };
+      }
+
+      return snapshot;
+    },
+    {},
+  );
+
+  return {
+    [projectId]: {
+      [breakpoint]: tileLayout,
+    },
+  };
+}
+
+function downloadJsonFile(fileName: string, data: unknown) {
+  const blob = new Blob([`${JSON.stringify(data, null, 2)}\n`], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+
+  link.href = url;
+  link.download = fileName;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
 // --- Responsive board configuration ----------------------------------------------
 
 function useBoardColumns() {
@@ -717,6 +774,8 @@ function InteractiveProjectGrid({
   const [resizingId, setResizingId] = useState<string | null>(null);
   const [resizingDirection, setResizingDirection] = useState<ResizeDirection | null>(null);
   const [resizeBlocked, setResizeBlocked] = useState<{ id: string; direction: ResizeDirection } | null>(null);
+  const [layoutToolsEnabled, setLayoutToolsEnabled] = useState(false);
+  const [layoutExportStatus, setLayoutExportStatus] = useState<string | null>(null);
   const boardRef = useRef<HTMLDivElement>(null);
   const layoutRef = useRef<GridLayout>(initialBoard.layout);
   const dragRef = useRef<DragState | null>(null);
@@ -1042,9 +1101,57 @@ function InteractiveProjectGrid({
     && draggingPosition
     && (moveOrigin.col !== draggingPosition.col || moveOrigin.row !== draggingPosition.row),
   );
+  const layoutBreakpoint = getLayoutBreakpoint(columns);
+  const getCurrentLayoutSnapshot = () => createLayoutOverrideSnapshot(
+    project.id,
+    layoutBreakpoint,
+    board.layout,
+    tiles,
+  );
+
+  const logCurrentLayout = () => {
+    const snapshot = getCurrentLayoutSnapshot();
+
+    console.info(`[project-grid] ${project.id}/${layoutBreakpoint} layout override`, snapshot);
+    console.log(`[project-grid] ${project.id}/${layoutBreakpoint} layout JSON\n${JSON.stringify(snapshot, null, 2)}`);
+    console.table(snapshot[project.id][layoutBreakpoint]);
+    setLayoutExportStatus(`logged ${project.id}/${layoutBreakpoint}`);
+  };
+
+  const downloadCurrentLayout = () => {
+    downloadJsonFile(`${project.id}-${layoutBreakpoint}-layout.json`, getCurrentLayoutSnapshot());
+    setLayoutExportStatus(`downloaded ${project.id}/${layoutBreakpoint}`);
+  };
 
   return (
     <section className="pd-board-section" aria-labelledby="board-instructions">
+      {showLayoutExportTools && (
+        <div className="pd-board-tools" aria-label="Layout export tools">
+          <label>
+            <input
+              type="checkbox"
+              checked={layoutToolsEnabled}
+              onChange={(event) => setLayoutToolsEnabled(event.currentTarget.checked)}
+            />
+            layout tools
+          </label>
+          {layoutToolsEnabled && (
+            <div className="pd-board-tools__actions">
+              <button type="button" onClick={logCurrentLayout}>
+                log layout
+              </button>
+              <button type="button" onClick={downloadCurrentLayout}>
+                download json
+              </button>
+              {layoutExportStatus && (
+                <span className="pd-board-tools__status" aria-live="polite">
+                  {layoutExportStatus}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      )}
       <p id="board-instructions" className="pd-board-instructions">
         Drag tiles to move. Pull an edge or corner to resize by grid cells. Arrow keys move; Shift + arrow grows and Alt + arrow shrinks.
       </p>

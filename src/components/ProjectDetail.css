@@ -146,6 +146,51 @@
   padding: 16px 0 64px;
 }
 
+.pd-board-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  color: var(--pd-muted);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+}
+
+.pd-board-tools label,
+.pd-board-tools__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pd-board-tools input {
+  margin: 0;
+  accent-color: var(--pd-red);
+}
+
+.pd-board-tools button {
+  min-height: 30px;
+  border: 1px solid var(--pd-line);
+  border-radius: 6px;
+  padding: 6px 9px;
+  background: rgb(255 255 255 / 58%);
+  color: var(--pd-ink);
+  font: inherit;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.pd-board-tools button:hover {
+  border-color: var(--pd-red);
+  color: var(--pd-red);
+}
+
+.pd-board-tools__status {
+  color: var(--pd-red);
+}
+
 .pd-board-instructions {
   width: fit-content;
   max-width: 72ch;
