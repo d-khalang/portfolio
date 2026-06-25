@@ -147,20 +147,20 @@
       "highlights": [
         "Delivers spaced repetition reviews and LLM-generated conjugation/translation cards directly inside Telegram, keeping the learning loop close to the user's daily message flow.",
         "Rebuilt a raw prototype (originally configured as an N8N automation workflow) into a modular, production-ready Python package with a secure MongoDB database caching layer.",
-        "Designed a comprehensive suite of 286 automated tests and flat-file async observability tracing to guarantee service availability and track latencies."
+        "Designed a comprehensive suite of 413 automated tests (unit, integration, and smoke) covering webhook failure modes, database exceptions, and background task resilience."
       ],
       "metrics": [
         {
-          "label": "Creation speed",
+          "label": "Flashcard creation latency",
           "value": "77-84% reduction"
         },
         {
-          "label": "Rating flow",
+          "label": "Rating flow latency",
           "value": "89-92% latency drop"
         },
         {
           "label": "Test suite",
-          "value": "286 units"
+          "value": "400+ tests"
         }
       ],
       "lessons": [
