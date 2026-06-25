@@ -542,6 +542,28 @@ function ProjectTileView({ tile, project }: { tile: ProjectTile; project: Projec
     return <MediaTile tile={tile} project={project} />;
   }
 
+  if (tile.kind === 'links') {
+    const url = tile.id.startsWith('link-') ? tile.id.substring(5) : '';
+    return (
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`pd-tile pd-tile--${tile.kind} pd-tile--${tile.tone} ${chromeClasses}`}
+        style={{
+          ...style,
+          cursor: 'pointer',
+          textDecoration: 'none',
+          color: 'inherit',
+        }}
+      >
+        {tile.eyebrow && <span>{tile.eyebrow}</span>}
+        {tile.title && <strong>{tile.title}</strong>}
+        {tile.body && <p>{tile.body}</p>}
+      </a>
+    );
+  }
+
   return (
     <article className={`pd-tile pd-tile--${tile.kind} pd-tile--${tile.tone} ${chromeClasses}`} style={style}>
       {tile.eyebrow && <span>{tile.eyebrow}</span>}
