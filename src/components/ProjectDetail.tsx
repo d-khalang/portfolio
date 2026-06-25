@@ -123,6 +123,50 @@ const projectAssetMeta: Record<string, Record<string, ProjectAssetMeta>> = {
       description: 'Hierarchical directory displaying categorized layers, from cultural heritage to disaster risk reduction features.',
     },
   },
+  kartino: {
+    'image01.webp': {
+      title: 'Marketing Landing Page',
+      width: 1280,
+      height: 719,
+      description: 'The responsive web presence of Kartino presenting its feature set and character-driven design.',
+    },
+    'image02.webp': {
+      title: 'Settings interface',
+      width: 857,
+      height: 688,
+      description: 'Flexible settings menu mapping level parameters, translation targets, and daily reminders.',
+    },
+    'image03.webp': {
+      title: 'Flashcard deck rendering',
+      width: 1232,
+      height: 2560,
+      description: 'High-signal vocabulary flashcards generated dynamically in the Telegram interface.',
+    },
+    'image04.webp': {
+      title: 'Interactive verb tables',
+      width: 530,
+      height: 1280,
+      description: 'Grammar review tools showing comprehensive verb conjugation patterns.',
+    },
+    'generate.mp4': {
+      title: 'Spaced repetition loop',
+      width: 928,
+      height: 1200,
+      description: 'Live walkthrough showing a flashcard being generated from a word input and saving it to the active learning session.',
+    },
+    'kartino_setting_final.mp4': {
+      title: 'Custom preferences selection',
+      width: 1080,
+      height: 1350,
+      description: 'A quick run-through of configuring custom language level (CEFR) and review schedules inside Telegram.',
+    },
+    'kartino_verb.mp4': {
+      title: 'Dynamic verb lookup',
+      width: 928,
+      height: 1200,
+      description: 'Showing how the Telegram bot parses verb infinitives and prints instant conjugation tables.',
+    },
+  },
 };
 
 function createRandom(seed: number) {
@@ -386,7 +430,8 @@ function getProjectTiles(project: Project, assets: ProjectAsset[], seed: number 
 }
 
 function supportingEmptyCount(project: Project, assets: ProjectAsset[]) {
-  return project.story.metrics.length + assets.length + 6;
+  const baseCount = project.id === 'kartino' ? 18 : 6;
+  return project.story.metrics.length + assets.length + baseCount;
 }
 
 function NothingGlyphMark({ label }: { label: string }) {
@@ -469,9 +514,26 @@ function ProjectTileView({ tile, project }: { tile: ProjectTile; project: Projec
   }
 
   if (tile.kind === 'glyph') {
+    const isKartino = project.id === 'kartino';
+    const stickerSrc = isKartino ? assetModules['../assets/projects/common/stickers/kartino_reading.png'] : null;
+
     return (
       <div className="pd-tile pd-tile--glyph" style={style}>
-        <NothingGlyphMark label={`${project.core.title} glyph matrix`} />
+        {stickerSrc ? (
+          <img
+            src={stickerSrc}
+            alt="Kartino mascot"
+            style={{
+              width: '80%',
+              height: '80%',
+              objectFit: 'contain',
+              position: 'relative',
+              zIndex: 1,
+            }}
+          />
+        ) : (
+          <NothingGlyphMark label={`${project.core.title} glyph matrix`} />
+        )}
       </div>
     );
   }

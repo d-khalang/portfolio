@@ -140,31 +140,31 @@
       ]
     },
     "story": {
-      "summary": "An AI-powered Telegram flashcard product rebuilt from a prototype into a modular and production-ready learning system.",
-      "problem": "The original idea needed to move beyond a rough prototype into something fast, maintainable, observable, and reliable enough to behave like a real product.",
-      "solution": "I reworked the system around a more modular backend, improved core learning flows, and added testing and observability so the product could scale with more confidence.",
-      "outcome": "Kartino became a stronger product technically and operationally, with large performance gains in the most important user flows.",
+      "summary": "An AI-powered language leaning companion that automatically generates, stores and schedules flashcards with context-aware example sentences and translations.",
+      "problem": "Conventional language learning often suffers from quick forgetting cycles, where words learned in textbooks or classes fade rapidly. Standard flashcard applications require heavy manual creation friction and encourage rote memorization of static, repetitive content.",
+      "solution": "A Telegram learning companion using FastAPI and aiogram. It leverages LLMs to generate bespoke flashcards, including dynamic example sentences and conjugations matching the learner's CEFR level, reducing manual typing friction to zero.",
+      "outcome": "Kartino was optimized into a production-ready, highly observable learning companion, dropping card generation times by 84% and rating lookup times by 92%, backed by a comprehensive suite of 286 unit and integration tests.",
       "highlights": [
-        "Migrated from workflow prototype to modular production backend",
-        "Improved flashcard creation, lookup, and rating performance",
-        "Added stronger reliability, observability, and test coverage"
+        "Combines spaced repetition reminders with LLM-generated translations and verb conjugations directly inside the Telegram interface, adapting to the user's CEFR level.",
+        "Re-engineered a raw prototype into a modular, test-driven Python package architecture with a secure MongoDB database caching layer.",
+        "Designed a comprehensive suite of 286 automated tests and observability monitoring to track latency and ensure robust service availability."
       ],
       "metrics": [
         {
           "label": "Creation speed",
-          "value": "77-84%"
+          "value": "77-84% reduction"
         },
         {
           "label": "Rating flow",
-          "value": "89-92%"
+          "value": "89-92% latency drop"
         },
         {
           "label": "Test suite",
-          "value": "286 tests"
+          "value": "286 units"
         }
       ],
       "lessons": [
-        "Good AI products are not just about the model feature; they depend on system quality, speed, trust, and iteration loops."
+        "Good AI products are not just about the model features; they depend heavily on system responsiveness, trust, and frictionless interaction loops."
       ],
       "nextSteps": []
     },
@@ -172,25 +172,17 @@
       "cover": {
         "type": "image",
         "title": "Kartino cover",
-        "caption": "Main visual for the Kartino project section.",
-        "src": "assets/projects/kartino/cover/kartino-cover-placeholder.png",
-        "alt": "Placeholder cover for the Kartino project"
+        "caption": "Main visual showing flashcards deck generation on the Telegram bot.",
+        "src": "assets/projects/kartino/image03.webp",
+        "alt": "Kartino dynamic Telegram flashcards interface"
       },
       "gallery": [
         {
           "type": "image",
           "title": "Product loop",
           "caption": "Flashcard generation and review flow visuals.",
-          "src": "assets/projects/kartino/gallery/kartino-product-loop-placeholder.png",
-          "alt": "Kartino product loop placeholder"
-        },
-        {
-          "type": "video",
-          "title": "System walkthrough",
-          "caption": "A short clip explaining architecture and performance decisions.",
-          "src": "",
-          "poster": "",
-          "alt": "Kartino walkthrough video placeholder"
+          "src": "assets/projects/kartino/image03.webp",
+          "alt": "Kartino product loop"
         }
       ],
       "visualStyle": {
