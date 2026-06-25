@@ -143,11 +143,11 @@
       "summary": "An AI-powered language leaning companion that automatically generates, stores and schedules flashcards with context-aware example sentences and translations.",
       "problem": "Conventional language learning often suffers from quick forgetting cycles, where words learned in textbooks or classes fade rapidly. Standard flashcard applications require heavy manual creation friction and encourage rote memorization of static, repetitive content.",
       "solution": "A Telegram learning companion using FastAPI and aiogram. It leverages LLMs to generate bespoke flashcards, including dynamic example sentences and conjugations matching the learner's CEFR level, reducing manual typing friction to zero.",
-      "outcome": "Kartino was optimized into a production-ready, highly observable learning companion, dropping card generation times by 84% and rating lookup times by 92%, backed by a comprehensive suite of 286 unit and integration tests.",
+      "outcome": "Kartino is a production-level learning companion, deliberately designed to be friction-free, easy to use, and close to the learner's daily habits inside Telegram.",
       "highlights": [
-        "Combines spaced repetition reminders with LLM-generated translations and verb conjugations directly inside the Telegram interface, adapting to the user's CEFR level.",
-        "Re-engineered a raw prototype into a modular, test-driven Python package architecture with a secure MongoDB database caching layer.",
-        "Designed a comprehensive suite of 286 automated tests and observability monitoring to track latency and ensure robust service availability."
+        "Delivers spaced repetition reviews and LLM-generated conjugation/translation cards directly inside Telegram, keeping the learning loop close to the user's daily message flow.",
+        "Rebuilt a raw prototype (originally configured as an N8N automation workflow) into a modular, production-ready Python package with a secure MongoDB database caching layer.",
+        "Designed a comprehensive suite of 286 automated tests and flat-file async observability tracing to guarantee service availability and track latencies."
       ],
       "metrics": [
         {
