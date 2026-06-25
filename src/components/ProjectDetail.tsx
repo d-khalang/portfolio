@@ -282,7 +282,7 @@ function createFactTile(
 function createStoryTile(id: string, eyebrow: string, title: string, body: string): ProjectTile {
   const length = title.length + body.length;
   const cols = length > 240 ? 6 : length > 150 ? 5 : length > 85 ? 4 : 3;
-  const rows = length > 300 ? 3 : length > 130 ? 2 : 1;
+  const rows = getTextRows(title, body, cols, 1);
 
   return {
     id,
@@ -463,6 +463,8 @@ function MediaTile({ tile, project }: { tile: ProjectTile; project: Project }) {
             controls
             muted
             playsInline
+            autoPlay
+            loop
             preload="metadata"
           />
         ) : (
