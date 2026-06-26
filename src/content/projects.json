@@ -136,6 +136,11 @@
           "label": "Live product",
           "url": "https://kartino.it",
           "type": "live"
+        },
+        {
+          "label": "Source Code",
+          "url": "https://github.com/d-khalang/FlashCard_ecosystem",
+          "type": "github"
         }
       ]
     },
@@ -311,62 +316,110 @@
     "featured": true,
     "journeyPosition": 0.67,
     "core": {
-      "title": "Replication Toolbox",
-      "tagline": "A future research and tooling project slot.",
-      "status": "planned",
-      "dateLabel": "Upcoming",
-      "role": "Engineer / system builder",
-      "teamContext": "Planned future portfolio case study",
+      "title": "RESILIAGE Replication Toolbox",
+      "tagline": "A guided digital platform for replicating community-based disaster resilience strategies, with role-aware wizard flows, structured knowledge cards, and a CMS-powered resource taxonomy.",
+      "status": "live",
+      "dateLabel": "2026",
+      "role": "Lead Full-Stack Engineer + designer",
+      "teamContext": "Politecnico di Torino RESILIAGE team member; owned end-to-end design, development, data ingestion pipeline, deployment, and CMS administration",
       "stack": [
-        "TBD"
+        "React",
+        "TypeScript",
+        "Vite",
+        "Tailwind CSS",
+        "NestJS",
+        "Prisma",
+        "PostgreSQL",
+        "AWS S3",
+        "Docker"
       ],
       "categories": [
-        "research",
+        "full-stack",
+        "platform",
         "tooling",
-        "upcoming"
+        "public-tech",
+        "cloud-architecture"
       ],
-      "links": []
+      "links": [
+        {
+          "label": "Live platform",
+          "url": "https://toolbox.resiliage-ecosystem.eu",
+          "type": "live"
+        }
+      ]
     },
     "story": {
-      "summary": "A reserved slot for an upcoming project so the portfolio grows like an active workshop instead of a closed archive.",
-      "problem": "A static portfolio can feel finished even when real work is still on the way.",
-      "solution": "This entry reserves narrative and visual space for a serious next build without forcing fake detail too early.",
-      "outcome": "The portfolio can signal momentum and direction while remaining honest about what is still ahead.",
+      "summary": "A full-stack guided platform enabling communities, first responders, policymakers, and researchers to discover and replicate disaster-resilience strategies from the EU Horizon Europe RESILIAGE project. Users navigate a role-aware wizard to receive personalised replication guides, explore a structured taxonomy of 29+ DRM solutions, access interactive knowledge cards with markdown-rendered Q&A, step-by-step user guides, and downloadable resources stored on S3.",
+      "problem": "Consortium partners across 5 pilot sites needed a single digital workspace to publish, discover, and contextually adapt over 29 disaster risk management solutions — spanning monitoring toolkits, training modules, preparedness plans, and awareness campaigns — in a way that's actionable for wildly different stakeholder profiles (first responders, policymakers, citizens, researchers).",
+      "solution": "A React + NestJS full-stack application featuring a multi-step wizard that personalises content by stakeholder role and SyRI (Systemic Resilience Index) dimension. The backend exposes a recursive category -> solution -> info-card -> user-guide data model via RESTful APIs, backed by Prisma/PostgreSQL with S3-hosted file delivery through presigned URLs. A built-in admin panel enables non-technical team members to manage the full content taxonomy, upload files, create info cards with section-linked files, and author multi-step user guides — all without touching code. Content is seeded from parsed markdown documents via automated scripts.",
+      "outcome": "A live, content-managed replication platform serving the RESILIAGE consortium's 18 Horizon Europe partners, providing structured access to 29+ solutions, interactive user guides, and downloadable resources — ready for communities to adapt and replicate DRM strategies in their own contexts.",
       "highlights": [
-        "Keeps the project system extensible",
-        "Signals future work without pretending it already exists"
+        "Designed a recursive category -> solution -> info-card -> user-guide data model with Prisma, enabling deeply nested DRM taxonomies with structured Q&A sections, step-by-step guides, and linked file attachments per section.",
+        "Built a multi-step wizard flow with React Context + useReducer, persisting user state to localStorage, to personalise replication guides based on stakeholder role and SyRI resilience dimension.",
+        "Developed a full admin CMS panel enabling non-technical team members to manage the entire content taxonomy: create categories, solutions, upload files to S3 via presigned URLs, author info cards with markdown sections, and build multi-step user guides — all without code.",
+        "Engineered a two-phase S3 upload pipeline: the backend generates presigned PutObject URLs, the frontend uploads directly to S3, then confirms back to register the file in PostgreSQL — eliminating backend bandwidth bottlenecks.",
+        "Implemented a markdown-driven content pipeline with automated database seeding from structured markdown documents, parsers that extract info-card sections and guide steps, and a manifest-based file registration system."
       ],
       "metrics": [
         {
-          "label": "Status",
-          "value": "Planned chamber"
+          "label": "Solutions indexed",
+          "value": "29+ DRM tools & strategies"
+        },
+        {
+          "label": "Content model depth",
+          "value": "6-level recursive taxonomy"
+        },
+        {
+          "label": "Stakeholder profiles",
+          "value": "4 target groups x 5 SyRI dimensions"
+        },
+        {
+          "label": "Delivery",
+          "value": "Docker multi-stage build + AWS"
         }
       ],
-      "lessons": [],
+      "lessons": [
+        "Building a content-managed knowledge platform for a research consortium requires treating the data model as a first-class design artifact — the recursive Category -> Solution -> InfoCard -> Section -> LinkedFile graph became the backbone that made both the admin CMS and the public-facing taxonomy navigation coherent.",
+        "A multi-step wizard that persists state client-side and generates personalised output creates genuine user engagement, but requires careful decoupling of the guide-building logic from the wizard state to keep the system testable and extensible."
+      ],
       "nextSteps": [
-        "Replace placeholder content once the project direction is confirmed"
+        "Integrate the personalised wizard output with the backend taxonomy so that the 'Generate Plan' feature pulls live solution data instead of static templates."
       ]
     },
     "media": {
       "cover": {
         "type": "image",
-        "title": "Replication Toolbox cover",
-        "caption": "Main visual for the Replication Toolbox project section.",
-        "src": "",
-        "alt": "Placeholder cover for the Replication Toolbox project"
+        "title": "Platform Onboarding",
+        "caption": "The dark-themed landing page welcoming stakeholders with structured entry paths into the replication ecosystem.",
+        "src": "assets/projects/replication-toolbox/cover/image01.png",
+        "alt": "Replication Toolbox platform landing page"
       },
       "gallery": [
         {
           "type": "image",
-          "title": "Future artifact slot",
-          "caption": "Reserved for screenshots, diagrams, or a short demo.",
-          "src": "",
-          "alt": "Replication Toolbox placeholder"
+          "title": "Target Groups & Solutions",
+          "caption": "The role-selection view mapping resilience strategies and solutions to specific community stakeholder roles.",
+          "src": "assets/projects/replication-toolbox/gallery/image02.png",
+          "alt": "Target Groups and Solutions selection view"
+        },
+        {
+          "type": "image",
+          "title": "Solution Info Card",
+          "caption": "An interactive knowledge card with structured Q&A accordions detailing replication steps and hosting direct S3 downloads.",
+          "src": "assets/projects/replication-toolbox/gallery/image03.png",
+          "alt": "Solution detail Key Information Card"
+        },
+        {
+          "type": "image",
+          "title": "Step-by-Step User Guide",
+          "caption": "A structured deployment guide featuring nested steps and actions to help communities activate disaster risk management systems.",
+          "src": "assets/projects/replication-toolbox/gallery/image04.png",
+          "alt": "Interactive step-by-step user guide"
         }
       ],
       "visualStyle": {
         "accent": "#8fd4ff",
-        "tone": "reserved, technical, anticipatory"
+        "tone": "clean, modern, structured"
       }
     }
   },
@@ -396,7 +449,13 @@
         "hardware",
         "bot"
       ],
-      "links": []
+      "links": [
+        {
+          "label": "Source Code",
+          "url": "https://github.com/d-khalang/smart-care",
+          "type": "github"
+        }
+      ]
     },
     "story": {
       "summary": "An IoT monitoring system combining sensors, actuators, Telegram interaction, and LLM-powered reporting.",

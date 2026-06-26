@@ -77,7 +77,7 @@ const visualLabels: Record<string, string> = {
   atlas: 'cartography signal',
   kartino: 'learning signal',
   recore: 'platform signal',
-  'replication-toolbox': 'future signal',
+  'replication-toolbox': 'replication signal',
   'smart-plant-care': 'hardware signal',
 };
 
@@ -194,6 +194,32 @@ const projectAssetMeta: Record<string, Record<string, ProjectAssetMeta>> = {
       width: 1930,
       height: 1072,
       description: 'Live preview of the sticky monitoring tools of the ecosystem.',
+    },
+  },
+  'replication-toolbox': {
+    'image01.png': {
+      title: 'Platform Onboarding',
+      width: 2736,
+      height: 1590,
+      description: 'The dark-themed landing page welcoming stakeholders with structured entry paths into the replication ecosystem.',
+    },
+    'image02.png': {
+      title: 'Target Groups & Solutions',
+      width: 2121,
+      height: 1510,
+      description: 'The role-selection view mapping resilience strategies and solutions to specific community stakeholder roles.',
+    },
+    'image03.png': {
+      title: 'Solution Info Card',
+      width: 1089,
+      height: 1381,
+      description: 'An interactive knowledge card with structured Q&A accordions detailing replication steps and hosting direct S3 downloads.',
+    },
+    'image04.png': {
+      title: 'Step-by-Step User Guide',
+      width: 1210,
+      height: 1314,
+      description: 'A structured deployment guide featuring nested steps and actions to help communities activate disaster risk management systems.',
     },
   },
 };
@@ -777,10 +803,12 @@ function InteractiveProjectGrid({
   tiles,
   project,
   seed,
+  setSeed,
 }: {
   tiles: ProjectTile[];
   project: Project;
   seed: number | null;
+  setSeed: (seed: number | null) => void;
 }) {
   const columns = useBoardColumns();
   const editorialGroups = useMemo(() => createEditorialTileGroups(tiles), [tiles]);
@@ -808,6 +836,28 @@ function InteractiveProjectGrid({
   const layoutRef = useRef<GridLayout>(initialBoard.layout);
   const dragRef = useRef<DragState | null>(null);
   const resizeRef = useRef<ResizeDragState | null>(null);
+  const [isPanelVisible, setIsPanelVisible] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  useEffect(() => {
+    const target = boardRef.current;
+    if (!target) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsPanelVisible(entry.isIntersecting);
+      },
+      {
+        root: null,
+        threshold: 0.02, // triggers when 2% of the board is visible
+      }
+    );
+
+    observer.observe(target);
+    return () => {
+      observer.unobserve(target);
+    };
+  }, []);
 
   useEffect(() => {
     layoutRef.current = initialBoard.layout;
@@ -1300,6 +1350,44 @@ function InteractiveProjectGrid({
           );
         })}
       </div>
+
+      {/* Floating Side Panel */}
+      <div 
+        className={`pd-grid-panel ${isPanelVisible ? 'is-visible' : ''} ${isExpanded ? 'is-expanded' : ''}`}
+        onMouseEnter={() => setIsExpanded(true)}
+        onMouseLeave={() => setIsExpanded(false)}
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <div className="pd-grid-panel__tab">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          <span className="pd-grid-panel__arrow">◀</span>
+        </div>
+        <div className="pd-grid-panel__body" onClick={(e) => e.stopPropagation()}>
+          <button 
+            type="button" 
+            className="pd-grid-panel__btn"
+            onClick={() => {
+              setSeed(getInitialSeed(project));
+            }}
+          >
+            Remix Grid
+          </button>
+          <button 
+            type="button" 
+            className="pd-grid-panel__btn"
+            onClick={() => {
+              setSeed(null);
+            }}
+          >
+            Default Layout
+          </button>
+        </div>
+      </div>
     </section>
   );
 }
@@ -1323,11 +1411,25 @@ export default function ProjectDetail({ project }: ProjectDetailProps) {
           <h1 id="project-title">{project.core.title}</h1>
           <p>{project.core.tagline}</p>
           <div className="pd-actions">
-            <button type="button" onClick={() => setSeed(getInitialSeed(project))}>
-              remix grid
-            </button>
             {project.core.links.map((link) => (
-              <a key={link.url} href={link.url}>
+              <a 
+                key={link.url} 
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={link.type === 'github' ? 'pd-action-github' : undefined}
+              >
+                {link.type === 'github' && (
+                  <svg 
+                    viewBox="0 0 24 24" 
+                    width="14" 
+                    height="14" 
+                    fill="currentColor" 
+                    style={{ marginRight: '6px', display: 'inline-block', verticalAlign: 'text-bottom' }}
+                  >
+                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                  </svg>
+                )}
                 {link.label}
               </a>
             ))}
@@ -1335,7 +1437,7 @@ export default function ProjectDetail({ project }: ProjectDetailProps) {
         </div>
       </header>
 
-      <InteractiveProjectGrid tiles={tiles} project={project} seed={seed} />
+      <InteractiveProjectGrid tiles={tiles} project={project} seed={seed} setSeed={setSeed} />
     </main>
   );
 }

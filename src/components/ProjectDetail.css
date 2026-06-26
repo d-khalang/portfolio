@@ -930,12 +930,135 @@
   .pd-move-affordance,
   .pd-move-hint,
   .pd-size-readout,
-  .pd-resize-handle {
+  .pd-resize-handle,
+  .pd-grid-panel,
+  .pd-grid-panel__arrow {
     transition: none;
   }
 
   .pd-blocked-edge,
   .pd-resize-handle.is-blocked {
     animation: none;
+  }
+}
+
+/* --- Floating Side Panel & GitHub Hero Actions ----------------------------- */
+
+.pd-actions a.pd-action-github {
+  background: var(--pd-ink);
+  color: var(--pd-white);
+}
+
+.pd-actions a.pd-action-github:hover {
+  border-color: var(--pd-red);
+  color: var(--pd-red);
+}
+
+.pd-grid-panel {
+  position: fixed;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%) translateX(calc(100% - 44px));
+  display: flex;
+  align-items: center;
+  z-index: 100;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pd-grid-panel.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.pd-grid-panel:hover,
+.pd-grid-panel.is-expanded {
+  transform: translateY(-50%) translateX(0);
+}
+
+.pd-grid-panel__tab {
+  width: 44px;
+  height: 70px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(243, 242, 238, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: var(--pd-ink);
+  border-radius: 8px 0 0 8px;
+  cursor: pointer;
+  border: 1px solid rgba(11, 11, 11, 0.08);
+  border-right: none;
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.06);
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.pd-grid-panel__tab:hover {
+  color: var(--pd-red);
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(215, 25, 32, 0.2);
+}
+
+.pd-grid-panel__arrow {
+  display: inline-block;
+  transition: transform 0.3s ease;
+  font-size: 0.7rem;
+  margin-top: 6px;
+}
+
+.pd-grid-panel:hover .pd-grid-panel__arrow,
+.pd-grid-panel.is-expanded .pd-grid-panel__arrow {
+  transform: rotate(180deg);
+}
+
+.pd-grid-panel__body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 16px;
+  background: rgba(243, 242, 238, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(11, 11, 11, 0.08);
+  border-left: none;
+  border-radius: 8px 0 0 8px;
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.06);
+}
+
+.pd-grid-panel__btn {
+  min-height: 38px;
+  border: 1px solid rgba(11, 11, 11, 0.12);
+  border-radius: 6px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.4);
+  color: var(--pd-ink);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.pd-grid-panel__btn:hover {
+  border-color: var(--pd-red);
+  color: var(--pd-red);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 4px 12px rgba(215, 25, 32, 0.06);
+}
+
+@media (max-width: 760px) {
+  .pd-grid-panel {
+    top: auto;
+    bottom: 80px;
+    transform: translateY(0) translateX(calc(100% - 44px));
+  }
+  
+  .pd-grid-panel:hover,
+  .pd-grid-panel.is-expanded {
+    transform: translateY(0) translateX(0);
   }
 }
