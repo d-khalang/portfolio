@@ -331,7 +331,8 @@
         "Prisma",
         "PostgreSQL",
         "AWS S3",
-        "Docker"
+        "Docker",
+        "JWT"
       ],
       "categories": [
         "full-stack",
@@ -349,7 +350,7 @@
       ]
     },
     "story": {
-      "summary": "A full-stack guided platform enabling communities, first responders, policymakers, and researchers to discover and replicate disaster-resilience strategies from the EU Horizon Europe RESILIAGE project. Users navigate a role-aware wizard to receive personalised replication guides, explore a structured taxonomy of 29+ DRM solutions, access interactive knowledge cards with markdown-rendered Q&A, step-by-step user guides, and downloadable resources stored on S3.",
+      "summary": "A guided platform helping communities adapt and replicate 29+ disaster resilience strategies via a role-aware wizard, interactive knowledge cards, and structured user guides.",
       "problem": "Consortium partners across 5 pilot sites needed a single digital workspace to publish, discover, and contextually adapt over 29 disaster risk management solutions — spanning monitoring toolkits, training modules, preparedness plans, and awareness campaigns — in a way that's actionable for wildly different stakeholder profiles (first responders, policymakers, citizens, researchers).",
       "solution": "A React + NestJS full-stack application featuring a multi-step wizard that personalises content by stakeholder role and SyRI (Systemic Resilience Index) dimension. The backend exposes a recursive category -> solution -> info-card -> user-guide data model via RESTful APIs, backed by Prisma/PostgreSQL with S3-hosted file delivery through presigned URLs. A built-in admin panel enables non-technical team members to manage the full content taxonomy, upload files, create info cards with section-linked files, and author multi-step user guides — all without touching code. Content is seeded from parsed markdown documents via automated scripts.",
       "outcome": "A live, content-managed replication platform serving the RESILIAGE consortium's 18 Horizon Europe partners, providing structured access to 29+ solutions, interactive user guides, and downloadable resources — ready for communities to adapt and replicate DRM strategies in their own contexts.",
@@ -391,7 +392,7 @@
         "type": "image",
         "title": "Platform Onboarding",
         "caption": "The dark-themed landing page welcoming stakeholders with structured entry paths into the replication ecosystem.",
-        "src": "assets/projects/replication-toolbox/cover/image01.png",
+        "src": "assets/projects/replication-toolbox/cover/image01.webp",
         "alt": "Replication Toolbox platform landing page"
       },
       "gallery": [
@@ -399,22 +400,36 @@
           "type": "image",
           "title": "Target Groups & Solutions",
           "caption": "The role-selection view mapping resilience strategies and solutions to specific community stakeholder roles.",
-          "src": "assets/projects/replication-toolbox/gallery/image02.png",
+          "src": "assets/projects/replication-toolbox/gallery/image02.webp",
           "alt": "Target Groups and Solutions selection view"
         },
         {
           "type": "image",
           "title": "Solution Info Card",
           "caption": "An interactive knowledge card with structured Q&A accordions detailing replication steps and hosting direct S3 downloads.",
-          "src": "assets/projects/replication-toolbox/gallery/image03.png",
+          "src": "assets/projects/replication-toolbox/gallery/image03.webp",
           "alt": "Solution detail Key Information Card"
         },
         {
           "type": "image",
           "title": "Step-by-Step User Guide",
           "caption": "A structured deployment guide featuring nested steps and actions to help communities activate disaster risk management systems.",
-          "src": "assets/projects/replication-toolbox/gallery/image04.png",
+          "src": "assets/projects/replication-toolbox/gallery/image04.webp",
           "alt": "Interactive step-by-step user guide"
+        },
+        {
+          "type": "image",
+          "title": "Database Schema",
+          "caption": "The clean relational database model (ERD) mapping categories, solutions, user guides, files, and admins within PostgreSQL using Prisma.",
+          "src": "assets/projects/replication-toolbox/gallery/image05.webp",
+          "alt": "Database Schema diagram"
+        },
+        {
+          "type": "image",
+          "title": "CMS Ingestion Dashboard",
+          "caption": "The admin content management system (CMS) dashboard supporting direct-to-S3 file uploads, metadata tracking, and structured taxonomy creation.",
+          "src": "assets/projects/replication-toolbox/gallery/image06.webp",
+          "alt": "Admin Content Ingestion Dashboard"
         }
       ],
       "visualStyle": {

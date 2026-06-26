@@ -116,7 +116,172 @@ export const projectLayoutOverrides: ProjectLayouts = {
       'recore-asset-3': { col: 3, row: 27, cols: 6, rows: 3 },
     },
   },
-  'replication-toolbox': {},
+  'replication-toolbox': {
+    "desktop": {
+      "role": {
+        "col": 7,
+        "row": 1,
+        "cols": 4,
+        "rows": 3
+      },
+      "metric-Solutions indexed": {
+        "col": 11,
+        "row": 3,
+        "cols": 2,
+        "rows": 2
+      },
+      "replication-toolbox-asset-0": {
+        "col": 3,
+        "row": 12,
+        "cols": 6,
+        "rows": 4
+      },
+      "status": {
+        "col": 7,
+        "row": 5,
+        "cols": 2,
+        "rows": 1
+      },
+      "domain": {
+        "col": 6,
+        "row": 7,
+        "cols": 2,
+        "rows": 2
+      },
+      "summary": {
+        "col": 9,
+        "row": 9,
+        "cols": 2,
+        "rows": 6
+      },
+      "challenge": {
+        "col": 1,
+        "row": 8,
+        "cols": 5,
+        "rows": 2
+      },
+      "response": {
+        "col": 5,
+        "row": 18,
+        "cols": 4,
+        "rows": 4
+      },
+      "result": {
+        "col": 1,
+        "row": 11,
+        "cols": 2,
+        "rows": 3
+      },
+      "stack": {
+        "col": 2,
+        "row": 17,
+        "cols": 3,
+        "rows": 3
+      },
+      "glyph": {
+        "col": 9,
+        "row": 6,
+        "cols": 3,
+        "rows": 2
+      },
+      "metric-Content model depth": {
+        "col": 8,
+        "row": 25,
+        "cols": 2,
+        "rows": 1
+      },
+      "metric-Stakeholder profiles": {
+        "col": 9,
+        "row": 15,
+        "cols": 4,
+        "rows": 2
+      },
+      "metric-Delivery": {
+        "col": 6,
+        "row": 22,
+        "cols": 2,
+        "rows": 1
+      },
+      "highlight-0": {
+        "col": 1,
+        "row": 25,
+        "cols": 2,
+        "rows": 2
+      },
+      "highlight-1": {
+        "col": 2,
+        "row": 29,
+        "cols": 2,
+        "rows": 2
+      },
+      "highlight-2": {
+        "col": 10,
+        "row": 30,
+        "cols": 2,
+        "rows": 2
+      },
+      "highlight-3": {
+        "col": 7,
+        "row": 32,
+        "cols": 4,
+        "rows": 2
+      },
+      "lesson-0": {
+        "col": 1,
+        "row": 44,
+        "cols": 6,
+        "rows": 3
+      },
+      "lesson-1": {
+        "col": 7,
+        "row": 44,
+        "cols": 6,
+        "rows": 2
+      },
+      "link-https://toolbox.resiliage-ecosystem.eu": {
+        "col": 2,
+        "row": 47,
+        "cols": 3,
+        "rows": 2
+      },
+      "next-0": {
+        "col": 7,
+        "row": 46,
+        "cols": 5,
+        "rows": 2
+      },
+      "replication-toolbox-asset-1": {
+        "col": 8,
+        "row": 26,
+        "cols": 5,
+        "rows": 4
+      },
+      "replication-toolbox-asset-2": {
+        "col": 2,
+        "row": 2,
+        "cols": 4,
+        "rows": 5
+      },
+      "replication-toolbox-asset-3": {
+        "col": 9,
+        "row": 19,
+        "cols": 4,
+        "rows": 5
+      },
+      "replication-toolbox-asset-4": {
+        "col": 3,
+        "row": 31,
+        "cols": 4,
+        "rows": 4
+      },
+      "replication-toolbox-asset-5": {
+        "col": 3,
+        "row": 23,
+        "cols": 4,
+        "rows": 5
+      }
+    }
+  },
   'smart-plant-care': {},
 };
 
