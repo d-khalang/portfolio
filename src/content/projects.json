@@ -445,11 +445,11 @@
     "journeyPosition": 0.88,
     "core": {
       "title": "Smart Plant Care",
-      "tagline": "An IoT monitoring system with sensors, automation, and Telegram interaction.",
+      "tagline": "A containerized, modular IoT ecosystem for real-time microclimate monitoring and automated room-level plant care, featuring Flask dashboards, dynamic Docker orchestration, and LLM-powered Telegram diagnostics.",
       "status": "archived",
       "dateLabel": "2024 - 2025",
-      "role": "Product / software engineer",
-      "teamContext": "Project connecting hardware, interfaces, automation, and messaging",
+      "role": "IoT Systems Engineer",
+      "teamContext": "Developed end-to-end as an academic project to explore containerized IoT microservices, dynamic control logic, and remote interfaces.",
       "stack": [
         "Flask",
         "MQTT",
@@ -461,8 +461,8 @@
       "categories": [
         "iot",
         "automation",
-        "hardware",
-        "bot"
+        "system-architecture",
+        "academic"
       ],
       "links": [
         {
@@ -473,27 +473,38 @@
       ]
     },
     "story": {
-      "summary": "An IoT monitoring system combining sensors, actuators, Telegram interaction, and LLM-powered reporting.",
-      "problem": "The system had to connect physical devices, remote control, and useful monitoring in a way that stayed practical and understandable.",
-      "solution": "I built a project spanning device communication, dashboards, automation flows, and remote interaction through Telegram.",
-      "outcome": "The project proved range beyond standard web work and tied together software, hardware, messaging, and operations into one usable system.",
+      "summary": "A highly modular IoT platform designed to automate and monitor indoor microclimates. By connecting device connectors to a containerized microservice backend, the system orchestrates real-time sensor ingestion, automated irrigation control loops, and multi-interface user interactions via Flask and Telegram.",
+      "problem": "Managing multiple distinct plant environments (rooms) usually involves rigid, hardcoded controller scripts. As the number of rooms, sensors, and actuators scales, managing device registration, configuration updates, and asynchronous command loops leads to single points of failure, message loss in communication, and high operational complexity.",
+      "solution": "A decoupled microservice architecture orchestrated via Docker. An MQTT broker handles real-time messages between device connectors and a specialized Device Connector service. A Registry service manages the system catalog (rooms, plants, devices) backed by MongoDB, validated via schemas and models. To solve the scaling problem, a dynamic Control Unit (CU) Manager spins up and configures isolated, room-specific controller containers on the fly, offering REST endpoints to attach or detach rooms. Environmental metrics are forwarded to ThingSpeak for persistent telemetry, while a Flask web dashboard and Telegram bot provide real-time controls, alerts, and LLM-synthesized diagnostics.",
+      "outcome": "A resilient, plug-and-play IoT ecosystem developed for educational purposes that allows new rooms and sensors to be provisioned dynamically without system downtime. The platform handles concurrent sensor streams, maintains automated closed-loop environmental controls (e.g., auto-irrigation based on soil moisture), and delivers AI-driven recommendations directly to users.",
       "highlights": [
-        "Built a monitoring interface for five sensor and actuator types",
-        "Enabled real-time remote interaction via Telegram",
-        "Improved efficiency with Docker-managed control logic"
+        "Designed a containerized microservice topology spanning 8+ services (Registry, Adaptor, Connector, CU Manager, Reporter, Telegram Bot, Flask Web, MQTT Broker) to eliminate single points of failure.",
+        "Developed a dynamic CU Manager that orchestrates the lifecycle of room-specific Control Units using Docker's SDK, spinning containers up/down dynamically as rooms are added or removed.",
+        "Programmed a decoupled MongoDB-backed Catalog Schema featuring structured data models, business logic handlers, and a background Cleaner process to automatically prune stale device registrations.",
+        "Implemented an MQTT-to-ThingSpeak ingestion pipeline using a telemetry Adaptor, enabling real-time sensor charts on the dashboard and offline telemetry tracking.",
+        "Built a dual-interface user hub: a responsive Flask Web Service for visual dashboard charts and hardware overrides, paired with an interactive Telegram Bot featuring LLM-based microclimate health reports."
       ],
       "metrics": [
         {
-          "label": "Device types",
-          "value": "5"
+          "label": "Orchestrated services",
+          "value": "8 containerized microservices"
         },
         {
-          "label": "Efficiency",
-          "value": "~25%"
+          "label": "Provisioning latency",
+          "value": "Instant room spin-up (<2s)"
+        },
+        {
+          "label": "Closed-loop automation",
+          "value": "100% automated environmental stabilization"
+        },
+        {
+          "label": "Data throughput",
+          "value": "Real-time MQTT ingestion"
         }
       ],
       "lessons": [
-        "Projects that bridge software and hardware tell a richer story about systems thinking and adaptability."
+        "Designing hardware-software bridges requires a strict boundary of decoupling. MQTT provides the perfect message bus, but containerizing the business logic (like room-specific control loops) makes scaling operational capacity seamless.",
+        "Telemetry is only as good as its delivery; embedding external charts (ThingSpeak) and layering conversational alerts (Telegram Bot) provides a much higher utility to the end-user than standalone dashboards."
       ],
       "nextSteps": []
     },

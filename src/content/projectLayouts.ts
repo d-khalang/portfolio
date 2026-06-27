@@ -282,7 +282,136 @@ export const projectLayoutOverrides: ProjectLayouts = {
       }
     }
   },
-  'smart-plant-care': {},
+  'smart-plant-care': {
+    "desktop": {
+      "role": {
+        "col": 5,
+        "row": 2,
+        "cols": 4,
+        "rows": 2
+      },
+      "metric-Orchestrated services": {
+        "col": 9,
+        "row": 3,
+        "cols": 4,
+        "rows": 3
+      },
+      "smart-plant-care-asset-0": {
+        "col": 6,
+        "row": 15,
+        "cols": 4,
+        "rows": 4
+      },
+      "status": {
+        "col": 10,
+        "row": 1,
+        "cols": 2,
+        "rows": 2
+      },
+      "domain": {
+        "col": 2,
+        "row": 3,
+        "cols": 3,
+        "rows": 3
+      },
+      "summary": {
+        "col": 5,
+        "row": 7,
+        "cols": 7,
+        "rows": 3
+      },
+      "challenge": {
+        "col": 7,
+        "row": 12,
+        "cols": 2,
+        "rows": 3
+      },
+      "response": {
+        "col": 11,
+        "row": 17,
+        "cols": 2,
+        "rows": 3
+      },
+      "result": {
+        "col": 1,
+        "row": 14,
+        "cols": 4,
+        "rows": 3
+      },
+      "stack": {
+        "col": 2,
+        "row": 20,
+        "cols": 4,
+        "rows": 3
+      },
+      "glyph": {
+        "col": 10,
+        "row": 11,
+        "cols": 3,
+        "rows": 3
+      },
+      "metric-Provisioning latency": {
+        "col": 3,
+        "row": 17,
+        "cols": 2,
+        "rows": 1
+      },
+      "metric-Closed-loop automation": {
+        "col": 2,
+        "row": 7,
+        "cols": 2,
+        "rows": 1
+      },
+      "metric-Data throughput": {
+        "col": 3,
+        "row": 10,
+        "cols": 3,
+        "rows": 3
+      },
+      "highlight-0": {
+        "col": 7,
+        "row": 21,
+        "cols": 4,
+        "rows": 2
+      },
+      "highlight-1": {
+        "col": 8,
+        "row": 23,
+        "cols": 5,
+        "rows": 2
+      },
+      "highlight-2": {
+        "col": 6,
+        "row": 25,
+        "cols": 5,
+        "rows": 2
+      },
+      "highlight-3": {
+        "col": 4,
+        "row": 27,
+        "cols": 5,
+        "rows": 2
+      },
+      "lesson-0": {
+        "col": 2,
+        "row": 29,
+        "cols": 2,
+        "rows": 2
+      },
+      "lesson-1": {
+        "col": 10,
+        "row": 28,
+        "cols": 2,
+        "rows": 2
+      },
+      "link-https://github.com/d-khalang/smart-care": {
+        "col": 2,
+        "row": 24,
+        "cols": 3,
+        "rows": 2
+      }
+    }
+  },
 };
 
 export function getProjectLayoutOverrides(projectId: string, columns: number) {

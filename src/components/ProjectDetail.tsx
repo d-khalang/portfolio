@@ -234,6 +234,38 @@ const projectAssetMeta: Record<string, Record<string, ProjectAssetMeta>> = {
       description: 'The admin content management system (CMS) dashboard supporting direct-to-S3 file uploads, metadata tracking, and structured taxonomy creation.',
     },
   },
+  'smart-plant-care': {
+    'architecture.png': {
+      title: 'System Architecture',
+      width: 1024,
+      height: 1024,
+      description: 'The modular microservice topology mapping the Flask interface, Telegram bot, dynamic Docker-based control units, and MQTT message broker.',
+    },
+    'image01.webp': {
+      title: 'Catalog Schema',
+      width: 1000,
+      height: 450,
+      description: 'The relational document schema mapping endpoints, handlers, and the MongoDB catalog database agent.',
+    },
+    'image02.webp': {
+      title: 'Dynamic Controller Modularity',
+      width: 1000,
+      height: 800,
+      description: 'Architectural overview of how room-specific controllers are dynamically configured and scaled.',
+    },
+    'image03.webp': {
+      title: 'Flask Web Dashboard',
+      width: 1000,
+      height: 625,
+      description: 'The visual web portal with embedded live ThingSpeak charts and manual hardware toggle overrides.',
+    },
+    'smart-plant-care-demo-placeholder.mp4': {
+      title: 'Technical System Walkthrough',
+      width: 1600,
+      height: 900,
+      description: 'Demonstration of MQTT message flow, Docker manager dynamics, and LLM-assisted Telegram diagnostics.',
+    },
+  },
 };
 
 function createRandom(seed: number) {
