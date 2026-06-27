@@ -130,8 +130,37 @@ export default function JungleJourney() {
         '(prefers-reduced-motion: reduce)',
       ).matches;
 
+      let targetX = 0;
+      let targetY = 0;
+
+      const getBikerTargetCoords = () => {
+        const highlight = container.querySelector<HTMLElement>('.jj-hero__statement--highlight');
+        if (!highlight) return { x: 0, y: 0 };
+
+        const containerRect = container.getBoundingClientRect();
+        const highlightRect = highlight.getBoundingClientRect();
+
+        // Horizontal target: align biker center with ~87% of the highlight text width (shifting 0.05 / half-character to the right)
+        targetX = (highlightRect.left + highlightRect.width * 0.87) - (containerRect.width / 2);
+
+        // Vertical target: place the biker's wheels one line space to the bottom (using highlightRect.height)
+        const isMobile = window.innerWidth <= 720;
+        const bottomOffset = containerRect.height * (isMobile ? 0.02 : 0.04);
+        const bikerBottomDefault = containerRect.height - bottomOffset;
+
+        targetY = (highlightRect.top + highlightRect.height * 0.18) - bikerBottomDefault;
+        return { x: targetX, y: targetY };
+      };
+
       if (!reduceMotion) {
-        setBikerY(getBikerRideY(0, 0));
+        const coords = getBikerTargetCoords();
+        gsap.set(bikerElement, {
+          y: coords.y,
+          x: coords.x,
+          rotation: -30,
+          scale: 0.85,
+          zIndex: 12,
+        });
       }
 
       const projectElements = gsap.utils.toArray<HTMLElement>('.jj-project');
@@ -156,6 +185,9 @@ export default function JungleJourney() {
       const progressHud = container.querySelector<HTMLElement>(
         '.jj-progress-hud',
       );
+      const headerElement = container.querySelector<HTMLElement>('.jj-header');
+      const headerCenterIntro = container.querySelector<HTMLElement>('.jj-header__center-intro');
+
       const progressHudCounter = progressHud?.querySelector<HTMLElement>(
         '.jj-progress-hud__counter',
       );
@@ -170,75 +202,89 @@ export default function JungleJourney() {
         )
         : [];
       let activeHudProjectIndex = -1;
-      let viewportWidth = container.clientWidth;
+
+      // Event listener for brand link to scroll back to top
+      const brandBtn = container.querySelector<HTMLElement>('.jj-header__brand-btn');
+      const handleBrandClick = (e: MouseEvent) => {
+        e.preventDefault();
+        const scrollObj = { y: window.scrollY };
+        gsap.to(scrollObj, {
+          y: 0,
+          duration: 1.2,
+          ease: 'power2.out',
+          overwrite: 'auto',
+          onUpdate: () => window.scrollTo(0, scrollObj.y),
+        });
+      };
+      brandBtn?.addEventListener('click', handleBrandClick as any);
+
+      // Event listeners for HUD segments
+      progressHudSegments.forEach((segment, index) => {
+        segment.addEventListener('click', (e) => {
+          e.preventDefault();
+          const project = featuredProjects[index];
+          if (!project) return;
+          const journeyPosition = project.journeyPosition ?? 0.5;
+          const journeyProgress = journeyPosition + 0.03;
+          const scrollProgress = journeyProgress * 0.85 + 0.15;
+          const targetScroll = scrollProgress * SCROLL_DISTANCE;
+
+          const scrollObj = { y: window.scrollY };
+          gsap.to(scrollObj, {
+            y: targetScroll,
+            duration: 1.2,
+            ease: 'power2.out',
+            overwrite: 'auto',
+            onUpdate: () => window.scrollTo(0, scrollObj.y),
+          });
+        });
+
+        segment.addEventListener('pointerenter', () => {
+          const project = featuredProjects[index];
+          if (project && progressHudTitle) {
+            progressHudTitle.textContent = project.core.title;
+          }
+          if (progressHudCounter) {
+            const current = String(index + 1).padStart(2, '0');
+            const total = String(featuredProjects.length).padStart(2, '0');
+            progressHudCounter.textContent = `[${current} / ${total}]`;
+          }
+        });
+      });
+
+      // Reset hover previews when pointer leaves the HUD track
+      const hudTrack = progressHud?.querySelector<HTMLElement>('.jj-progress-hud__track');
+      const handleHudTrackLeave = () => {
+        const project = featuredProjects[activeHudProjectIndex];
+        if (project) {
+          if (progressHudTitle) {
+            progressHudTitle.textContent = project.core.title;
+          }
+          if (progressHudCounter) {
+            const current = String(activeHudProjectIndex + 1).padStart(2, '0');
+            const total = String(featuredProjects.length).padStart(2, '0');
+            progressHudCounter.textContent = `[${current} / ${total}]`;
+          }
+        } else {
+          if (progressHudTitle) {
+            progressHudTitle.textContent = '[PORTFOLIO // V3]';
+          }
+          if (progressHudCounter) {
+            progressHudCounter.textContent = '[00 / 05]';
+          }
+        }
+      };
+      hudTrack?.addEventListener('pointerleave', handleHudTrackLeave);
+
       let viewportHeight = container.clientHeight;
 
       const updateViewportSize = () => {
-        viewportWidth = container.clientWidth;
         viewportHeight = container.clientHeight;
       };
 
       window.addEventListener('resize', updateViewportSize, { passive: true });
 
-      const supportsPointerParallax =
-        !reduceMotion && window.matchMedia('(pointer: fine)').matches;
-      const parallaxDefinitions = [
-        { selector: '.jj-hero__header-inner', xRange: 6, yRange: 4 },
-        { selector: '.jj-hero__content-inner', xRange: 14, yRange: 9 },
-        { selector: '.jj-hero__backdrop', xRange: -4, yRange: -3 },
-        { selector: '.journey-clouds', xRange: -10, yRange: -5 },
-        { selector: '.journey-sky-glow', xRange: -3, yRange: -2 },
-      ];
-      const parallaxTargets = supportsPointerParallax
-        ? parallaxDefinitions.flatMap(({ selector, xRange, yRange }) => {
-          const element = container.querySelector<HTMLElement>(selector);
-
-          return element
-            ? [{
-              xRange,
-              yRange,
-              setX: gsap.quickTo(element, 'x', {
-                duration: 0.45,
-                ease: 'power3.out',
-              }),
-              setY: gsap.quickTo(element, 'y', {
-                duration: 0.45,
-                ease: 'power3.out',
-              }),
-            }]
-            : [];
-        })
-        : [];
-      let pointerParallaxEnabled = supportsPointerParallax;
-
-      const setPointerParallax = (pointerX: number, pointerY: number) => {
-        parallaxTargets.forEach(({ xRange, yRange, setX, setY }) => {
-          setX(pointerX * xRange);
-          setY(pointerY * yRange);
-        });
-      };
-
-      const handlePointerMove = (event: PointerEvent) => {
-        if (!pointerParallaxEnabled) {
-          return;
-        }
-
-        const pointerX = (event.clientX / viewportWidth - 0.5) * 2;
-        const pointerY = (event.clientY / viewportHeight - 0.5) * 2;
-
-        setPointerParallax(pointerX, pointerY);
-      };
-
-      const resetPointerParallax = () => {
-        setPointerParallax(0, 0);
-      };
-
-      if (supportsPointerParallax) {
-        container.addEventListener('pointermove', handlePointerMove, {
-          passive: true,
-        });
-        container.addEventListener('pointerleave', resetPointerParallax);
-      }
+      // Pointer parallax removed to clean up text shifting
 
       const updateProgressHud = (projectIndex: number) => {
         if (projectIndex === activeHudProjectIndex) {
@@ -355,6 +401,15 @@ export default function JungleJourney() {
         updateProgressHud(nearestProjectIndex);
       };
 
+      if (headerElement) {
+        gsap.set(headerElement, {
+          backgroundColor: 'rgba(219, 232, 228, 0)',
+          borderColor: 'rgba(18, 59, 69, 0)',
+          boxShadow: '0 8px 28px rgba(18, 59, 69, 0)',
+          color: '#dbe8e4',
+        });
+      }
+
       if (progressHud) {
         gsap.set(progressHud, { autoAlpha: 0, y: -12 });
       }
@@ -372,28 +427,15 @@ export default function JungleJourney() {
           onUpdate: (self) => {
             setProjectStates(self.progress);
 
-            if (supportsPointerParallax) {
-              const shouldEnablePointerParallax = self.progress < 0.01;
 
-              if (pointerParallaxEnabled && !shouldEnablePointerParallax) {
-                resetPointerParallax();
-              }
-
-              pointerParallaxEnabled = shouldEnablePointerParallax;
-            }
 
             if (!reduceMotion) {
               const introThreshold = 0.15;
-              const journeyProgress = self.progress < introThreshold
-                ? 0
-                : (self.progress - introThreshold) / (1 - introThreshold);
-
-              const speedFactor = self.progress < introThreshold
-                ? self.progress / introThreshold
-                : 1;
-
-              const travelledDistance = journeyProgress * SCROLL_DISTANCE;
-              setBikerY(getBikerRideY(travelledDistance, speedFactor));
+              if (self.progress >= introThreshold) {
+                const journeyProgress = (self.progress - introThreshold) / (1 - introThreshold);
+                const travelledDistance = journeyProgress * SCROLL_DISTANCE;
+                setBikerY(getBikerRideY(travelledDistance, 1));
+              }
             }
           },
         },
@@ -406,12 +448,59 @@ export default function JungleJourney() {
         ease: 'power2.inOut',
       }, 0);
 
-      timeline.to('.jj-hero__header', {
-        y: -40,
-        opacity: 0,
-        duration: 0.1,
-        ease: 'power2.inOut',
-      }, 0);
+      if (!reduceMotion) {
+        // Set zIndex at the beginning and when landing
+        timeline.set(bikerElement, { zIndex: 12 }, 0);
+        timeline.set(bikerElement, { zIndex: 6 }, 0.15);
+
+        // X animation (smooth move from right to center)
+        timeline.fromTo(bikerElement, {
+          x: () => getBikerTargetCoords().x,
+        }, {
+          x: 0,
+          duration: 0.15,
+          ease: 'power1.out',
+        }, 0);
+
+        // Rotation animation (starts tilted, swings back, settles)
+        timeline.fromTo(bikerElement, {
+          rotation: -30,
+        }, {
+          rotation: 0,
+          duration: 0.15,
+          ease: 'power2.out',
+        }, 0);
+
+        // Scale animation (starts slightly smaller, scales up as it lands)
+        timeline.fromTo(bikerElement, {
+          scale: 0.85,
+        }, {
+          scale: 1,
+          duration: 0.15,
+          ease: 'power2.out',
+        }, 0);
+
+        // Y animation (falling and bouncing)
+        timeline.fromTo(bikerElement, {
+          y: () => getBikerTargetCoords().y,
+        }, {
+          y: BIKER_RIDE.startYOffset,
+          duration: 0.11,
+          ease: 'power2.in',
+        }, 0);
+
+        timeline.to(bikerElement, {
+          y: BIKER_RIDE.startYOffset - 30, // bounce up 30px
+          duration: 0.025,
+          ease: 'power1.out',
+        }, 0.11);
+
+        timeline.to(bikerElement, {
+          y: BIKER_RIDE.startYOffset,
+          duration: 0.015,
+          ease: 'power1.in',
+        }, 0.135);
+      }
 
       timeline.to('.jj-hero__content', {
         y: -60,
@@ -432,13 +521,34 @@ export default function JungleJourney() {
         duration: 0.01,
       }, 0.12);
 
+      if (headerElement) {
+        timeline.to(headerElement, {
+          backgroundColor: 'rgba(219, 232, 228, 0.86)',
+          borderColor: 'rgba(18, 59, 69, 0.24)',
+          boxShadow: '0 8px 28px rgba(18, 59, 69, 0.1)',
+          backdropFilter: 'blur(8px)',
+          color: '#123b45',
+          duration: 0.08,
+          ease: 'power2.inOut',
+        }, 0.04);
+      }
+
+      if (headerCenterIntro) {
+        timeline.to(headerCenterIntro, {
+          autoAlpha: 0,
+          y: -10,
+          duration: 0.08,
+          ease: 'power2.inOut',
+        }, 0.04);
+      }
+
       if (progressHud) {
         timeline.to(progressHud, {
           autoAlpha: 1,
           y: 0,
           duration: 0.08,
           ease: 'power2.out',
-        }, 0.11);
+        }, 0.08);
       }
 
       // Track animations: animate layers horizontally after the intro threshold
@@ -457,10 +567,35 @@ export default function JungleJourney() {
         );
       });
 
+      // Detect URL hash on load to jump directly to a project
+      const handleHashNavigation = () => {
+        const hash = window.location.hash;
+        if (!hash) return;
+        const slug = hash.replace('#', '');
+        const projectIndex = featuredProjects.findIndex(p => p.slug === slug);
+        if (projectIndex === -1) return;
+
+        const project = featuredProjects[projectIndex];
+        const journeyPosition = project.journeyPosition ?? 0.5;
+        const journeyProgress = journeyPosition + 0.03;
+        const scrollProgress = journeyProgress * 0.85 + 0.15;
+        const targetScrollTop = scrollProgress * SCROLL_DISTANCE;
+
+        window.scrollTo(0, targetScrollTop);
+        ScrollTrigger.refresh();
+      };
+
+      // Run immediately
+      handleHashNavigation();
+
+      // Run on a tiny timeout just in case of DOM/rendering ticks
+      const timer = setTimeout(handleHashNavigation, 50);
+
       return () => {
+        clearTimeout(timer);
         window.removeEventListener('resize', updateViewportSize);
-        container.removeEventListener('pointermove', handlePointerMove);
-        container.removeEventListener('pointerleave', resetPointerParallax);
+        brandBtn?.removeEventListener('click', handleBrandClick as any);
+        hudTrack?.removeEventListener('pointerleave', handleHudTrackLeave);
       };
     }, container);
 
@@ -471,15 +606,53 @@ export default function JungleJourney() {
     <main ref={containerRef} className="jj-container">
       <JourneyEnvironment />
 
-      <div className="jj-hero" aria-label="Hero Introduction">
-        <div className="jj-hero__backdrop" />
-        <header className="jj-hero__header">
-          <div className="jj-hero__header-inner">
-            <span className="jj-hero__meta">DANIAL KHALILI</span>
-            <span className="jj-hero__meta jj-hero__meta--center">[PORTFOLIO // V3]</span>
+      <header className="jj-header">
+        <div className="jj-header__inner">
+          <div className="jj-header__brand">
+            <button className="jj-header__brand-btn" type="button">
+              <span className="jj-hero__meta">DANIAL KHALILI</span>
+            </button>
+          </div>
+
+          <div className="jj-header__center">
+            <div className="jj-header__center-intro">
+              <span className="jj-hero__meta jj-hero__meta--center">[PORTFOLIO // V3]</span>
+            </div>
+
+            <div className="jj-header__center-hud jj-progress-hud" aria-label="Journey Progress">
+              <span className="jj-progress-hud__counter">
+                {`[01 / ${String(featuredProjects.length).padStart(2, '0')}]`}
+              </span>
+              <span className="jj-progress-hud__title">
+                {featuredProjects[0]?.core.title}
+              </span>
+              <span
+                className="jj-progress-hud__track"
+                style={{
+                  gridTemplateColumns: `repeat(${featuredProjects.length}, minmax(0, 1fr))`,
+                }}
+              >
+                {featuredProjects.map((project, index) => (
+                  <button
+                    key={project.id}
+                    className="jj-progress-hud__segment"
+                    type="button"
+                    data-state={index === 0 ? 'active' : 'upcoming'}
+                    aria-label={`Jump to ${project.core.title}`}
+                  />
+                ))}
+              </span>
+            </div>
+          </div>
+
+          <div className="jj-header__status">
             <span className="jj-hero__meta jj-hero__meta--right">SYS_STATUS: ACTIVE</span>
           </div>
-        </header>
+        </div>
+      </header>
+
+      <div className="jj-hero" aria-label="Hero Introduction">
+        <div className="jj-hero__backdrop" />
 
         <div className="jj-hero__content">
           <div className="jj-hero__content-inner">
@@ -508,29 +681,6 @@ export default function JungleJourney() {
             <span className="jj-hero__scroll-text">[00 // SCROLL TO RIDE]</span>
           </div>
         </div>
-      </div>
-
-      <div className="jj-progress-hud" aria-hidden="true">
-        <span className="jj-progress-hud__counter">
-          {`[01 / ${String(featuredProjects.length).padStart(2, '0')}]`}
-        </span>
-        <span className="jj-progress-hud__title">
-          {featuredProjects[0]?.core.title}
-        </span>
-        <span
-          className="jj-progress-hud__track"
-          style={{
-            gridTemplateColumns: `repeat(${featuredProjects.length}, minmax(0, 1fr))`,
-          }}
-        >
-          {featuredProjects.map((project, index) => (
-            <span
-              key={project.id}
-              className="jj-progress-hud__segment"
-              data-state={index === 0 ? 'active' : 'upcoming'}
-            />
-          ))}
-        </span>
       </div>
 
       {layers.map((layer) => {

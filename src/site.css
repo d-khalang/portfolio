@@ -384,23 +384,7 @@ body {
   pointer-events: none;
 }
 
-@media (hover: hover) and (prefers-reduced-motion: no-preference) {
-  .jj-hero__statement--highlight::before {
-    transition: clip-path 420ms cubic-bezier(0.22, 1, 0.36, 1);
-  }
 
-  .jj-hero__statement--highlight::after {
-    transition: transform 480ms cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  .jj-hero__statement--highlight:hover::before {
-    clip-path: inset(0 0 0 0);
-  }
-
-  .jj-hero__statement--highlight:hover::after {
-    transform: scaleX(1);
-  }
-}
 
 .jj-hero__profile {
   margin-top: 14px;
@@ -494,33 +478,90 @@ body {
 }
 
 /* ==========================================================================
-   Journey progress HUD
+   Journey progress HUD & Persistent Header
    ========================================================================== */
 
-.jj-progress-hud {
+.jj-header {
   position: absolute;
   top: 20px;
-  right: 50px;
   left: 50px;
-  z-index: 9;
+  right: 50px;
+  z-index: 100;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  color: #dbe8e4;
+  background: transparent;
+  will-change: background-color, border-color, box-shadow, color, backdrop-filter;
+  pointer-events: none;
+}
+
+.jj-header__inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 42px;
+  padding: 10px 14px;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.76rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+}
+
+.jj-header__brand {
+  pointer-events: auto;
+}
+
+.jj-header__brand-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+  opacity: 0.82;
+  transition: opacity 200ms ease;
+}
+
+.jj-header__brand-btn:hover {
+  opacity: 1;
+}
+
+.jj-header__status {
+  pointer-events: auto;
+}
+
+.jj-header__center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 60%;
+  pointer-events: none;
+}
+
+.jj-header__center-intro {
+  position: absolute;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.jj-header__center-hud {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) minmax(180px, 28vw);
   align-items: center;
   gap: 18px;
-  min-height: 42px;
-  padding: 10px 14px;
-  border: 1px solid rgb(18 59 69 / 24%);
-  border-radius: 3px;
-  color: #123b45;
-  background: rgb(219 232 228 / 86%);
-  box-shadow: 0 8px 28px rgb(18 59 69 / 10%);
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 0.72rem;
-  font-weight: 500;
-  letter-spacing: 0.1em;
-  pointer-events: none;
-  visibility: hidden;
-  opacity: 0;
+  width: 100%;
+  pointer-events: auto;
   will-change: transform, opacity;
 }
 
@@ -535,6 +576,7 @@ body {
   text-overflow: ellipsis;
   text-transform: uppercase;
   white-space: nowrap;
+  color: inherit;
 }
 
 .jj-progress-hud__track {
@@ -544,13 +586,31 @@ body {
 }
 
 .jj-progress-hud__segment {
+  position: relative;
   display: block;
   height: 3px;
   background: rgb(18 59 69 / 20%);
+  border: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  cursor: pointer;
   transform-origin: center;
   transition:
     background-color 180ms ease,
-    transform 180ms ease;
+    transform 180ms ease,
+    outline 180ms ease;
+  pointer-events: auto;
+}
+
+/* Expanded hover/click hit area */
+.jj-progress-hud__segment::before {
+  content: "";
+  position: absolute;
+  top: -15px;
+  bottom: -15px;
+  left: 0;
+  right: 0;
 }
 
 .jj-progress-hud__segment[data-state="complete"] {
@@ -560,6 +620,16 @@ body {
 .jj-progress-hud__segment[data-state="active"] {
   background: #b35a44;
   transform: scaleY(1.75);
+}
+
+.jj-progress-hud__segment:hover {
+  background: #b35a44;
+  transform: scaleY(2.2);
+}
+
+.jj-progress-hud__segment:focus-visible {
+  outline: 2px solid #b35a44;
+  outline-offset: 2px;
 }
 
 @media (max-width: 640px) {
@@ -591,18 +661,33 @@ body {
     display: none;
   }
 
-  .jj-progress-hud {
+  .jj-header {
     top: 12px;
-    right: 12px;
     left: 12px;
-    grid-template-columns: auto minmax(0, 1fr);
-    gap: 12px;
-    min-height: 38px;
-    padding: 8px 10px;
+    right: 12px;
   }
 
-  .jj-progress-hud__title {
+  .jj-header__inner {
+    padding: 6px 10px;
+    font-size: 0.72rem;
+  }
+
+  .jj-header__status {
     display: none;
+  }
+
+  .jj-header__center {
+    position: static;
+    transform: none;
+    max-width: none;
+    flex-grow: 1;
+    margin-left: 16px;
+    pointer-events: auto;
+  }
+
+  .jj-header__center-hud {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 12px;
   }
 
   .jj-progress-hud__track {
