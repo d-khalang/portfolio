@@ -445,7 +445,7 @@
     "journeyPosition": 0.88,
     "core": {
       "title": "Smart Plant Care",
-      "tagline": "A containerized, modular IoT ecosystem for real-time microclimate monitoring and automated room-level plant care, featuring Flask dashboards, dynamic Docker orchestration, and LLM-powered Telegram diagnostics.",
+      "tagline": "A containerized, modular IoT ecosystem for real-time microclimate monitoring and automated plant care, featuring Flask dashboards, dynamic orchestration, and LLM-powered diagnostics.",
       "status": "archived",
       "dateLabel": "2024 - 2025",
       "role": "IoT Systems Engineer",
@@ -473,7 +473,7 @@
       ]
     },
     "story": {
-      "summary": "A highly modular IoT platform designed to automate and monitor indoor microclimates. By connecting device connectors to a containerized microservice backend, the system orchestrates real-time sensor ingestion, automated irrigation control loops, and multi-interface user interactions via Flask and Telegram.",
+      "summary": "A containerized IoT platform that automates indoor microclimates using real-time sensor ingestion, automated irrigation loops, and interactive Flask and Telegram interfaces.",
       "problem": "Managing multiple distinct plant environments (rooms) usually involves rigid, hardcoded controller scripts. As the number of rooms, sensors, and actuators scales, managing device registration, configuration updates, and asynchronous command loops leads to single points of failure, message loss in communication, and high operational complexity.",
       "solution": "A decoupled microservice architecture orchestrated via Docker. An MQTT broker handles real-time messages between device connectors and a specialized Device Connector service. A Registry service manages the system catalog (rooms, plants, devices) backed by MongoDB, validated via schemas and models. To solve the scaling problem, a dynamic Control Unit (CU) Manager spins up and configures isolated, room-specific controller containers on the fly, offering REST endpoints to attach or detach rooms. Environmental metrics are forwarded to ThingSpeak for persistent telemetry, while a Flask web dashboard and Telegram bot provide real-time controls, alerts, and LLM-synthesized diagnostics.",
       "outcome": "A resilient, plug-and-play IoT ecosystem developed for educational purposes that allows new rooms and sensors to be provisioned dynamically without system downtime. The platform handles concurrent sensor streams, maintains automated closed-loop environmental controls (e.g., auto-irrigation based on soil moisture), and delivers AI-driven recommendations directly to users.",
