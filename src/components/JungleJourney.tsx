@@ -183,21 +183,20 @@ export default function JungleJourney() {
         setScaleY: gsap.quickSetter(projectElement, 'scaleY'),
       }));
       const progressHud = container.querySelector<HTMLElement>(
-        '.jj-progress-hud',
+        '.jj-cloud-hud',
       );
       const headerElement = container.querySelector<HTMLElement>('.jj-header');
-      const headerCenterIntro = container.querySelector<HTMLElement>('.jj-header__center-intro');
 
       const progressHudCounter = progressHud?.querySelector<HTMLElement>(
-        '.jj-progress-hud__counter',
+        '.jj-cloud-hud__counter',
       );
       const progressHudTitle = progressHud?.querySelector<HTMLElement>(
-        '.jj-progress-hud__title',
+        '.jj-cloud-hud__title',
       );
       const progressHudSegments = progressHud
         ? Array.from(
           progressHud.querySelectorAll<HTMLElement>(
-            '.jj-progress-hud__segment',
+            '.jj-cloud-hud__nav',
           ),
         )
         : [];
@@ -253,7 +252,7 @@ export default function JungleJourney() {
       });
 
       // Reset hover previews when pointer leaves the HUD track
-      const hudTrack = progressHud?.querySelector<HTMLElement>('.jj-progress-hud__track');
+      const hudTrack = progressHud?.querySelector<HTMLElement>('.jj-cloud-hud__track');
       const handleHudTrackLeave = () => {
         const project = featuredProjects[activeHudProjectIndex];
         if (project) {
@@ -533,22 +532,21 @@ export default function JungleJourney() {
         }, 0.04);
       }
 
-      if (headerCenterIntro) {
-        timeline.to(headerCenterIntro, {
-          autoAlpha: 0,
-          y: -10,
-          duration: 0.08,
-          ease: 'power2.inOut',
-        }, 0.04);
-      }
-
       if (progressHud) {
+        // Fade in HUD during the intro
         timeline.to(progressHud, {
           autoAlpha: 1,
           y: 0,
           duration: 0.08,
           ease: 'power2.out',
         }, 0.08);
+
+        // Parallax: translate cloud HUD horizontally on scroll
+        timeline.to(progressHud, {
+          x: '-6vw',
+          ease: 'none',
+          duration: 0.85,
+        }, 0.15);
       }
 
       // Track animations: animate layers horizontally after the intro threshold
@@ -606,7 +604,7 @@ export default function JungleJourney() {
     <main ref={containerRef} className="jj-container">
       <JourneyEnvironment />
 
-      <header className="jj-header">
+      {/* <header className="jj-header">
         <div className="jj-header__inner">
           <div className="jj-header__brand">
             <button className="jj-header__brand-btn" type="button">
@@ -614,42 +612,36 @@ export default function JungleJourney() {
             </button>
           </div>
 
-          <div className="jj-header__center">
-            <div className="jj-header__center-intro">
-              <span className="jj-hero__meta jj-hero__meta--center">[PORTFOLIO // V3]</span>
-            </div>
-
-            <div className="jj-header__center-hud jj-progress-hud" aria-label="Journey Progress">
-              <span className="jj-progress-hud__counter">
-                {`[01 / ${String(featuredProjects.length).padStart(2, '0')}]`}
-              </span>
-              <span className="jj-progress-hud__title">
-                {featuredProjects[0]?.core.title}
-              </span>
-              <span
-                className="jj-progress-hud__track"
-                style={{
-                  gridTemplateColumns: `repeat(${featuredProjects.length}, minmax(0, 1fr))`,
-                }}
-              >
-                {featuredProjects.map((project, index) => (
-                  <button
-                    key={project.id}
-                    className="jj-progress-hud__segment"
-                    type="button"
-                    data-state={index === 0 ? 'active' : 'upcoming'}
-                    aria-label={`Jump to ${project.core.title}`}
-                  />
-                ))}
-              </span>
-            </div>
-          </div>
-
           <div className="jj-header__status">
             <span className="jj-hero__meta jj-hero__meta--right">SYS_STATUS: ACTIVE</span>
           </div>
         </div>
-      </header>
+      </header> */}
+
+      <div className="jj-cloud-hud" aria-label="Journey Progress HUD">
+        {/* Info Cloud (Wider, left side) */}
+        <div className="jj-cloud-hud__info">
+          <span className="jj-cloud-hud__counter">
+            {`[01 / ${String(featuredProjects.length).padStart(2, '0')}]`}
+          </span>
+          <span className="jj-cloud-hud__title">
+            {featuredProjects[0]?.core.title}
+          </span>
+        </div>
+
+        {/* Nav Clouds Track (Middle/right side, one cloud per project) */}
+        <div className="jj-cloud-hud__track">
+          {featuredProjects.map((project, index) => (
+            <button
+              key={project.id}
+              className={`jj-cloud-hud__nav jj-cloud-hud__nav--${index}`}
+              type="button"
+              data-state={index === 0 ? 'active' : 'upcoming'}
+              aria-label={`Jump to ${project.core.title}`}
+            />
+          ))}
+        </div>
+      </div>
 
       <div className="jj-hero" aria-label="Hero Introduction">
         <div className="jj-hero__backdrop" />

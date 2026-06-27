@@ -30,12 +30,6 @@ interface JourneyEnvironmentProps {
   palette?: JourneyEnvironmentPalette;
 }
 
-const clouds = [
-  { id: 'far-left', className: 'journey-cloud--far-left' },
-  { id: 'center', className: 'journey-cloud--center' },
-  { id: 'right', className: 'journey-cloud--right' },
-];
-
 export default function JourneyEnvironment({
   palette = defaultJourneyPalette,
 }: JourneyEnvironmentProps) {
@@ -58,15 +52,6 @@ export default function JourneyEnvironment({
       aria-hidden="true"
     >
       <div className="journey-sky-glow" />
-
-      <div className="journey-clouds">
-        {clouds.map((cloud) => (
-          <span
-            key={cloud.id}
-            className={`journey-cloud ${cloud.className}`}
-          />
-        ))}
-      </div>
 
       <div className="journey-horizon-haze" />
       <div className="journey-ground-fill" />
