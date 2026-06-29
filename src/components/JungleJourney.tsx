@@ -10,6 +10,7 @@ import foregroundLayer from '../assets/jungle/web/l5_foreground_blurred.webp';
 import biker from '../assets/jungle/web/biker.webp';
 import projectsData from '../content/projects.json';
 import JourneyEnvironment from './JourneyEnvironment';
+import JungleFooter from './JungleFooter';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -319,9 +320,10 @@ export default function JungleJourney() {
 
       const setProjectStates = (scrollProgress: number) => {
         const introThreshold = 0.15;
+        const journeyEnd = 0.85;
         const journeyProgress = scrollProgress < introThreshold
           ? 0
-          : (scrollProgress - introThreshold) / (1 - introThreshold);
+          : Math.min(1, (scrollProgress - introThreshold) / (journeyEnd - introThreshold));
 
         const hiddenYOffset =
           viewportHeight * PROJECT_CARD_MOTION.hiddenYOffsetRatio;
@@ -426,12 +428,13 @@ export default function JungleJourney() {
           onUpdate: (self) => {
             setProjectStates(self.progress);
 
-
-
             if (!reduceMotion) {
               const introThreshold = 0.15;
               if (self.progress >= introThreshold) {
-                const journeyProgress = (self.progress - introThreshold) / (1 - introThreshold);
+                const journeyEnd = 0.85;
+                const journeyProgress = self.progress < introThreshold
+                  ? 0
+                  : Math.min(1, (self.progress - introThreshold) / (journeyEnd - introThreshold));
                 const travelledDistance = journeyProgress * SCROLL_DISTANCE;
                 setBikerY(getBikerRideY(travelledDistance, 1));
               }
@@ -539,13 +542,14 @@ export default function JungleJourney() {
           y: 0,
           duration: 0.08,
           ease: 'power2.out',
+          overwrite: 'auto',
         }, 0.08);
 
         // Parallax: translate cloud HUD horizontally on scroll
         timeline.to(progressHud, {
           x: '-6vw',
           ease: 'none',
-          duration: 0.85,
+          duration: 0.70, // compressed from 0.85
         }, 0.15);
       }
 
@@ -558,12 +562,76 @@ export default function JungleJourney() {
           {
             x: -travel,
             ease: 'none',
-            duration: 0.85,
+            duration: 0.70, // compressed from 0.85
             force3D: true,
           },
           0.15,
         );
       });
+
+      // --- Transitions to Deep Roots Footer at Scroll End (progress 0.85 -> 1.0) ---
+
+      // 1. Biker exit: drives off-screen right with speed
+      if (!reduceMotion) {
+        timeline.to(bikerElement, {
+          xPercent: 200,
+          opacity: 0,
+          duration: 0.07,
+          ease: 'power2.in',
+        }, 0.85);
+      }
+
+      // 2. Landscape ascent: environment layers slide upward out of viewport
+      timeline.to('.jj-layer', {
+        yPercent: -120,
+        duration: 0.10,
+        ease: 'power2.inOut',
+        stagger: 0.01,
+      }, 0.85);
+
+      // 3. Environment background transitions to deep roots charcoal teal
+      timeline.to(container, {
+        backgroundColor: '#08171a',
+        duration: 0.07,
+        ease: 'power1.inOut',
+      }, 0.85);
+
+      // 4. Fade out sky / haze background
+      timeline.to('.journey-environment', {
+        opacity: 0,
+        duration: 0.05,
+        ease: 'power1.out',
+      }, 0.85);
+
+      // 5. Header transitions to dark-mode styling
+      if (headerElement) {
+        timeline.to(headerElement, {
+          backgroundColor: 'rgba(8, 23, 26, 0.86)',
+          borderColor: 'rgba(16, 185, 129, 0.2)',
+          boxShadow: '0 8px 28px rgba(8, 23, 26, 0.5)',
+          color: '#c8dad4',
+          duration: 0.07,
+          ease: 'power1.inOut',
+        }, 0.88);
+      }
+
+      // 6. HUD counter transitions to match dark theme
+      timeline.to('.jj-progress-hud__counter', {
+        color: '#10b981',
+        duration: 0.07,
+      }, 0.88);
+
+      // 7. Footer slides up into view
+      timeline.fromTo('.jj-footer', {
+        yPercent: 100,
+        autoAlpha: 0,
+      }, {
+        yPercent: 0,
+        autoAlpha: 1,
+        duration: 0.12,
+        ease: 'power2.out',
+      }, 0.88);
+
 
       // Detect URL hash on load to jump directly to a project
       const handleHashNavigation = () => {
@@ -780,6 +848,9 @@ export default function JungleJourney() {
         fetchPriority="high"
         draggable={false}
       />
+
+      <JungleFooter />
     </main>
+
   );
 }
