@@ -7,7 +7,7 @@ import greenLayer from '../assets/jungle/web/l2_green.webp';
 import treeLayer from '../assets/jungle/web/l3_trees.webp';
 import roadLayer from '../assets/jungle/web/l4_road.webp';
 import foregroundLayer from '../assets/jungle/web/l5_foreground_blurred.webp';
-import biker from '../assets/jungle/web/biker.webp';
+import biker from '../assets/jungle/web/biker2.webp';
 import projectsData from '../content/projects.json';
 import JourneyEnvironment from './JourneyEnvironment';
 import JungleFooter from './JungleFooter';
