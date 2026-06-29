@@ -315,7 +315,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 8;
+  z-index: auto;
 }
 
 .tube {
@@ -362,6 +362,7 @@
   bottom: 125px;
   width: 156px;
   transform: rotate(-56.8deg);
+  z-index: 11;
 }
 
 .seat-tube {
@@ -386,8 +387,8 @@
   */
   left: 240px;
   bottom: 135px;
-  width: 171px;
-  transform: rotate(-37.87deg);
+  width: 157px;
+  transform: rotate(-30.65deg);
 }
 
 .top-tube {
@@ -398,8 +399,8 @@
   */
   left: 210px;
   bottom: 255px;
-  width: 157px;
-  transform: rotate(-9.16deg);
+  width: 155px;
+  transform: rotate(0deg);
 }
 
 /* Bottom bracket center circle */
@@ -423,7 +424,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 9;
+  z-index: 12;
 }
 
 .head-tube {
@@ -434,7 +435,7 @@
   */
   position: absolute;
   left: 375px;
-  bottom: 240px;
+  bottom: 215px;
   width: 42px;
   height: 12px; /* Thicker tube */
   background: var(--bike-color, #e63946);
@@ -457,40 +458,46 @@
   */
   position: absolute;
   left: 365px;
-  bottom: 280px;
-  width: 164px;
+  bottom: 255px;
+  width: 140px;
   height: 6px;
   background-color: var(--wheel-color, #333);
   border-radius: 3px;
   transform-origin: 0% 50%;
-  transform: rotate(72.1deg);
+  transform: rotate(69deg);
 }
 
 .stem {
   position: absolute;
   left: 365px;
-  bottom: 280px;
+  bottom: 255px;
   width: 25px;
   height: 6px;
-  background-color: #333;
+  background-color: #222;
   transform-origin: 0% 50%;
   transform: rotate(-15deg); /* Angle forward */
   border-radius: 2px;
 }
 
-.theme-neon .stem, .theme-cyber .stem {
+.theme-neon .stem, .theme-cyber .stem,
+.theme-neon .handlebars, .theme-cyber .handlebars {
   background-color: #555;
+}
+
+.theme-neon .bar-drop, .theme-cyber .bar-drop {
+  border-color: #555;
 }
 
 .handlebars {
   position: absolute;
-  left: 388px;
-  bottom: 286px;
+  left: 389px;
+  bottom: 261px;
   width: 22px;
-  height: 5px;
-  background-color: #111;
+  height: 6px;
+  background-color: #222;
   border-radius: 3px;
-  transform: rotate(-10deg);
+  transform-origin: 0% 50%;
+  transform: rotate(-15deg);
 }
 
 .bar-drop {
@@ -499,7 +506,7 @@
   top: 0;
   width: 20px;
   height: 25px;
-  border: 4px solid #111;
+  border: 4px solid #222;
   border-left: 0;
   border-top: 0;
   border-radius: 0 0 12px 6px;
@@ -617,7 +624,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 9;
+  z-index: 12;
 }
 
 .seatpost {
@@ -629,7 +636,7 @@
   height: 5px;
   background-color: #555;
   transform-origin: 0% 50%;
-  transform: rotate(104deg);
+  transform: rotate(-104deg);
 }
 
 .saddle {
@@ -812,3 +819,76 @@
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+/* Debug Labels Overlay */
+.show-debug-labels .tube[data-label]::after,
+.show-debug-labels .wheel[data-label]::after,
+.show-debug-labels .handlebars[data-label]::after,
+.show-debug-labels .saddle[data-label]::after,
+.show-debug-labels .fork[data-label]::after,
+.show-debug-labels .stem[data-label]::after,
+.show-debug-labels .chain-upper[data-label]::after,
+.show-debug-labels .chain-lower[data-label]::after,
+.show-debug-labels .chainring[data-label]::after,
+.show-debug-labels .seatpost[data-label]::after,
+.show-debug-labels .crank-arm[data-label]::after,
+.show-debug-labels .pedal[data-label]::after,
+.show-debug-labels .bottom-bracket[data-label]::after {
+  content: attr(data-label);
+  position: absolute;
+  background-color: #1c1d22;
+  color: #ff6b6b;
+  border: 1px solid #ff6b6b;
+  border-radius: 4px;
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 8px;
+  font-weight: 700;
+  padding: 1px 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 9999;
+  text-transform: lowercase;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.theme-retro .show-debug-labels *[data-label]::after {
+  background-color: #fdf6ed;
+  color: #b85b56;
+  border-color: #b85b56;
+}
+
+.theme-cyber .show-debug-labels *[data-label]::after {
+  color: #66fcf1;
+  border-color: #66fcf1;
+  background-color: #1f2833;
+}
+
+/* Adjust labels for specific elements so they are easier to read and don't overlap */
+.show-debug-labels .wheel::after {
+  top: 15%;
+}
+.show-debug-labels .chainring::after {
+  top: -12px;
+}
+.show-debug-labels .bottom-bracket::after {
+  top: 22px;
+}
+.show-debug-labels .saddle::after {
+  top: -15px;
+}
+.show-debug-labels .handlebars::after {
+  top: -15px;
+}
+.show-debug-labels .pedal::after {
+  top: -12px;
+}
+.show-debug-labels .crank-arm::after {
+  top: -12px;
+}
+.show-debug-labels .stem::after {
+  top: -12px;
+}
+

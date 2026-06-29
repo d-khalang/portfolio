@@ -6,6 +6,7 @@ const BikeExperiment: React.FC = () => {
   const [bikeColor, setBikeColor] = useState<string>('#e63946');
   const [wheelColor, setWheelColor] = useState<string>('#1d3557');
   const [theme, setTheme] = useState<'neon' | 'retro' | 'cyber'>('neon');
+  const [showLabels, setShowLabels] = useState<boolean>(true); // Enabled by default for user communication
 
   // Map speed slider value to animation duration in seconds
   const getRotationDuration = () => {
@@ -37,7 +38,7 @@ const BikeExperiment: React.FC = () => {
           </div>
 
           <div 
-            className="bike" 
+            className={`bike ${showLabels ? 'show-debug-labels' : ''}`} 
             style={{ 
               ['--bike-color' as any]: bikeColor,
               ['--wheel-color' as any]: wheelColor,
@@ -46,7 +47,7 @@ const BikeExperiment: React.FC = () => {
             }}
           >
             {/* Rear Wheel */}
-            <div className="wheel rear-wheel">
+            <div className="wheel rear-wheel" data-label="rear-wheel">
               <div className="tire"></div>
               <div className="rim"></div>
               <div className="spokes"></div>
@@ -55,7 +56,7 @@ const BikeExperiment: React.FC = () => {
             </div>
 
             {/* Front Wheel */}
-            <div className="wheel front-wheel">
+            <div className="wheel front-wheel" data-label="front-wheel">
               <div className="tire"></div>
               <div className="rim"></div>
               <div className="spokes"></div>
@@ -64,49 +65,49 @@ const BikeExperiment: React.FC = () => {
 
             {/* Bike Frame Tubes */}
             <div className="frame">
-              <div className="tube chain-stay"></div>
-              <div className="tube seat-stay"></div>
-              <div className="tube seat-tube"></div>
-              <div className="tube down-tube"></div>
-              <div className="tube top-tube"></div>
+              <div className="tube chain-stay" data-label="chain-stay"></div>
+              <div className="tube seat-stay" data-label="seat-stay"></div>
+              <div className="tube seat-tube" data-label="seat-tube"></div>
+              <div className="tube down-tube" data-label="down-tube"></div>
+              <div className="tube top-tube" data-label="top-tube"></div>
               
               {/* Bottom Bracket (Crank center) */}
-              <div className="bottom-bracket"></div>
+              <div className="bottom-bracket" data-label="bottom-bracket"></div>
             </div>
 
             {/* Fork & Steerer */}
             <div className="fork-assembly">
-              <div className="fork"></div>
-              <div className="head-tube"></div>
-              <div className="stem"></div>
-              <div className="handlebars">
+              <div className="fork" data-label="fork"></div>
+              <div className="head-tube" data-label="head-tube"></div>
+              <div className="stem" data-label="stem"></div>
+              <div className="handlebars" data-label="handlebars">
                 <div className="bar-drop"></div>
               </div>
             </div>
 
             {/* Drivetrain (Crankset, pedals, chain) */}
             <div className="drivetrain">
-              <div className="chainring"></div>
-              <div className="chain-upper"></div>
-              <div className="chain-lower"></div>
+              <div className="chainring" data-label="chainring"></div>
+              <div className="chain-upper" data-label="chain-upper"></div>
+              <div className="chain-lower" data-label="chain-lower"></div>
               
               {/* Crank Arm & Pedal 1 */}
               <div className="crank-assembly crank-left">
-                <div className="crank-arm"></div>
-                <div className="pedal"></div>
+                <div className="crank-arm" data-label="crank-arm"></div>
+                <div className="pedal" data-label="pedal"></div>
               </div>
               
               {/* Crank Arm & Pedal 2 */}
               <div className="crank-assembly crank-right">
-                <div className="crank-arm"></div>
-                <div className="pedal"></div>
+                <div className="crank-arm" data-label="crank-arm"></div>
+                <div className="pedal" data-label="pedal"></div>
               </div>
             </div>
 
             {/* Saddle / Seat Assembly */}
             <div className="seat-assembly">
-              <div className="seatpost"></div>
-              <div className="saddle"></div>
+              <div className="seatpost" data-label="seatpost"></div>
+              <div className="saddle" data-label="saddle"></div>
             </div>
           </div>
         </div>
@@ -177,6 +178,18 @@ const BikeExperiment: React.FC = () => {
                 </button>
               ))}
             </div>
+          </div>
+
+          <div className="control-group label-toggle-group">
+            <label className="checkbox-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+              <input 
+                type="checkbox" 
+                checked={showLabels} 
+                onChange={(e) => setShowLabels(e.target.checked)} 
+                style={{ cursor: 'pointer' }}
+              />
+              Show CSS Class Labels
+            </label>
           </div>
 
           <div className="css-fun-facts">
