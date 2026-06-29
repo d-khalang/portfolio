@@ -581,9 +581,9 @@ export default function JungleJourney() {
         }, 0.85);
       }
 
-      // 2. Landscape ascent: environment layers slide upward out of viewport
-      timeline.to('.jj-layer', {
-        yPercent: -120,
+      // 2. Landscape ascent: environment layers slide upward to occupy top half
+      timeline.to(['.jj-layer', '.journey-environment'], {
+        yPercent: -70,
         duration: 0.10,
         ease: 'power2.inOut',
         stagger: 0.01,
@@ -596,10 +596,10 @@ export default function JungleJourney() {
         ease: 'power1.inOut',
       }, 0.85);
 
-      // 4. Fade out sky / haze background
+      // 4. Subtle dimming of the landscape environment (instead of full fade-out)
       timeline.to('.journey-environment', {
-        opacity: 0,
-        duration: 0.05,
+        opacity: 0.7,
+        duration: 0.08,
         ease: 'power1.out',
       }, 0.85);
 
@@ -615,11 +615,15 @@ export default function JungleJourney() {
         }, 0.88);
       }
 
-      // 6. HUD counter transitions to match dark theme
-      timeline.to('.jj-progress-hud__counter', {
-        color: '#10b981',
-        duration: 0.07,
-      }, 0.88);
+      // 6. HUD slides out of view (and slides back in on reverse scroll)
+      if (progressHud) {
+        timeline.to(progressHud, {
+          y: -40,
+          autoAlpha: 0,
+          duration: 0.07,
+          ease: 'power1.inOut',
+        }, 0.85);
+      }
 
       // 7. Footer slides up into view
       timeline.fromTo('.jj-footer', {
