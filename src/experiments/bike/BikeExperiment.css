@@ -1,0 +1,814 @@
+/* Reset and base structure */
+.bike-experiment-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100%;
+  font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  transition: background-color 0.5s ease, color 0.5s ease;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+/* Themes */
+.theme-neon {
+  background-color: #0d0b18;
+  color: #f1faee;
+}
+.theme-neon .bike-canvas {
+  background: radial-gradient(circle at center, #1b1731 0%, #0d0b18 100%);
+  border: 2px solid rgba(138, 43, 226, 0.4);
+  box-shadow: 0 0 30px rgba(138, 43, 226, 0.2);
+}
+.theme-neon .road {
+  background: #19162b;
+  border-top: 3px solid #8a2be2;
+  box-shadow: 0 0 15px rgba(138, 43, 226, 0.6);
+}
+.theme-neon .grid-lines {
+  background-image: 
+    linear-gradient(rgba(138, 43, 226, 0.15) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(138, 43, 226, 0.15) 1px, transparent 1px);
+}
+
+.theme-retro {
+  background-color: #f4eae1;
+  color: #2b2d42;
+}
+.theme-retro .bike-canvas {
+  background: #fdf6ed;
+  border: 4px solid #d4a373;
+  box-shadow: 8px 8px 0px #d4a373;
+}
+.theme-retro .road {
+  background: #e6ccb2;
+  border-top: 4px solid #b7b7a4;
+}
+.theme-retro .grid-lines {
+  background-image: radial-gradient(#ddb892 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+}
+
+.theme-cyber {
+  background-color: #0b0c10;
+  color: #66fcf1;
+}
+.theme-cyber .bike-canvas {
+  background: #1f2833;
+  border: 2px solid #66fcf1;
+  box-shadow: 0 0 20px rgba(102, 252, 241, 0.3);
+}
+.theme-cyber .road {
+  background: #0f141d;
+  border-top: 3px solid #45f3ff;
+  box-shadow: 0 0 10px rgba(69, 243, 255, 0.4);
+}
+.theme-cyber .grid-lines {
+  background-image: 
+    linear-gradient(rgba(102, 252, 241, 0.08) 2px, transparent 2px),
+    linear-gradient(90deg, rgba(102, 252, 241, 0.08) 2px, transparent 2px);
+}
+
+/* Header */
+.experiment-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  max-width: 600px;
+}
+.experiment-header h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin: 0.5rem 0;
+  letter-spacing: -0.5px;
+}
+.experiment-header p {
+  opacity: 0.8;
+  font-size: 1.1rem;
+}
+.back-btn {
+  background: transparent;
+  border: 1px solid currentColor;
+  color: inherit;
+  padding: 0.5rem 1.2rem;
+  border-radius: 30px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+.back-btn:hover {
+  background: currentColor;
+  color: #000;
+}
+
+/* Main Container Layout */
+.experiment-container {
+  display: flex;
+  flex-direction: row;
+  gap: 2.5rem;
+  width: 100%;
+  max-width: 1100px;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+@media (max-width: 950px) {
+  .experiment-container {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+/* Canvas Styling */
+.bike-canvas {
+  position: relative;
+  width: 600px;
+  height: 380px;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 650px) {
+  .bike-canvas {
+    width: 100%;
+    max-width: 480px;
+    height: 320px;
+    transform: scale(0.8);
+  }
+}
+
+/* Scrolling Background */
+.scrolling-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+}
+
+.grid-lines {
+  position: absolute;
+  top: 0;
+  left: -200%;
+  width: 400%;
+  height: 100%;
+  background-size: 40px 40px;
+  animation: bg-scroll 8s linear infinite;
+  animation-play-state: var(--play-state);
+}
+
+.mountains {
+  position: absolute;
+  bottom: 80px;
+  left: 0;
+  width: 100%;
+  height: 120px;
+  opacity: 0.15;
+  background: 
+    polygon(0% 100%, 15% 30%, 30% 100%, 45% 40%, 65% 100%, 80% 20%, 100% 100%) repeat-x;
+  background-size: 300px 100%;
+  animation: bg-scroll 30s linear infinite;
+  animation-play-state: var(--play-state);
+}
+
+.road {
+  position: absolute;
+  bottom: 0;
+  left: -200%;
+  width: 400%;
+  height: 80px;
+  background-image: linear-gradient(90deg, transparent 50%, rgba(255, 255, 255, 0.15) 50%);
+  background-size: 60px 100%;
+  animation: bg-scroll 4s linear infinite;
+  animation-play-state: var(--play-state);
+}
+
+@keyframes bg-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* Bike Parent */
+.bike {
+  position: absolute;
+  bottom: 30px;
+  left: 30px;
+  width: 540px;
+  height: 320px;
+  z-index: 5;
+}
+
+/* Wheels */
+.wheel {
+  position: absolute;
+  bottom: 50px;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  z-index: 10;
+}
+
+.rear-wheel {
+  left: 50px;
+}
+
+.front-wheel {
+  left: 340px;
+}
+
+.wheel .tire {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 8px solid #1a1a1a;
+  box-sizing: border-box;
+  box-shadow: 0 0 10px rgba(0,0,0,0.4);
+}
+
+.theme-cyber .wheel .tire {
+  border-color: #0c0f12;
+}
+
+.wheel .rim {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  border-radius: 50%;
+  border: 4px solid var(--wheel-color, #3d3d3d);
+  box-sizing: border-box;
+  background: transparent;
+}
+
+.wheel .spokes {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  border-radius: 50%;
+  background: repeating-conic-gradient(
+    from 0deg,
+    transparent 0deg 1.5deg,
+    rgba(255, 255, 255, 0.25) 1.5deg 2deg,
+    transparent 2deg 15deg
+  );
+  animation: spin var(--rotation-speed, 3s) linear infinite;
+  animation-play-state: var(--play-state, running);
+}
+
+.theme-retro .wheel .spokes {
+  background: repeating-conic-gradient(
+    from 0deg,
+    transparent 0deg 1.5deg,
+    rgba(43, 45, 66, 0.2) 1.5deg 2.2deg,
+    transparent 2.2deg 15deg
+  );
+}
+
+.wheel .hub {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 18px;
+  height: 18px;
+  background: #cccccc;
+  border: 2px solid #555555;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 12;
+  box-shadow: 0 0 5px rgba(0,0,0,0.5);
+}
+
+.rear-wheel .cassette {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 36px;
+  height: 36px;
+  background: repeating-conic-gradient(
+    from 0deg,
+    #777777 0deg 15deg,
+    #555555 15deg 30deg
+  );
+  border: 1px solid #444;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) rotate(0deg);
+  z-index: 11;
+  animation: spin var(--rotation-speed, 3s) linear infinite;
+  animation-play-state: var(--play-state, running);
+}
+
+/* Frame Tubes */
+.frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 8;
+}
+
+.tube {
+  position: absolute;
+  background-color: var(--bike-color, #e63946);
+  border-radius: 4px;
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2), 0 2px 4px rgba(0,0,0,0.3);
+  height: 8px; /* Thickness of tubes */
+  transform-origin: 0% 50%; /* Rotate from start point */
+}
+
+.theme-neon .tube {
+  box-shadow: 0 0 8px var(--bike-color), inset 0 1px 2px rgba(255, 255, 255, 0.5);
+}
+
+/* Coordinate map:
+   Rear Hub: (125, 125) (using left 50px + wheel rad 75px = 125px)
+   Front Hub: (415, 125) (using left 340px + wheel rad 75px = 415px)
+   Bottom Bracket (BB): (240, 135)
+   Seat Post Top: (210, 255) (Y from bottom is 255)
+   Head Tube Top: (365, 280)
+   Head Tube Bottom: (375, 240)
+*/
+
+.chain-stay {
+  /* Rear Hub (125, 125) to BB (240, 135)
+     dx = 115px, dy = 10px
+     length = sqrt(115^2 + 10^2) = 115.4px
+     angle = atan2(10, 115) = 4.97deg
+  */
+  left: 125px;
+  bottom: 125px;
+  width: 116px;
+  transform: rotate(4.97deg);
+}
+
+.seat-stay {
+  /* Rear Hub (125, 125) to Seat Post Top (210, 255)
+     dx = 85px, dy = 130px
+     length = sqrt(85^2 + 130^2) = 155.3px
+     angle = atan2(130, 85) = 56.8deg
+  */
+  left: 125px;
+  bottom: 125px;
+  width: 156px;
+  transform: rotate(56.8deg);
+}
+
+.seat-tube {
+  /* BB (240, 135) to Seat Post Top (210, 255)
+     dx = -30px, dy = 120px
+     length = sqrt(30^2 + 120^2) = 123.7px
+     angle = 180 - atan2(120, 30) = 104deg (or from seat post top down)
+     We can position at BB and rotate backwards:
+     angle = 104deg
+  */
+  left: 240px;
+  bottom: 135px;
+  width: 124px;
+  transform: rotate(104deg);
+}
+
+.down-tube {
+  /* BB (240, 135) to Head Tube Bottom (375, 240)
+     dx = 135px, dy = 105px
+     length = sqrt(135^2 + 105^2) = 171px
+     angle = atan2(105, 135) = 37.87deg
+  */
+  left: 240px;
+  bottom: 135px;
+  width: 171px;
+  transform: rotate(37.87deg);
+}
+
+.top-tube {
+  /* Seat Post Top (210, 255) to Head Tube Top (365, 280)
+     dx = 155px, dy = 25px
+     length = sqrt(155^2 + 25^2) = 157px
+     angle = atan2(25, 155) = 9.16deg
+  */
+  left: 210px;
+  bottom: 255px;
+  width: 157px;
+  transform: rotate(9.16deg);
+}
+
+/* Bottom bracket center circle */
+.bottom-bracket {
+  position: absolute;
+  left: 240px;
+  bottom: 135px;
+  width: 16px;
+  height: 16px;
+  background-color: #333;
+  border: 2px solid #aaa;
+  border-radius: 50%;
+  transform: translate(-50%, 50%);
+  z-index: 10;
+}
+
+/* Fork & Steering Assembly */
+.fork-assembly {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9;
+}
+
+.head-tube {
+  /* Head Tube Bottom (375, 240) to Head Tube Top (365, 280)
+     dx = -10px, dy = 40px
+     length = sqrt(10^2 + 40^2) = 41.2px
+     angle = 104deg
+  */
+  position: absolute;
+  left: 375px;
+  bottom: 240px;
+  width: 42px;
+  height: 12px; /* Thicker tube */
+  background: var(--bike-color, #e63946);
+  border-radius: 4px;
+  transform-origin: 0% 50%;
+  transform: rotate(104deg);
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2), 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.theme-neon .head-tube {
+  box-shadow: 0 0 8px var(--bike-color), inset 0 1px 2px rgba(255, 255, 255, 0.5);
+}
+
+.fork {
+  /* Head Tube Top (365, 280) through Head Tube Bottom (375, 240) to Front Hub (415, 125)
+     This is roughly a straight line at 104 degrees backwards from Hub up to Steerer, or from Head Tube Top:
+     dx = 50px, dy = -155px
+     length = sqrt(50^2 + 155^2) = 163px
+     angle = atan2(-155, 50) = -72.1deg
+  */
+  position: absolute;
+  left: 365px;
+  bottom: 280px;
+  width: 164px;
+  height: 6px;
+  background-color: var(--wheel-color, #333);
+  border-radius: 3px;
+  transform-origin: 0% 50%;
+  transform: rotate(-72.1deg);
+}
+
+.stem {
+  position: absolute;
+  left: 365px;
+  bottom: 280px;
+  width: 25px;
+  height: 6px;
+  background-color: #333;
+  transform-origin: 0% 50%;
+  transform: rotate(15deg); /* Angle forward */
+  border-radius: 2px;
+}
+
+.theme-neon .stem, .theme-cyber .stem {
+  background-color: #555;
+}
+
+.handlebars {
+  position: absolute;
+  left: 388px;
+  bottom: 286px;
+  width: 22px;
+  height: 5px;
+  background-color: #111;
+  border-radius: 3px;
+  transform: rotate(-10deg);
+}
+
+.bar-drop {
+  position: absolute;
+  right: -5px;
+  top: 0;
+  width: 20px;
+  height: 25px;
+  border: 4px solid #111;
+  border-left: 0;
+  border-top: 0;
+  border-radius: 0 0 12px 6px;
+}
+
+/* Drivetrain (Crankset, chain, pedals) */
+.drivetrain {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 11;
+}
+
+.chainring {
+  position: absolute;
+  left: 240px;
+  bottom: 135px;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 2px dashed #666;
+  background: radial-gradient(circle, transparent 55%, #444 58%, #222 70%);
+  transform: translate(-50%, 50%);
+  animation: spin var(--rotation-speed, 3s) linear infinite;
+  animation-play-state: var(--play-state, running);
+}
+
+.chain-upper {
+  position: absolute;
+  left: 125px;
+  bottom: 142px;
+  width: 116px;
+  height: 2px;
+  background-color: #555;
+  transform-origin: 0% 50%;
+  transform: rotate(8deg);
+}
+
+.chain-lower {
+  position: absolute;
+  left: 125px;
+  bottom: 112px;
+  width: 116px;
+  height: 2px;
+  background-color: #555;
+  transform-origin: 0% 50%;
+  transform: rotate(-5deg);
+}
+
+/* Crank Arms and Pedals */
+.crank-assembly {
+  position: absolute;
+  left: 240px;
+  bottom: 135px;
+  width: 45px;
+  height: 6px;
+  transform-origin: 0% 50%;
+  display: flex;
+  align-items: center;
+}
+
+.crank-right {
+  animation: spin var(--rotation-speed, 3s) linear infinite;
+  animation-play-state: var(--play-state, running);
+}
+
+.crank-left {
+  /* Opposite side crank */
+  transform: rotate(180deg);
+  animation: spin-opposite var(--rotation-speed, 3s) linear infinite;
+  animation-play-state: var(--play-state, running);
+  z-index: 6; /* Render behind frame */
+}
+
+@keyframes spin-opposite {
+  from { transform: rotate(180deg); }
+  to { transform: rotate(540deg); }
+}
+
+.crank-arm {
+  width: 100%;
+  height: 100%;
+  background-color: #888;
+  border-radius: 3px;
+  border: 1px solid #444;
+}
+
+.crank-left .crank-arm {
+  background-color: #555;
+}
+
+.pedal {
+  position: absolute;
+  right: -8px;
+  width: 16px;
+  height: 8px;
+  background-color: #222;
+  border: 1px solid #666;
+  border-radius: 2px;
+  animation: counter-spin var(--rotation-speed, 3s) linear infinite;
+  animation-play-state: var(--play-state, running);
+}
+
+@keyframes counter-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
+}
+
+/* Saddle/Seat Assembly */
+.seat-assembly {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9;
+}
+
+.seatpost {
+  /* Extension from seat-tube up to saddle */
+  position: absolute;
+  left: 210px;
+  bottom: 255px;
+  width: 25px;
+  height: 5px;
+  background-color: #555;
+  transform-origin: 0% 50%;
+  transform: rotate(104deg);
+}
+
+.saddle {
+  position: absolute;
+  left: 195px;
+  bottom: 278px;
+  width: 32px;
+  height: 7px;
+  background-color: #111;
+  border-radius: 4px 12px 2px 2px;
+  transform: rotate(4deg);
+}
+
+.theme-retro .saddle {
+  background-color: #8b5a2b; /* Leather brown */
+}
+
+/* Control Panel Styling */
+.control-panel {
+  flex: 1;
+  min-width: 320px;
+  max-width: 400px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  box-sizing: border-box;
+}
+
+.theme-retro .control-panel {
+  background: #fdf6ed;
+  border: 2px solid #d4a373;
+  box-shadow: 6px 6px 0px #d4a373;
+}
+
+.control-panel h3 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+  font-size: 1.25rem;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.2);
+  padding-bottom: 0.5rem;
+}
+
+.theme-retro .control-panel h3 {
+  border-bottom-color: #d4a373;
+  color: #2b2d42;
+}
+
+.control-group {
+  margin-bottom: 1.5rem;
+}
+
+.control-group label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  opacity: 0.9;
+}
+
+.theme-retro .control-group label {
+  color: #2b2d42;
+}
+
+.control-group input[type="range"] {
+  width: 100%;
+  accent-color: var(--bike-color);
+  cursor: pointer;
+}
+
+.color-presets {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.color-preset {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.color-preset:hover {
+  transform: scale(1.15);
+}
+
+.color-preset.active {
+  border-color: #fff;
+  transform: scale(1.1);
+}
+
+.theme-retro .color-preset.active {
+  border-color: #2b2d42;
+}
+
+.control-group input[type="color"] {
+  border: none;
+  background: none;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.theme-toggle {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.theme-btn {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: inherit;
+  padding: 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 700;
+  transition: all 0.3s ease;
+}
+
+.theme-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.theme-btn.active {
+  background: var(--bike-color);
+  border-color: var(--bike-color);
+  color: #fff;
+}
+
+.theme-retro .theme-btn {
+  background: #f4eae1;
+  border-color: #d4a373;
+  color: #2b2d42;
+}
+
+.theme-retro .theme-btn.active {
+  background: #d4a373;
+  color: #fff;
+}
+
+.css-fun-facts {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px dashed rgba(255, 255, 255, 0.2);
+  font-size: 0.85rem;
+}
+
+.theme-retro .css-fun-facts {
+  border-top-color: #d4a373;
+  color: #555;
+}
+
+.css-fun-facts h4 {
+  margin: 0 0 0.5rem 0;
+  font-weight: 700;
+}
+
+.css-fun-facts ul {
+  margin: 0;
+  padding-left: 1.2rem;
+  opacity: 0.8;
+}
+
+.css-fun-facts li {
+  margin-bottom: 0.3rem;
+}
+
+/* Animations */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
