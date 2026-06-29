@@ -226,7 +226,7 @@ export default function JungleJourney() {
           if (!project) return;
           const journeyPosition = project.journeyPosition ?? 0.5;
           const journeyProgress = journeyPosition + 0.03;
-          const scrollProgress = journeyProgress * 0.85 + 0.15;
+          const scrollProgress = journeyProgress * 0.70 + 0.15;
           const targetScroll = scrollProgress * SCROLL_DISTANCE;
 
           const scrollObj = { y: window.scrollY };
@@ -648,7 +648,7 @@ export default function JungleJourney() {
         const project = featuredProjects[projectIndex];
         const journeyPosition = project.journeyPosition ?? 0.5;
         const journeyProgress = journeyPosition + 0.03;
-        const scrollProgress = journeyProgress * 0.85 + 0.15;
+        const scrollProgress = journeyProgress * 0.70 + 0.15;
         const targetScrollTop = scrollProgress * SCROLL_DISTANCE;
 
         window.scrollTo(0, targetScrollTop);
