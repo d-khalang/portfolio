@@ -693,6 +693,7 @@ export default function JungleJourney() {
       <div className="jj-cloud-hud" aria-label="Journey Progress HUD">
         {/* Info Cloud (Wider, left side) */}
         <div className="jj-cloud-hud__info">
+          <div className="jj-cloud-hud__bubble" aria-hidden="true" />
           <span className="jj-cloud-hud__counter">
             {`[01 / ${String(featuredProjects.length).padStart(2, '0')}]`}
           </span>

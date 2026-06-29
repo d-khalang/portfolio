@@ -552,9 +552,10 @@ body {
 
   position: absolute;
   top: 76px;
-  left: 50px;
+  left: 100px;
   right: 50px;
-  z-index: 99; /* above environment layers, below hero text when it's on foreground */
+  z-index: 99;
+  /* above environment layers, below hero text when it's on foreground */
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -569,24 +570,24 @@ body {
   align-items: center;
   justify-content: center;
   gap: 12px;
-  width: clamp(15rem, 24vw, 22rem);
+  width: clamp(13.5rem, 21vw, 17.5rem);
   height: 2.8rem;
   border-radius: 999px;
-  background: linear-gradient(
-    180deg,
-    var(--journey-cloud-light),
-    var(--journey-cloud-shade)
-  );
+  background: linear-gradient(180deg,
+      var(--journey-cloud-light),
+      var(--journey-cloud-shade));
   filter: drop-shadow(0 0.8rem 1.4rem rgb(67 108 117 / 12%));
   opacity: 0.88;
   padding: 0 1.6rem;
   box-sizing: border-box;
-  overflow: visible; /* ensure bumps are visible */
+  overflow: visible;
+  /* ensure bumps are visible */
   transform-style: preserve-3d;
 }
 
 .jj-cloud-hud__info::before,
-.jj-cloud-hud__info::after {
+.jj-cloud-hud__info::after,
+.jj-cloud-hud__bubble {
   position: absolute;
   bottom: 0.45rem;
   content: "";
@@ -595,23 +596,32 @@ body {
 }
 
 .jj-cloud-hud__info::before {
-  left: 2rem;
-  width: 4.8rem;
-  height: 4.2rem;
+  left: 1.8rem;
+  width: 4.2rem;
+  height: 3.6rem;
   border-radius: 50% 50% 40% 40% / 60% 60% 40% 40%;
 }
 
+.jj-cloud-hud__bubble {
+  left: 50%;
+  transform: translateX(-50%) translateZ(-1px);
+  width: 5rem;
+  height: 4.5rem;
+  border-radius: 50% 50% 42% 42% / 58% 58% 42% 42%;
+}
+
 .jj-cloud-hud__info::after {
-  right: 2.2rem;
-  width: 6.2rem;
-  height: 5.4rem;
+  right: 1.8rem;
+  width: 5.8rem;
+  height: 5rem;
   border-radius: 50% 50% 45% 45% / 55% 55% 45% 45%;
 }
 
 .jj-cloud-hud__counter,
 .jj-cloud-hud__title {
   position: relative;
-  z-index: 2; /* draw above the cloud bumps */
+  z-index: 2;
+  /* draw above the cloud bumps */
   transform: translateZ(1px);
   font-family: "IBM Plex Mono", monospace;
   font-size: 0.74rem;
@@ -645,11 +655,9 @@ body {
   width: 7.2rem;
   height: 1.8rem;
   border-radius: 999px;
-  background: linear-gradient(
-    180deg,
-    var(--journey-cloud-light),
-    var(--journey-cloud-shade)
-  );
+  background: linear-gradient(180deg,
+      var(--journey-cloud-light),
+      var(--journey-cloud-shade));
   box-shadow: 0 0.8rem 1.8rem rgb(67 108 117 / 10%);
   border: none;
   padding: 0;
@@ -657,7 +665,8 @@ body {
   cursor: pointer;
   pointer-events: auto;
   opacity: 0.72;
-  overflow: visible; /* critical for button elements to show absolute pseudo-elements */
+  overflow: visible;
+  /* critical for button elements to show absolute pseudo-elements */
   transition:
     scale 300ms cubic-bezier(0.34, 1.56, 0.64, 1),
     opacity 300ms ease;
@@ -671,11 +680,9 @@ body {
   bottom: 0.3rem;
   content: "";
   border-radius: 50%;
-  background: linear-gradient(
-    180deg,
-    var(--journey-cloud-light),
-    var(--journey-cloud-shade)
-  );
+  background: linear-gradient(180deg,
+      var(--journey-cloud-light),
+      var(--journey-cloud-shade));
   transition: background-image 400ms ease;
 }
 
@@ -725,22 +732,18 @@ body {
 
 /* Active State: Warm sunset gradient */
 .jj-cloud-hud__nav[data-state="active"] {
-  background: linear-gradient(
-    180deg,
-    #f7ba9e 0%,
-    #d97d62 100%
-  );
+  background: linear-gradient(180deg,
+      #f7ba9e 0%,
+      #d97d62 100%);
   opacity: 0.95;
   box-shadow: 0 0.8rem 1.8rem rgb(217 125 98 / 25%);
 }
 
 .jj-cloud-hud__nav[data-state="active"]::before,
 .jj-cloud-hud__nav[data-state="active"]::after {
-  background: linear-gradient(
-    180deg,
-    #f7ba9e 0%,
-    #d97d62 100%
-  );
+  background: linear-gradient(180deg,
+      #f7ba9e 0%,
+      #d97d62 100%);
 }
 
 /* Completed State */
@@ -762,11 +765,13 @@ body {
     right: 20px;
     gap: 16px;
   }
+
   .jj-cloud-hud__info {
     width: clamp(12rem, 20vw, 15rem);
     padding: 0 1rem;
     gap: 8px;
   }
+
   .jj-cloud-hud__track {
     gap: 1vw;
   }
@@ -827,7 +832,7 @@ body {
     margin-top: 10px;
     pointer-events: auto;
   }
-  
+
   .jj-cloud-hud__info {
     width: 100%;
     max-width: 320px;

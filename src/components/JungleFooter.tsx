@@ -58,6 +58,14 @@ export default function JungleFooter() {
     setTimeout(() => setCopied(false), 2200);
   };
 
+  const handleMouseMove = (e: React.MouseEvent<HTMLAnchorElement | HTMLButtonElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    e.currentTarget.style.setProperty('--mouse-x', `${x}px`);
+    e.currentTarget.style.setProperty('--mouse-y', `${y}px`);
+  };
+
   const handleSignalTrigger = (e: React.MouseEvent<HTMLAnchorElement>, option: 'collab' | 'coffee' | 'hi') => {
     if (signalState.status !== 'idle') {
       e.preventDefault();
@@ -173,22 +181,31 @@ export default function JungleFooter() {
                 href="mailto:danikhalang@gmail.com?subject=Collaborate%20with%20Danial&body=Hi%20Danial%2C%0A%0AI%20was%20browsing%20your%20portfolio%20and%20would%20love%20to%20discuss%20working%20together%20on..."
                 className={`jj-footer__signal-btn ${signalState.status !== 'idle' ? 'disabled' : ''}`}
                 onClick={(e) => handleSignalTrigger(e, 'collab')}
+                onMouseMove={handleMouseMove}
               >
-                [ Collaborate ]
+                <span className="jj-footer__btn-bracket">[</span>
+                <span className="jj-footer__btn-text">Collaborate</span>
+                <span className="jj-footer__btn-bracket">]</span>
               </a>
               <a
                 href="mailto:danikhalang@gmail.com?subject=Coffee%20Chat%20%2F%20Let's%20connect&body=Hi%20Danial%2C%0A%0AI'd%20love%20to%20grab%20a%20coffee%20(or%20have%20a%20virtual%20chat)%20to%20talk%20about..."
                 className={`jj-footer__signal-btn ${signalState.status !== 'idle' ? 'disabled' : ''}`}
                 onClick={(e) => handleSignalTrigger(e, 'coffee')}
+                onMouseMove={handleMouseMove}
               >
-                [ Coffee Chat ]
+                <span className="jj-footer__btn-bracket">[</span>
+                <span className="jj-footer__btn-text">Coffee Chat</span>
+                <span className="jj-footer__btn-bracket">]</span>
               </a>
               <a
                 href="mailto:danikhalang@gmail.com?subject=Just%20saying%20hi!&body=Hi%20Danial%2C%0A%0AJust%20stopping%20by%20your%20portfolio%20to%20say%20hello!%20Stunning%20work."
                 className={`jj-footer__signal-btn ${signalState.status !== 'idle' ? 'disabled' : ''}`}
                 onClick={(e) => handleSignalTrigger(e, 'hi')}
+                onMouseMove={handleMouseMove}
               >
-                [ Say Hello ]
+                <span className="jj-footer__btn-bracket">[</span>
+                <span className="jj-footer__btn-text">Say Hello</span>
+                <span className="jj-footer__btn-bracket">]</span>
               </a>
             </div>
             
@@ -218,15 +235,17 @@ export default function JungleFooter() {
             <span className="jj-footer__group-label">Direct Connection</span>
             <button
               type="button"
-              className="jj-footer__email"
+              className={`jj-footer__email ${copied ? 'copied' : ''}`}
               onClick={handleCopy}
+              onMouseMove={handleMouseMove}
               aria-label="Copy email address"
             >
               <span className="jj-footer__email-text">
                 danikhalang@gmail.com
+                <span className="jj-footer__email-cursor">{copied ? '✓' : '_'}</span>
               </span>
-              <span className="jj-footer__email-hint">
-                {copied ? '— copied to clipboard' : '— click to copy'}
+              <span className={`jj-footer__email-hint ${copied ? 'copied' : ''}`}>
+                {copied ? '— copied to clipboard!' : '— click to copy'}
               </span>
             </button>
           </div>
@@ -242,6 +261,8 @@ export default function JungleFooter() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={s.label}
+                  data-platform={s.label.toLowerCase()}
+                  onMouseMove={handleMouseMove}
                 >
                   <span className="jj-footer__social-icon">{s.icon}</span>
                   <span className="jj-footer__social-label">{s.label}</span>
