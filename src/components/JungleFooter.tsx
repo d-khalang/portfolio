@@ -58,38 +58,65 @@ export default function JungleFooter() {
     setTimeout(() => setCopied(false), 2200);
   };
 
-  const handleSignalTrigger = (option: 'collab' | 'coffee' | 'hi') => {
-    if (signalState.status !== 'idle') return;
+  const handleSignalTrigger = (e: React.MouseEvent<HTMLAnchorElement>, option: 'collab' | 'coffee' | 'hi') => {
+    if (signalState.status !== 'idle') {
+      e.preventDefault();
+      console.warn(`[JungleFooter] Signal ignored. Current status: ${signalState.status}`);
+      return;
+    }
+
+    const mailtoUrl = e.currentTarget.getAttribute('href');
+    console.log(`[JungleFooter] Clicked option: "${option}". Prefilled mailto url: "${mailtoUrl}"`);
+
+    // Copy email to clipboard immediately as a reliable fallback
+    navigator.clipboard.writeText('danikhalang@gmail.com')
+      .then(() => console.log('[JungleFooter] Email copied to clipboard successfully.'))
+      .catch((err) => console.error('[JungleFooter] Failed to copy email to clipboard:', err));
 
     let optionLabel = '';
-    let mailtoUrl = '';
-
     switch (option) {
       case 'collab':
         optionLabel = 'Collaborate';
-        mailtoUrl = "mailto:danikhalang@gmail.com?subject=Collaborate%20with%20Danial&body=Hi%20Danial%2C%0A%0AI%20was%20browsing%20your%20portfolio%20and%20would%20love%20to%20discuss%20working%20together%20on...";
         break;
       case 'coffee':
         optionLabel = 'Coffee Chat';
-        mailtoUrl = "mailto:danikhalang@gmail.com?subject=Coffee%20Chat%20%2F%20Let's%20connect&body=Hi%20Danial%2C%0A%0AI'd%20love%20to%20grab%20a%20coffee%20(or%20have%20a%20virtual%20chat)%20to%20talk%20about...";
         break;
       case 'hi':
         optionLabel = 'Say Hello';
-        mailtoUrl = "mailto:danikhalang@gmail.com?subject=Just%20saying%20hi!&body=Hi%20Danial%2C%0A%0AJust%20stopping%20by%20your%20portfolio%20to%20say%20hello!%20Stunning%20work.";
         break;
     }
 
-    setSignalState({ status: 'routing', label: optionLabel });
+    let blurred = false;
+    const handleBlur = () => {
+      blurred = true;
+    };
+    window.addEventListener('blur', handleBlur);
 
+    // Defer state update so it doesn't interrupt the browser's native mailto handling
     setTimeout(() => {
-      setSignalState({ status: 'sent', label: optionLabel });
-      window.location.href = mailtoUrl;
+      setSignalState({ status: 'routing', label: optionLabel });
 
-      // Reset state after a few seconds
       setTimeout(() => {
-        setSignalState({ status: 'idle', label: '' });
-      }, 3500);
-    }, 1200);
+        window.removeEventListener('blur', handleBlur);
+
+        if (blurred) {
+          setSignalState({ 
+            status: 'sent', 
+            label: `✓ Email client opened. Template routed.` 
+          });
+        } else {
+          setSignalState({ 
+            status: 'sent', 
+            label: `⚠ Default mail provider not set or blocked; mail address copied instead` 
+          });
+        }
+
+        // Reset state after a few seconds
+        setTimeout(() => {
+          setSignalState({ status: 'idle', label: '' });
+        }, 5000);
+      }, 1200);
+    }, 50);
   };
 
   return (
@@ -142,30 +169,27 @@ export default function JungleFooter() {
           <div className="jj-footer__signals-section">
             <span className="jj-footer__group-label">Send a signal through the roots:</span>
             <div className="jj-footer__signals-grid">
-              <button
-                type="button"
+              <a
+                href="mailto:danikhalang@gmail.com?subject=Collaborate%20with%20Danial&body=Hi%20Danial%2C%0A%0AI%20was%20browsing%20your%20portfolio%20and%20would%20love%20to%20discuss%20working%20together%20on..."
                 className={`jj-footer__signal-btn ${signalState.status !== 'idle' ? 'disabled' : ''}`}
-                onClick={() => handleSignalTrigger('collab')}
-                disabled={signalState.status !== 'idle'}
+                onClick={(e) => handleSignalTrigger(e, 'collab')}
               >
                 [ Collaborate ]
-              </button>
-              <button
-                type="button"
+              </a>
+              <a
+                href="mailto:danikhalang@gmail.com?subject=Coffee%20Chat%20%2F%20Let's%20connect&body=Hi%20Danial%2C%0A%0AI'd%20love%20to%20grab%20a%20coffee%20(or%20have%20a%20virtual%20chat)%20to%20talk%20about..."
                 className={`jj-footer__signal-btn ${signalState.status !== 'idle' ? 'disabled' : ''}`}
-                onClick={() => handleSignalTrigger('coffee')}
-                disabled={signalState.status !== 'idle'}
+                onClick={(e) => handleSignalTrigger(e, 'coffee')}
               >
                 [ Coffee Chat ]
-              </button>
-              <button
-                type="button"
+              </a>
+              <a
+                href="mailto:danikhalang@gmail.com?subject=Just%20saying%20hi!&body=Hi%20Danial%2C%0A%0AJust%20stopping%20by%20your%20portfolio%20to%20say%20hello!%20Stunning%20work."
                 className={`jj-footer__signal-btn ${signalState.status !== 'idle' ? 'disabled' : ''}`}
-                onClick={() => handleSignalTrigger('hi')}
-                disabled={signalState.status !== 'idle'}
+                onClick={(e) => handleSignalTrigger(e, 'hi')}
               >
                 [ Say Hello ]
-              </button>
+              </a>
             </div>
             
             <div className="jj-footer__signal-status">
@@ -175,8 +199,8 @@ export default function JungleFooter() {
                 </span>
               )}
               {signalState.status === 'sent' && (
-                <span className="jj-footer__status-text sent">
-                  ✓ Connection established. Opening email client...
+                <span className={`jj-footer__status-text sent ${signalState.label.startsWith('⚠') ? 'warning' : ''}`}>
+                  {signalState.label}
                 </span>
               )}
               {signalState.status === 'idle' && (
