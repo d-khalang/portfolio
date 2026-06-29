@@ -30,7 +30,7 @@
   height: 100vh;
   background-size: cover;
   background-position: center bottom;
-  opacity: 0.12;
+  opacity: 0.10;
   z-index: 0;
   pointer-events: none;
   mask-image: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.6) 15%, rgba(0,0,0,1) 35%);
@@ -54,12 +54,85 @@
   pointer-events: none;
 }
 
+/* --- SVG Mycelium Network --- */
+.jj-root-network {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.jj-root-path {
+  fill: none;
+  stroke: rgba(16, 185, 129, 0.08);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.jj-root-pulse {
+  fill: none;
+  stroke: #10b981;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 3px rgba(16, 185, 129, 0.4));
+  opacity: 0.25;
+  stroke-dasharray: 20 60;
+  animation: root-flow-slow 12s infinite linear;
+  will-change: stroke-dashoffset, opacity;
+}
+
+@keyframes root-flow-slow {
+  from {
+    stroke-dashoffset: 240;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Active terracotta signal flow when button clicked */
+.jj-root-pulse.routing {
+  animation: root-flow-fast 1s infinite linear;
+  opacity: 0.85;
+  stroke: #ff7a59;
+  stroke-width: 3.5;
+  filter: drop-shadow(0 0 5px #ff7a59);
+}
+
+@keyframes root-flow-fast {
+  from {
+    stroke-dashoffset: 160;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.jj-root-node {
+  fill: #08171a;
+  stroke: rgba(16, 185, 129, 0.25);
+  stroke-width: 1.5;
+  transition: all 0.3s ease;
+}
+
+.jj-root-node.active {
+  stroke: #ff7a59;
+  fill: #ff7a59;
+  filter: drop-shadow(0 0 4px #ff7a59);
+  r: 5px;
+}
+
 /* --- Main content grid --- */
 .jj-footer__content {
   position: relative;
   z-index: 2;
   display: grid;
-  grid-template-columns: 1.2fr 1fr;
+  grid-template-columns: 1.25fr 1fr;
   gap: 60px;
   max-width: 1100px;
   width: 100%;
@@ -67,7 +140,7 @@
   align-items: center;
 }
 
-/* --- Left Column: Info --- */
+/* --- Left Column: Info & Signals --- */
 .jj-footer__info {
   display: flex;
   flex-direction: column;
@@ -81,12 +154,12 @@
   font-weight: 500;
   letter-spacing: 0.16em;
   color: #ff7a59;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   text-shadow: 0 1px 3px rgba(8, 23, 26, 0.8);
 }
 
 .jj-footer__heading {
-  margin: 0;
+  margin: 0 0 32px;
   font-family: "Space Grotesk", sans-serif;
   font-size: clamp(2rem, 4.2vw, 3.2rem);
   font-weight: 700;
@@ -96,20 +169,91 @@
   text-shadow: 0 2px 8px rgba(8, 23, 26, 0.9);
 }
 
-.jj-footer__body {
-  margin: 16px 0 0;
-  font-size: 0.95rem;
-  line-height: 1.6;
-  color: rgba(240, 236, 228, 0.85);
-  max-width: 460px;
-  text-shadow: 0 1px 4px rgba(8, 23, 26, 0.8);
+/* --- Interactive Signals Starters --- */
+.jj-footer__signals-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 500px;
 }
 
-/* --- Right Column: Actions --- */
+.jj-footer__signals-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.jj-footer__signal-btn {
+  background: rgba(232, 226, 216, 0.08);
+  border: 1px solid rgba(232, 226, 216, 0.25);
+  border-radius: 6px;
+  color: #f0ece4;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  padding: 10px 16px;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  text-shadow: 0 1px 3px rgba(8, 23, 26, 0.8);
+}
+
+.jj-footer__signal-btn:hover {
+  border-color: #ff7a59;
+  color: #ffffff;
+  background: rgba(255, 122, 89, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 122, 89, 0.12);
+}
+
+.jj-footer__signal-btn.disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
+  border-color: rgba(232, 226, 216, 0.08);
+}
+
+.jj-footer__signal-status {
+  min-height: 20px;
+  margin-top: 4px;
+}
+
+.jj-footer__status-text {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.jj-footer__status-text.idle {
+  color: rgba(232, 226, 216, 0.35);
+}
+
+.jj-footer__status-text.routing {
+  color: #ff7a59;
+  font-weight: 500;
+  animation: text-pulse 1s infinite alternate;
+}
+
+.jj-footer__status-text.sent {
+  color: #10b981;
+  font-weight: 500;
+}
+
+@keyframes text-pulse {
+  0% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+/* --- Right Column: Direct Connections --- */
 .jj-footer__actions {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 28px;
   align-items: flex-start;
   text-align: left;
 }
@@ -117,7 +261,7 @@
 .jj-footer__actions-group {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   width: 100%;
 }
 
@@ -201,11 +345,11 @@
   align-items: center;
   gap: 8px;
   padding: 8px 14px;
-  border: 1px solid rgba(232, 226, 216, 0.15);
-  background: rgba(8, 23, 26, 0.5);
+  border: 1px solid rgba(232, 226, 216, 0.25);
+  background: rgba(232, 226, 216, 0.08);
   border-radius: 6px;
   text-decoration: none;
-  color: rgba(232, 226, 216, 0.8);
+  color: #e8e2d8;
   transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
   text-shadow: 0 1px 2px rgba(8, 23, 26, 0.6);
 }
@@ -213,8 +357,9 @@
 .jj-footer__social:hover {
   border-color: rgba(255, 122, 89, 0.45);
   color: #ffffff;
-  background: rgba(179, 90, 68, 0.08);
+  background: rgba(255, 122, 89, 0.15);
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 122, 89, 0.12);
 }
 
 .jj-footer__social-icon {
@@ -274,10 +419,7 @@
 
   .jj-footer__heading {
     font-size: clamp(1.8rem, 6vw, 2.5rem);
-  }
-
-  .jj-footer__body {
-    font-size: 0.9rem;
+    margin-bottom: 24px;
   }
 
   .jj-footer__actions {

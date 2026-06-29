@@ -35,13 +35,61 @@ const SOCIALS = [
   },
 ];
 
+const ROOT_PATHS = [
+  { id: 'root-left-main', d: 'M 150 0 C 140 120, 180 200, 110 320 C 70 390, 90 480, 120 540', nodeX: 120, nodeY: 540 },
+  { id: 'root-left-branch1', d: 'M 160 160 C 130 220, 110 280, 75 340', nodeX: 75, nodeY: 340 },
+  { id: 'root-center-main', d: 'M 500 0 C 520 150, 480 280, 540 380 C 580 450, 510 520, 480 620', nodeX: 480, nodeY: 620 },
+  { id: 'root-center-branch1', d: 'M 505 200 C 450 260, 420 320, 390 410', nodeX: 390, nodeY: 410 },
+  { id: 'root-center-branch2', d: 'M 525 330 C 590 400, 610 460, 650 520', nodeX: 650, nodeY: 520 },
+  { id: 'root-right-main', d: 'M 850 0 C 830 140, 890 260, 860 380 C 830 470, 870 540, 920 600', nodeX: 920, nodeY: 600 },
+  { id: 'root-right-branch1', d: 'M 870 200 C 920 280, 950 360, 990 430', nodeX: 990, nodeY: 430 }
+];
+
 export default function JungleFooter() {
   const [copied, setCopied] = useState(false);
+  const [signalState, setSignalState] = useState<{ status: 'idle' | 'routing' | 'sent'; label: string }>({
+    status: 'idle',
+    label: ''
+  });
 
   const handleCopy = () => {
     navigator.clipboard.writeText('danikhalang@gmail.com');
     setCopied(true);
     setTimeout(() => setCopied(false), 2200);
+  };
+
+  const handleSignalTrigger = (option: 'collab' | 'coffee' | 'hi') => {
+    if (signalState.status !== 'idle') return;
+
+    let optionLabel = '';
+    let mailtoUrl = '';
+
+    switch (option) {
+      case 'collab':
+        optionLabel = 'Collaborate';
+        mailtoUrl = "mailto:danikhalang@gmail.com?subject=Collaborate%20with%20Danial&body=Hi%20Danial%2C%0A%0AI%20was%20browsing%20your%20portfolio%20and%20would%20love%20to%20discuss%20working%20together%20on...";
+        break;
+      case 'coffee':
+        optionLabel = 'Coffee Chat';
+        mailtoUrl = "mailto:danikhalang@gmail.com?subject=Coffee%20Chat%20%2F%20Let's%20connect&body=Hi%20Danial%2C%0A%0AI'd%20love%20to%20grab%20a%20coffee%20(or%20have%20a%20virtual%20chat)%20to%20talk%20about...";
+        break;
+      case 'hi':
+        optionLabel = 'Say Hello';
+        mailtoUrl = "mailto:danikhalang@gmail.com?subject=Just%20saying%20hi!&body=Hi%20Danial%2C%0A%0AJust%20stopping%20by%20your%20portfolio%20to%20say%20hello!%20Stunning%20work.";
+        break;
+    }
+
+    setSignalState({ status: 'routing', label: optionLabel });
+
+    setTimeout(() => {
+      setSignalState({ status: 'sent', label: optionLabel });
+      window.location.href = mailtoUrl;
+
+      // Reset state after a few seconds
+      setTimeout(() => {
+        setSignalState({ status: 'idle', label: '' });
+      }, 3500);
+    }, 1200);
   };
 
   return (
@@ -56,20 +104,91 @@ export default function JungleFooter() {
       {/* Warm ambient glow */}
       <div className="jj-footer__glow" aria-hidden="true" />
 
+      {/* Animated SVG Mycelium/Root Network */}
+      <svg
+        className="jj-root-network"
+        viewBox="0 0 1200 700"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+      >
+        {ROOT_PATHS.map((path) => (
+          <g key={path.id}>
+            <path
+              className="jj-root-path"
+              d={path.d}
+            />
+            <path
+              className={`jj-root-pulse ${signalState.status === 'routing' ? 'routing' : ''}`}
+              d={path.d}
+            />
+            <circle
+              className={`jj-root-node ${signalState.status === 'routing' ? 'active' : ''}`}
+              cx={path.nodeX}
+              cy={path.nodeY}
+              r="4"
+            />
+          </g>
+        ))}
+      </svg>
+
       <div className="jj-footer__content">
-        {/* Left Column: Editorial Greeting */}
+        {/* Left Column: Editorial Greeting & Signal Starters */}
         <div className="jj-footer__info">
           <span className="jj-footer__kicker">[ END OF THE TRAIL ]</span>
           <h2 className="jj-footer__heading">
             The roots<br />connect here.
           </h2>
-          <p className="jj-footer__body">
-            If something sparked your curiosity along the way — a project,
-            an idea, or just a good conversation — I'd love to hear from you.
-          </p>
+
+          <div className="jj-footer__signals-section">
+            <span className="jj-footer__group-label">Send a signal through the roots:</span>
+            <div className="jj-footer__signals-grid">
+              <button
+                type="button"
+                className={`jj-footer__signal-btn ${signalState.status !== 'idle' ? 'disabled' : ''}`}
+                onClick={() => handleSignalTrigger('collab')}
+                disabled={signalState.status !== 'idle'}
+              >
+                [ Collaborate ]
+              </button>
+              <button
+                type="button"
+                className={`jj-footer__signal-btn ${signalState.status !== 'idle' ? 'disabled' : ''}`}
+                onClick={() => handleSignalTrigger('coffee')}
+                disabled={signalState.status !== 'idle'}
+              >
+                [ Coffee Chat ]
+              </button>
+              <button
+                type="button"
+                className={`jj-footer__signal-btn ${signalState.status !== 'idle' ? 'disabled' : ''}`}
+                onClick={() => handleSignalTrigger('hi')}
+                disabled={signalState.status !== 'idle'}
+              >
+                [ Say Hello ]
+              </button>
+            </div>
+            
+            <div className="jj-footer__signal-status">
+              {signalState.status === 'routing' && (
+                <span className="jj-footer__status-text routing">
+                  Routing "{signalState.label}" signal through root nodes...
+                </span>
+              )}
+              {signalState.status === 'sent' && (
+                <span className="jj-footer__status-text sent">
+                  ✓ Connection established. Opening email client...
+                </span>
+              )}
+              {signalState.status === 'idle' && (
+                <span className="jj-footer__status-text idle">
+                  System ready. Select a node to connect.
+                </span>
+              )}
+            </div>
+          </div>
         </div>
 
-        {/* Right Column: Contact Grid */}
+        {/* Right Column: Direct Connections */}
         <div className="jj-footer__actions">
           <div className="jj-footer__actions-group">
             <span className="jj-footer__group-label">Direct Connection</span>
