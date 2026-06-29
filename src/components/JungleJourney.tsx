@@ -177,11 +177,13 @@ export default function JungleJourney() {
       });
 
       const projectStates = projectElements.map((projectElement) => ({
+        element: projectElement,
         baseLeft: Number(projectElement.dataset.journeyLeft),
         setX: gsap.quickSetter(projectElement, 'x', 'vw'),
         setY: gsap.quickSetter(projectElement, 'y', 'px'),
         setScaleX: gsap.quickSetter(projectElement, 'scaleX'),
         setScaleY: gsap.quickSetter(projectElement, 'scaleY'),
+        setOpacity: gsap.quickSetter(projectElement, 'opacity'),
       }));
       const progressHud = container.querySelector<HTMLElement>(
         '.jj-cloud-hud',
@@ -334,11 +336,13 @@ export default function JungleJourney() {
         let nearestProjectDistance = Number.POSITIVE_INFINITY;
 
         projectStates.forEach(({
+          element,
           baseLeft,
           setX,
           setY,
           setScaleX,
           setScaleY,
+          setOpacity,
         }, projectIndex) => {
           const currentLeft = baseLeft - CONTENT_TRAVEL * journeyProgress;
           const distanceFromFocus = Math.abs(currentLeft - 50);
@@ -368,6 +372,18 @@ export default function JungleJourney() {
 
           setScaleX(scale);
           setScaleY(scale);
+
+          // Card reaches full opacity (1.0) quickly (by 10% of its journey up)
+          const cardOpacity = gsap.utils.clamp(0, 1, focusProgress / 0.1);
+          setOpacity(cardOpacity);
+
+          if (cardOpacity <= 0) {
+            element.style.visibility = 'hidden';
+            element.style.pointerEvents = 'none';
+          } else {
+            element.style.visibility = 'visible';
+            element.style.pointerEvents = 'auto';
+          }
         });
 
         const activeProject = projectElements[nearestProjectIndex];
