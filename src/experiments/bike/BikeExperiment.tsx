@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './BikeExperiment.css';
+import characterImg from './character.png';
 
 const BikeExperiment: React.FC = () => {
   const [speed, setSpeed] = useState<number>(3); // 0 (paused) to 5 (fast)
@@ -7,6 +8,7 @@ const BikeExperiment: React.FC = () => {
   const [wheelColor, setWheelColor] = useState<string>('#1d3557');
   const [theme, setTheme] = useState<'neon' | 'retro' | 'cyber'>('neon');
   const [showLabels, setShowLabels] = useState<boolean>(true); // Enabled by default for user communication
+  const [showRider, setShowRider] = useState<boolean>(true); // Show character on top of the bike
 
   // Map speed slider value to animation duration in seconds
   const getRotationDuration = () => {
@@ -109,6 +111,16 @@ const BikeExperiment: React.FC = () => {
               <div className="seatpost" data-label="seatpost"></div>
               <div className="saddle" data-label="saddle"></div>
             </div>
+
+            {/* Rider Character */}
+            {showRider && (
+              <img 
+                src={characterImg} 
+                className="rider" 
+                data-label="rider-character" 
+                alt="Rider"
+              />
+            )}
           </div>
         </div>
 
@@ -189,6 +201,18 @@ const BikeExperiment: React.FC = () => {
                 style={{ cursor: 'pointer' }}
               />
               Show CSS Class Labels
+            </label>
+          </div>
+
+          <div className="control-group rider-toggle-group">
+            <label className="checkbox-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+              <input 
+                type="checkbox" 
+                checked={showRider} 
+                onChange={(e) => setShowRider(e.target.checked)} 
+                style={{ cursor: 'pointer' }}
+              />
+              Show Rider Character
             </label>
           </div>
 
