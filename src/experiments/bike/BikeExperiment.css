@@ -349,7 +349,7 @@
   left: 125px;
   bottom: 125px;
   width: 116px;
-  transform: rotate(4.97deg);
+  transform: rotate(-4.97deg);
 }
 
 .seat-stay {
@@ -361,7 +361,7 @@
   left: 125px;
   bottom: 125px;
   width: 156px;
-  transform: rotate(56.8deg);
+  transform: rotate(-56.8deg);
 }
 
 .seat-tube {
@@ -375,7 +375,7 @@
   left: 240px;
   bottom: 135px;
   width: 124px;
-  transform: rotate(104deg);
+  transform: rotate(-104deg);
 }
 
 .down-tube {
@@ -387,7 +387,7 @@
   left: 240px;
   bottom: 135px;
   width: 171px;
-  transform: rotate(37.87deg);
+  transform: rotate(-37.87deg);
 }
 
 .top-tube {
@@ -399,7 +399,7 @@
   left: 210px;
   bottom: 255px;
   width: 157px;
-  transform: rotate(9.16deg);
+  transform: rotate(-9.16deg);
 }
 
 /* Bottom bracket center circle */
@@ -440,7 +440,7 @@
   background: var(--bike-color, #e63946);
   border-radius: 4px;
   transform-origin: 0% 50%;
-  transform: rotate(104deg);
+  transform: rotate(-104deg);
   box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2), 0 2px 4px rgba(0,0,0,0.3);
 }
 
@@ -463,7 +463,7 @@
   background-color: var(--wheel-color, #333);
   border-radius: 3px;
   transform-origin: 0% 50%;
-  transform: rotate(-72.1deg);
+  transform: rotate(72.1deg);
 }
 
 .stem {
@@ -474,7 +474,7 @@
   height: 6px;
   background-color: #333;
   transform-origin: 0% 50%;
-  transform: rotate(15deg); /* Angle forward */
+  transform: rotate(-15deg); /* Angle forward */
   border-radius: 2px;
 }
 
@@ -537,18 +537,18 @@
   height: 2px;
   background-color: #555;
   transform-origin: 0% 50%;
-  transform: rotate(8deg);
+  transform: rotate(-8deg);
 }
 
 .chain-lower {
   position: absolute;
   left: 125px;
-  bottom: 112px;
+  bottom: 107px;
   width: 116px;
   height: 2px;
   background-color: #555;
   transform-origin: 0% 50%;
-  transform: rotate(-5deg);
+  transform: rotate(-2.5deg);
 }
 
 /* Crank Arms and Pedals */
