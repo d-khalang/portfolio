@@ -608,7 +608,7 @@
 }
 
 .crank-right {
-  transform: rotate(80deg);
+  transform: rotate(50deg);
   animation: spin-right var(--rotation-speed, 3s) linear infinite;
   animation-play-state: var(--play-state, running);
   z-index: 16;
@@ -617,7 +617,7 @@
 
 .crank-left {
   /* Opposite side crank */
-  transform: rotate(260deg);
+  transform: rotate(230deg);
   animation: spin-left var(--rotation-speed, 3s) linear infinite;
   animation-play-state: var(--play-state, running);
   z-index: 6;
@@ -626,21 +626,21 @@
 
 @keyframes spin-right {
   from {
-    transform: rotate(80deg);
+    transform: rotate(50deg);
   }
 
   to {
-    transform: rotate(440deg);
+    transform: rotate(410deg);
   }
 }
 
 @keyframes spin-left {
   from {
-    transform: rotate(260deg);
+    transform: rotate(230deg);
   }
 
   to {
-    transform: rotate(620deg);
+    transform: rotate(590deg);
   }
 }
 
@@ -688,34 +688,34 @@
 }
 
 .crank-right .pedal {
-  transform: rotate(-80deg);
+  transform: rotate(-50deg);
   animation: counter-spin-right var(--rotation-speed, 3s) linear infinite;
   animation-play-state: var(--play-state, running);
 }
 
 .crank-left .pedal {
-  transform: rotate(-260deg);
+  transform: rotate(-230deg);
   animation: counter-spin-left var(--rotation-speed, 3s) linear infinite;
   animation-play-state: var(--play-state, running);
 }
 
 @keyframes counter-spin-right {
   from {
-    transform: rotate(-80deg);
+    transform: rotate(-50deg);
   }
 
   to {
-    transform: rotate(-440deg);
+    transform: rotate(-410deg);
   }
 }
 
 @keyframes counter-spin-left {
   from {
-    transform: rotate(-260deg);
+    transform: rotate(-230deg);
   }
 
   to {
-    transform: rotate(-620deg);
+    transform: rotate(-590deg);
   }
 }
 

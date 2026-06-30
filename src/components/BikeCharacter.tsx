@@ -31,7 +31,8 @@ const BikeCharacter: React.FC<BikeCharacterProps> = ({
   const isScrollDriven = rotationAngle !== undefined;
 
   if (isScrollDriven) {
-    const angleNormalized = ((rotationAngle % 360) + 360) % 360;
+    const physicalAngle = rotationAngle + 50;
+    const angleNormalized = ((physicalAngle % 360) + 360) % 360;
     if (angleNormalized >= 0 && angleNormalized < 75) {
       activeFrame = '5';
     } else if (angleNormalized >= 75 && angleNormalized < 105) {
@@ -172,15 +173,15 @@ const BikeCharacter: React.FC<BikeCharacterProps> = ({
               <div className="chain-lower" data-label="chain-lower"></div>
 
               {/* Crank Arm & Pedal 1 */}
-              <div className="crank-assembly crank-left" style={getRotationStyle(260)}>
+              <div className="crank-assembly crank-left" style={getRotationStyle(230)}>
                 <div className="crank-arm" data-label="crank-arm"></div>
-                <div className="pedal" data-label="pedal" style={getCounterRotationStyle(260)}></div>
+                <div className="pedal" data-label="pedal" style={getCounterRotationStyle(230)}></div>
               </div>
               
               {/* Crank Arm & Pedal 2 */}
-              <div className="crank-assembly crank-right" style={getRotationStyle(80)}>
+              <div className="crank-assembly crank-right" style={getRotationStyle(50)}>
                 <div className="crank-arm" data-label="crank-arm"></div>
-                <div className="pedal" data-label="pedal" style={getCounterRotationStyle(80)}></div>
+                <div className="pedal" data-label="pedal" style={getCounterRotationStyle(50)}></div>
               </div>
             </div>
 
