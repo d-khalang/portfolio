@@ -363,7 +363,7 @@
   */
   left: 145px;
   bottom: 125px;
-  width: 84px;
+  width: 94px;
   transform: rotate(4.8deg);
 }
 
@@ -386,10 +386,10 @@
      length = sqrt(13^2 + 102^2) = 102.8px
      angle = 180 - atan2(102, 13) = 97.2deg (in Y-down: -97.2deg)
   */
-  left: 228px;
-  bottom: 118px;
-  width: 103px;
-  transform: rotate(-97.2deg);
+  left: 245px;
+  bottom: 112px;
+  width: 113px;
+  transform: rotate(-105.2deg);
 }
 
 .down-tube {
@@ -398,10 +398,10 @@
      length = sqrt(147^2 + 107^2) = 181.8px
      angle = atan2(107, 147) = 36deg (in Y-down: -36deg)
   */
-  left: 228px;
-  bottom: 118px;
+  left: 238px;
+  bottom: 108px;
   width: 182px;
-  transform: rotate(-36deg);
+  transform: rotate(-42deg);
 }
 
 .top-tube {
@@ -437,7 +437,8 @@
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: auto; /* Allow children to sort globally */
+  z-index: auto;
+  /* Allow children to sort globally */
 }
 
 .head-tube {
@@ -457,7 +458,8 @@
   transform-origin: 0% 50%;
   transform: rotate(-99.5deg);
   box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2), 0 2px 4px rgba(0, 0, 0, 0.3);
-  z-index: 10; /* Render in front of body */
+  z-index: 10;
+  /* Render in front of body */
 }
 
 .theme-neon .head-tube {
@@ -480,21 +482,23 @@
   border-radius: 3px;
   transform-origin: 0% 50%;
   transform: rotate(72.9deg);
-  z-index: 10; /* Render in front of wheel */
+  z-index: 10;
+  /* Render in front of wheel */
 }
 
 .stem {
   position: absolute;
-  left: 370px;
-  bottom: 255px;
-  width: 18px;
+  left: 374px;
+  bottom: 257px;
+  width: 15px;
   height: 6px;
   background-color: #222;
   transform-origin: 0% 50%;
-  transform: rotate(220deg);
+  transform: rotate(230deg);
   /* Angle forward */
   border-radius: 2px;
-  z-index: 4; /* Render behind arms (which are z-index: 5) */
+  z-index: 4;
+  /* Render behind arms (which are z-index: 5) */
 }
 
 .theme-neon .stem,
@@ -511,15 +515,16 @@
 
 .handlebars {
   position: absolute;
-  left: 360px;
-  bottom: 265px;
+  left: 362px;
+  bottom: 270px;
   width: 25px;
   height: 6px;
   background-color: #222;
   border-radius: 3px;
   transform-origin: 0% 50%;
   transform: rotate(-15deg);
-  z-index: 4; /* Render behind hands (which are z-index: 5) */
+  z-index: 4;
+  /* Render behind hands (which are z-index: 5) */
 }
 
 .bar-drop {
@@ -541,7 +546,8 @@
   top: 0;
   width: 100%;
   height: 100%;
-  z-index: 11; /* Allow children to sort globally */
+  z-index: 11;
+  /* Allow children to sort globally */
   transform-origin: 0% 50%;
   /* transform: translateY(18px); */
   transform: translateY(-25px) rotate(10deg);
@@ -559,7 +565,8 @@
   transform: translate(-50%, 50%);
   animation: spin-chainring var(--rotation-speed, 3s) linear infinite;
   animation-play-state: var(--play-state, running);
-  z-index: 11; /* Render in front of frame stays */
+  z-index: 11;
+  /* Render in front of frame stays */
 }
 
 .chain-upper {
@@ -571,7 +578,8 @@
   background-color: #555;
   transform-origin: 0% 50%;
   transform: rotate(-8deg);
-  z-index: 11; /* Render in front of frame stays */
+  z-index: 11;
+  /* Render in front of frame stays */
 }
 
 .chain-lower {
@@ -583,7 +591,8 @@
   background-color: #555;
   transform-origin: 0% 50%;
   transform: rotate(-2.7deg);
-  z-index: 11; /* Render in front of frame stays */
+  z-index: 11;
+  /* Render in front of frame stays */
 }
 
 /* Crank Arms and Pedals */
@@ -602,7 +611,8 @@
   transform: rotate(80deg);
   animation: spin-right var(--rotation-speed, 3s) linear infinite;
   animation-play-state: var(--play-state, running);
-  z-index: 16; /* Render in front of the right leg (which has z-index: 15) */
+  z-index: 16;
+  /* Render in front of the right leg (which has z-index: 15) */
 }
 
 .crank-left {
@@ -724,7 +734,7 @@
   position: absolute;
   left: 215px;
   bottom: 220px;
-  width: 20px;
+  width: 30px;
   height: 5px;
   background-color: #555;
   transform-origin: 0% 50%;
@@ -734,7 +744,7 @@
 .saddle {
   position: absolute;
   left: 195px;
-  bottom: 238px;
+  bottom: 245px;
   width: 32px;
   height: 7px;
   background-color: #111;
@@ -1010,7 +1020,7 @@
   animation: rider-bob var(--rotation-speed, 3s) ease-in-out infinite;
   animation-play-state: var(--play-state, running);
   transform-origin: 0% 50%;
-  transform: rotate(0deg);
+  transform: rotate(0.5deg);
 }
 
 .rider-back-leg {
@@ -1027,10 +1037,10 @@
 
   0%,
   100% {
-    transform: translateY(0) rotate(0deg);
+    transform: translateY(-8) rotate(0.2deg);
   }
 
   50% {
-    transform: translateY(-2px) rotate(0.5deg);
+    transform: translateY(-10px) rotate(0.5deg);
   }
 }
