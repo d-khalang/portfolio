@@ -485,11 +485,11 @@
   position: absolute;
   left: 370px;
   bottom: 255px;
-  width: 25px;
+  width: 18px;
   height: 6px;
   background-color: #222;
   transform-origin: 0% 50%;
-  transform: rotate(-15deg);
+  transform: rotate(220deg);
   /* Angle forward */
   border-radius: 2px;
 }
@@ -508,8 +508,8 @@
 
 .handlebars {
   position: absolute;
-  left: 394px;
-  bottom: 261px;
+  left: 355px;
+  bottom: 265px;
   width: 22px;
   height: 6px;
   background-color: #222;
@@ -537,7 +537,7 @@
   top: 0;
   width: 100%;
   height: 100%;
-  z-index: 11;
+  z-index: 11; /* Allow children to sort globally */
   transform-origin: 0% 50%;
   /* transform: translateY(18px); */
   transform: translateY(-25px) rotate(10deg);
@@ -555,6 +555,7 @@
   transform: translate(-50%, 50%);
   animation: spin-chainring var(--rotation-speed, 3s) linear infinite;
   animation-play-state: var(--play-state, running);
+  z-index: 11; /* Render in front of frame stays */
 }
 
 .chain-upper {
@@ -566,6 +567,7 @@
   background-color: #555;
   transform-origin: 0% 50%;
   transform: rotate(-8deg);
+  z-index: 11; /* Render in front of frame stays */
 }
 
 .chain-lower {
@@ -577,6 +579,7 @@
   background-color: #555;
   transform-origin: 0% 50%;
   transform: rotate(-2.7deg);
+  z-index: 11; /* Render in front of frame stays */
 }
 
 /* Crank Arms and Pedals */
@@ -595,6 +598,7 @@
   transform: rotate(80deg);
   animation: spin-right var(--rotation-speed, 3s) linear infinite;
   animation-play-state: var(--play-state, running);
+  z-index: 16; /* Render in front of the right leg (which has z-index: 15) */
 }
 
 .crank-left {
@@ -656,6 +660,17 @@
 
 .crank-left .crank-arm {
   background-color: #555;
+}
+
+.pedal {
+  position: absolute;
+  right: -8px;
+  width: 18px;
+  height: 10px;
+  background-color: #333;
+  border: 2px solid #555;
+  border-radius: 3px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 .crank-right .pedal {
