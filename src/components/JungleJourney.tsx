@@ -424,7 +424,7 @@ export default function JungleJourney() {
           backgroundColor: 'rgba(219, 232, 228, 0)',
           borderColor: 'rgba(18, 59, 69, 0)',
           boxShadow: '0 8px 28px rgba(18, 59, 69, 0)',
-          color: '#dbe8e4',
+          color: '#123b45',
         });
       }
 
@@ -526,6 +526,13 @@ export default function JungleJourney() {
         y: -60,
         opacity: 0,
         duration: 0.12,
+        ease: 'power2.inOut',
+      }, 0);
+
+      timeline.to('.jj-hero__header', {
+        y: -30,
+        opacity: 0,
+        duration: 0.10,
         ease: 'power2.inOut',
       }, 0);
 
@@ -694,19 +701,7 @@ export default function JungleJourney() {
     <main ref={containerRef} className="jj-container">
       <JourneyEnvironment />
 
-      {/* <header className="jj-header">
-        <div className="jj-header__inner">
-          <div className="jj-header__brand">
-            <button className="jj-header__brand-btn" type="button">
-              <span className="jj-hero__meta">DANIAL KHALILI</span>
-            </button>
-          </div>
 
-          <div className="jj-header__status">
-            <span className="jj-hero__meta jj-hero__meta--right">SYS_STATUS: ACTIVE</span>
-          </div>
-        </div>
-      </header> */}
 
       <div className="jj-cloud-hud" aria-label="Journey Progress HUD">
         {/* Info Cloud (Wider, left side) */}
@@ -737,6 +732,13 @@ export default function JungleJourney() {
       <div className="jj-hero" aria-label="Hero Introduction">
         <div className="jj-hero__backdrop" />
 
+        <header className="jj-hero__header">
+          <div className="jj-hero__header-inner">
+            <span className="jj-hero__header-name">Danial Khalili</span>
+            <span className="jj-hero__header-role">Full-Stack Software Engineer</span>
+          </div>
+        </header>
+
         <div className="jj-hero__content">
           <div className="jj-hero__content-inner">
             <h1 className="jj-hero__statement">
@@ -750,11 +752,7 @@ export default function JungleJourney() {
                 WITH TASTE
               </span>
             </h1>
-            <div className="jj-hero__profile">
-              <span className="jj-hero__name">Danial Khalili</span>
-              <span className="jj-hero__divider">//</span>
-              <span className="jj-hero__role">Full-Stack Software Engineer</span>
-            </div>
+
           </div>
         </div>
 
