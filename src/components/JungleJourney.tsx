@@ -114,6 +114,9 @@ export default function JungleJourney() {
   const containerRef = useRef<HTMLDivElement>(null);
   const bikerRef = useRef<HTMLDivElement>(null);
   const [rotationAngle, setRotationAngle] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  const [bikeColor, setBikeColor] = useState<string | undefined>(undefined);
+  const [wheelColor, setWheelColor] = useState<string | undefined>(undefined);
   const featuredProjects = projectsData.filter((project) => project.featured);
 
   useLayoutEffect(() => {
@@ -863,11 +866,74 @@ export default function JungleJourney() {
       <div
         ref={bikerRef}
         className="jj-biker"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
-        <BikeCharacter
-          rotationAngle={rotationAngle}
-          theme="retro"
-        />
+        <div style={{ position: 'relative', width: '100%', height: '100%', pointerEvents: 'auto' }}>
+          <BikeCharacter
+            rotationAngle={rotationAngle}
+            theme="retro"
+            bikeColor={bikeColor}
+            wheelColor={wheelColor}
+          />
+          
+          {/* Small Customizer Pop-up Panel */}
+          <div className={`jj-biker-popup ${isHovered ? 'visible' : ''}`}>
+            <div className="popup-title">Bike Customizer</div>
+            
+            <div className="popup-control">
+              <label>Frame Color:</label>
+              <div className="popup-presets">
+                {['#d94e34', '#e63946', '#457b9d', '#ffb703', '#2a9d8f'].map((color) => (
+                  <button 
+                    key={color} 
+                    className={`popup-color-preset ${bikeColor === color ? 'active' : ''}`}
+                    style={{ backgroundColor: color }}
+                    onClick={() => setBikeColor(color)}
+                  />
+                ))}
+                <input 
+                  type="color" 
+                  value={bikeColor || '#d94e34'} 
+                  onChange={(e) => setBikeColor(e.target.value)} 
+                  className="popup-color-picker"
+                />
+              </div>
+            </div>
+
+            <div className="popup-control">
+              <label>Wheels Accent:</label>
+              <div className="popup-presets">
+                {['#2b2d42', '#1d3557', '#e63946', '#2a9d8f', '#a8dadc'].map((color) => (
+                  <button 
+                    key={color} 
+                    className={`popup-color-preset ${wheelColor === color ? 'active' : ''}`}
+                    style={{ backgroundColor: color }}
+                    onClick={() => setWheelColor(color)}
+                  />
+                ))}
+                <input 
+                  type="color" 
+                  value={wheelColor || '#2b2d42'} 
+                  onChange={(e) => setWheelColor(e.target.value)} 
+                  className="popup-color-picker"
+                />
+              </div>
+            </div>
+            
+            {(bikeColor !== undefined || wheelColor !== undefined) && (
+              <button 
+                className="popup-reset-btn"
+                onClick={() => {
+                  setBikeColor(undefined);
+                  setWheelColor(undefined);
+                }}
+              >
+                Reset Colors
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
       <JungleFooter />
