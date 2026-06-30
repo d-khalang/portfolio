@@ -142,15 +142,15 @@ export default function JungleJourney() {
         const containerRect = container.getBoundingClientRect();
         const highlightRect = highlight.getBoundingClientRect();
 
-        // Horizontal target: align biker center with ~87% of the highlight text width (shifting 0.05 / half-character to the right)
-        targetX = (highlightRect.left + highlightRect.width * 0.87) - (containerRect.width / 2);
+        // Horizontal target: align biker center with ~87% of the highlight text width + 20px right
+        targetX = (highlightRect.left + highlightRect.width * 0.87) - (containerRect.width / 2) + 20;
 
-        // Vertical target: place the biker's wheels one line space to the bottom (using highlightRect.height)
+        // Vertical target: place the biker's wheels one line space to the bottom + 15px down
         const isMobile = window.innerWidth <= 720;
         const bottomOffset = containerRect.height * (isMobile ? 0.02 : 0.04);
         const bikerBottomDefault = containerRect.height - bottomOffset;
 
-        targetY = (highlightRect.top + highlightRect.height * 0.18) - bikerBottomDefault;
+        targetY = (highlightRect.top + highlightRect.height * 0.18) - bikerBottomDefault + 15;
         return { x: targetX, y: targetY };
       };
 
