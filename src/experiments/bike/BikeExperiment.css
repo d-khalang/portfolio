@@ -210,7 +210,7 @@
   width: 150px;
   height: 150px;
   border-radius: 50%;
-  z-index: 10;
+  z-index: 3;
 }
 
 .rear-wheel {
@@ -325,6 +325,7 @@
   box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2), 0 2px 4px rgba(0,0,0,0.3);
   height: 8px; /* Thickness of tubes */
   transform-origin: 0% 50%; /* Rotate from start point */
+  z-index: 10;
 }
 
 .theme-neon .tube {
@@ -387,8 +388,8 @@
   */
   left: 250px;
   bottom: 135px;
-  width: 136.5px;
-  transform: rotate(-23.7deg);
+  width: 154px;
+  transform: rotate(-35.75deg);
 }
 
 .top-tube {
@@ -399,8 +400,8 @@
   */
   left: 215px;
   bottom: 220px;
-  width: 155px;
-  transform: rotate(0deg);
+  width: 159px;
+  transform: rotate(-12.7deg);
 }
 
 /* Bottom bracket center circle */
@@ -435,7 +436,7 @@
   */
   position: absolute;
   left: 375px;
-  bottom: 190px;
+  bottom: 225px;
   width: 31px;
   height: 12px; /* Thicker tube */
   background: var(--bike-color, #e63946);
@@ -458,24 +459,24 @@
   */
   position: absolute;
   left: 370px;
-  bottom: 220px;
-  width: 103px;
+  bottom: 255px;
+  width: 136px;
   height: 6px;
   background-color: var(--wheel-color, #333);
   border-radius: 3px;
   transform-origin: 0% 50%;
-  transform: rotate(67.2deg);
+  transform: rotate(72.9deg);
 }
 
 .stem {
   position: absolute;
   left: 370px;
-  bottom: 220px;
+  bottom: 255px;
   width: 25px;
   height: 6px;
   background-color: #222;
   transform-origin: 0% 50%;
-  transform: rotate(-90deg); /* Angle forward */
+  transform: rotate(-15deg); /* Angle forward */
   border-radius: 2px;
 }
 
@@ -490,8 +491,8 @@
 
 .handlebars {
   position: absolute;
-  left: 364px;
-  bottom: 246px;
+  left: 394px;
+  bottom: 261px;
   width: 22px;
   height: 6px;
   background-color: #222;
@@ -532,7 +533,7 @@
   border: 2px dashed #666;
   background: radial-gradient(circle, transparent 55%, #444 58%, #222 70%);
   transform: translate(-50%, 50%);
-  animation: spin var(--rotation-speed, 3s) linear infinite;
+  animation: spin-chainring var(--rotation-speed, 3s) linear infinite;
   animation-play-state: var(--play-state, running);
 }
 
@@ -571,21 +572,32 @@
 }
 
 .crank-right {
-  animation: spin var(--rotation-speed, 3s) linear infinite;
+  transform: rotate(80deg);
+  animation: spin-right var(--rotation-speed, 3s) linear infinite;
   animation-play-state: var(--play-state, running);
 }
 
 .crank-left {
   /* Opposite side crank */
-  transform: rotate(180deg);
-  animation: spin-opposite var(--rotation-speed, 3s) linear infinite;
+  transform: rotate(260deg);
+  animation: spin-left var(--rotation-speed, 3s) linear infinite;
   animation-play-state: var(--play-state, running);
   z-index: 6; /* Render behind frame */
 }
 
-@keyframes spin-opposite {
-  from { transform: rotate(180deg); }
-  to { transform: rotate(540deg); }
+@keyframes spin-right {
+  from { transform: rotate(80deg); }
+  to { transform: rotate(440deg); }
+}
+
+@keyframes spin-left {
+  from { transform: rotate(260deg); }
+  to { transform: rotate(620deg); }
+}
+
+@keyframes spin-chainring {
+  from { transform: translate(-50%, 50%) rotate(0deg); }
+  to { transform: translate(-50%, 50%) rotate(360deg); }
 }
 
 .crank-arm {
@@ -600,21 +612,26 @@
   background-color: #555;
 }
 
-.pedal {
-  position: absolute;
-  right: -8px;
-  width: 16px;
-  height: 8px;
-  background-color: #222;
-  border: 1px solid #666;
-  border-radius: 2px;
-  animation: counter-spin var(--rotation-speed, 3s) linear infinite;
+.crank-right .pedal {
+  transform: rotate(-80deg);
+  animation: counter-spin-right var(--rotation-speed, 3s) linear infinite;
   animation-play-state: var(--play-state, running);
 }
 
-@keyframes counter-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(-360deg); }
+.crank-left .pedal {
+  transform: rotate(-260deg);
+  animation: counter-spin-left var(--rotation-speed, 3s) linear infinite;
+  animation-play-state: var(--play-state, running);
+}
+
+@keyframes counter-spin-right {
+  from { transform: rotate(-80deg); }
+  to { transform: rotate(-440deg); }
+}
+
+@keyframes counter-spin-left {
+  from { transform: rotate(-260deg); }
+  to { transform: rotate(-620deg); }
 }
 
 /* Saddle/Seat Assembly */
@@ -893,18 +910,26 @@
 }
 
 /* Rider Character */
-.rider {
+.rider-back-leg,
+.rider-front {
   position: absolute;
   left: -140px;
   bottom: 20px;
   width: 840px;
   height: auto;
-  z-index: 15; /* Render in front of bike frame and components */
   pointer-events: none; /* Ignore clicks so controls remain interactive */
   animation: rider-bob var(--rotation-speed, 3s) ease-in-out infinite;
   animation-play-state: var(--play-state, running);
   transform-origin: 0% 50%;
-  transform: rotate(-25deg);
+  transform: rotate(0deg);
+}
+
+.rider-back-leg {
+  z-index: 15; /* Render in front of bike frame and components */
+}
+
+.rider-front {
+  z-index: 5; /* Render behind frame stays and drivetrain, but in front of wheels */
 }
 
 @keyframes rider-bob {

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './BikeExperiment.css';
-import characterImg from './character.png';
+import riderFullImg from './images/right-up-full.webp';
+import riderBackLegImg from './images/right-up-right-leg.webp';
 
 const BikeExperiment: React.FC = () => {
   const [speed, setSpeed] = useState<number>(3); // 0 (paused) to 5 (fast)
@@ -65,6 +66,16 @@ const BikeExperiment: React.FC = () => {
               <div className="hub"></div>
             </div>
 
+            {/* Rider Back Leg (Layered behind frame stays and drivetrain) */}
+            {showRider && (
+              <img 
+                src={riderBackLegImg} 
+                className="rider-back-leg" 
+                data-label="rider-back-leg" 
+                alt="Rider Back Leg"
+              />
+            )}
+
             {/* Bike Frame Tubes */}
             <div className="frame">
               <div className="tube chain-stay" data-label="chain-stay"></div>
@@ -112,11 +123,11 @@ const BikeExperiment: React.FC = () => {
               <div className="saddle" data-label="saddle"></div>
             </div>
 
-            {/* Rider Character */}
+            {/* Rider Front (Full torso + front leg) */}
             {showRider && (
               <img 
-                src={characterImg} 
-                className="rider" 
+                src={riderFullImg} 
+                className="rider-front" 
                 data-label="rider-character" 
                 alt="Rider"
               />
