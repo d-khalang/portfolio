@@ -216,6 +216,7 @@ body {
   z-index: 6;
   display: block;
   width: clamp(210px, 24vw, 390px);
+  aspect-ratio: 500 / 380; /* Preserve bike aspect ratio for foreignObject scaling */
   max-width: none;
   pointer-events: none;
   user-select: none;

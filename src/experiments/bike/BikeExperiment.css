@@ -13,7 +13,7 @@
 }
 
 /* Themes */
-.theme-neon {
+.experiment-container.theme-neon {
   background-color: #0d0b18;
   color: #f1faee;
 }
@@ -36,7 +36,7 @@
     linear-gradient(90deg, rgba(138, 43, 226, 0.15) 1px, transparent 1px);
 }
 
-.theme-retro {
+.experiment-container.theme-retro {
   background-color: #f4eae1;
   color: #2b2d42;
 }
@@ -57,7 +57,7 @@
   background-size: 24px 24px;
 }
 
-.theme-cyber {
+.experiment-container.theme-cyber {
   background-color: #0b0c10;
   color: #66fcf1;
 }

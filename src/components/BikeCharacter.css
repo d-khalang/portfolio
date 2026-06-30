@@ -1,0 +1,643 @@
+/* Standalone Bike & Biker Character Styles */
+
+.bike-container {
+  --bike-color: #e63946;
+  --wheel-color: #1d3557;
+  --rotation-speed: 3s;
+  --play-state: running;
+
+  position: absolute;
+  width: 500px;
+  height: 380px;
+  transform-origin: center bottom;
+  pointer-events: none;
+}
+
+/* Theme presets */
+.bike-container.theme-neon {
+  --bike-color: #ff007f;
+  --wheel-color: #00f0ff;
+}
+
+.bike-container.theme-retro {
+  --bike-color: #d94e34;
+  --wheel-color: #2b2d42;
+}
+
+.bike-container.theme-cyber {
+  --bike-color: #66fcf1;
+  --wheel-color: #1f2833;
+}
+
+/* Bike Outer Frame wrapper */
+.bike {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Wheel Styling */
+.wheel {
+  position: absolute;
+  bottom: 50px;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  z-index: 3;
+}
+
+.rear-wheel {
+  left: 70px;
+}
+
+.front-wheel {
+  left: 335px;
+}
+
+.wheel .tire {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 50%;
+  border: 8px solid #1a1a1a;
+  box-sizing: border-box;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+}
+
+.theme-cyber .wheel .tire {
+  border-color: #0f1115;
+  box-shadow: 0 0 8px rgba(102, 252, 241, 0.2);
+}
+
+.wheel .rim {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  right: 6px;
+  bottom: 6px;
+  border-radius: 50%;
+  border: 4px solid var(--wheel-color);
+  box-sizing: border-box;
+}
+
+.theme-neon .wheel .rim {
+  box-shadow: 0 0 10px var(--wheel-color), inset 0 0 5px var(--wheel-color);
+}
+
+.theme-cyber .wheel .rim {
+  box-shadow: 0 0 8px var(--wheel-color);
+}
+
+.wheel .spokes {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  border-radius: 50%;
+  background: repeating-conic-gradient(
+    from 0deg,
+    transparent 0deg 1.5deg,
+    rgba(255, 255, 255, 0.25) 1.5deg 2deg,
+    transparent 2deg 15deg
+  );
+  animation: spin var(--rotation-speed, 3s) linear infinite;
+  animation-play-state: var(--play-state, running);
+}
+
+.theme-retro .wheel .spokes {
+  background: repeating-conic-gradient(
+    from 0deg,
+    transparent 0deg 1.5deg,
+    rgba(43, 45, 66, 0.2) 1.5deg 2.2deg,
+    transparent 2.2deg 15deg
+  );
+}
+
+.wheel .hub {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 18px;
+  height: 18px;
+  background: #cccccc;
+  border: 2px solid #555555;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 12;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+.rear-wheel .cassette {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 36px;
+  height: 36px;
+  background: repeating-conic-gradient(
+    from 0deg,
+    #777777 0deg 15deg,
+    #555555 15deg 30deg
+  );
+  border: 1px solid #444;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) rotate(0deg);
+  z-index: 11;
+  animation: spin-cassette var(--rotation-speed, 3s) linear infinite;
+  animation-play-state: var(--play-state, running);
+}
+
+/* Frame Tubes */
+.frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: auto;
+}
+
+.tube {
+  position: absolute;
+  background-color: var(--bike-color, #e63946);
+  border-radius: 4px;
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2), 0 2px 4px rgba(0, 0, 0, 0.3);
+  height: 8px;
+  transform-origin: 0% 50%;
+  z-index: 10;
+}
+
+.theme-neon .tube {
+  box-shadow: 0 0 8px var(--bike-color), inset 0 1px 2px rgba(255, 255, 255, 0.5);
+}
+
+.chain-stay {
+  left: 145px;
+  bottom: 125px;
+  width: 84px;
+  transform: rotate(4.8deg);
+}
+
+.seat-stay {
+  left: 145px;
+  bottom: 125px;
+  width: 118px;
+  transform: rotate(-53.6deg);
+  z-index: 11;
+}
+
+.seat-tube {
+  left: 228px;
+  bottom: 118px;
+  width: 103px;
+  transform: rotate(-97.2deg);
+}
+
+.down-tube {
+  left: 228px;
+  bottom: 118px;
+  width: 182px;
+  transform: rotate(-36deg);
+}
+
+.top-tube {
+  left: 215px;
+  bottom: 220px;
+  width: 159px;
+  transform: rotate(-12.7deg);
+}
+
+/* Bottom bracket center circle */
+.bottom-bracket {
+  position: absolute;
+  left: 228px;
+  bottom: 118px;
+  width: 16px;
+  height: 16px;
+  background-color: #333;
+  border: 2px solid #aaa;
+  border-radius: 50%;
+  transform: translate(-50%, 50%);
+  z-index: 10;
+}
+
+/* Fork & Steering Assembly */
+.fork-assembly {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: auto;
+}
+
+.head-tube {
+  position: absolute;
+  left: 375px;
+  bottom: 225px;
+  width: 31px;
+  height: 12px;
+  background: var(--bike-color, #e63946);
+  border-radius: 4px;
+  transform-origin: 0% 50%;
+  transform: rotate(-99.5deg);
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2), 0 2px 4px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+}
+
+.theme-neon .head-tube {
+  box-shadow: 0 0 8px var(--bike-color), inset 0 1px 2px rgba(255, 255, 255, 0.5);
+}
+
+.fork {
+  position: absolute;
+  left: 370px;
+  bottom: 255px;
+  width: 136px;
+  height: 6px;
+  background-color: var(--wheel-color, #333);
+  border-radius: 3px;
+  transform-origin: 0% 50%;
+  transform: rotate(72.9deg);
+  z-index: 10;
+}
+
+.stem {
+  position: absolute;
+  left: 370px;
+  bottom: 255px;
+  width: 50px;
+  height: 6px;
+  background-color: #222;
+  transform-origin: 0% 50%;
+  transform: rotate(194deg);
+  border-radius: 2px;
+  z-index: 12;
+}
+
+.theme-neon .stem,
+.theme-cyber .stem,
+.theme-neon .handlebars,
+.theme-cyber .handlebars {
+  background-color: #555;
+}
+
+.theme-neon .bar-drop,
+.theme-cyber .bar-drop {
+  border-color: #555;
+}
+
+.handlebars {
+  position: absolute;
+  left: 322px;
+  bottom: 267px;
+  width: 25px;
+  height: 6px;
+  background-color: #222;
+  border-radius: 3px;
+  transform-origin: 0% 50%;
+  transform: rotate(-15deg);
+  z-index: 12;
+}
+
+.bar-drop {
+  position: absolute;
+  right: -5px;
+  top: 0;
+  width: 20px;
+  height: 25px;
+  border: 4px solid #222;
+  border-left: 0;
+  border-top: 0;
+  border-radius: 0 0 12px 6px;
+}
+
+/* Drivetrain (Crankset, chain, pedals) */
+.drivetrain {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: auto;
+  transform-origin: 0% 50%;
+  transform: translateY(-25px) rotate(10deg);
+}
+
+.chainring {
+  position: absolute;
+  left: 250px;
+  bottom: 135px;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 2px dashed #666;
+  background: radial-gradient(circle, transparent 55%, #444 58%, #222 70%);
+  transform: translate(-50%, 50%);
+  animation: spin-chainring var(--rotation-speed, 3s) linear infinite;
+  animation-play-state: var(--play-state, running);
+  z-index: 11;
+}
+
+.chain-upper {
+  position: absolute;
+  left: 145px;
+  bottom: 143px;
+  width: 105px;
+  height: 2px;
+  background-color: #555;
+  transform-origin: 0% 50%;
+  transform: rotate(-8deg);
+  z-index: 11;
+}
+
+.chain-lower {
+  position: absolute;
+  left: 145px;
+  bottom: 107px;
+  width: 105px;
+  height: 2px;
+  background-color: #555;
+  transform-origin: 0% 50%;
+  transform: rotate(-2.7deg);
+  z-index: 11;
+}
+
+/* Crank Arms and Pedals */
+.crank-assembly {
+  position: absolute;
+  left: 250px;
+  bottom: 135px;
+  width: 45px;
+  height: 6px;
+  transform-origin: 0% 50%;
+  display: flex;
+  align-items: center;
+}
+
+.crank-right {
+  transform: rotate(80deg);
+  animation: spin-right var(--rotation-speed, 3s) linear infinite;
+  animation-play-state: var(--play-state, running);
+  z-index: 16;
+}
+
+.crank-left {
+  transform: rotate(260deg);
+  animation: spin-left var(--rotation-speed, 3s) linear infinite;
+  animation-play-state: var(--play-state, running);
+  z-index: 6;
+}
+
+.crank-arm {
+  width: 90%;
+  height: 100%;
+  background-color: #888;
+  border-radius: 3px;
+  border: 1px solid #444;
+}
+
+.crank-left .crank-arm {
+  background-color: #555;
+}
+
+.pedal {
+  position: absolute;
+  right: -8px;
+  width: 18px;
+  height: 10px;
+  background-color: #333;
+  border: 2px solid #555;
+  border-radius: 3px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.crank-right .pedal {
+  transform: rotate(-80deg);
+  animation: counter-spin-right var(--rotation-speed, 3s) linear infinite;
+  animation-play-state: var(--play-state, running);
+}
+
+.crank-left .pedal {
+  transform: rotate(-260deg);
+  animation: counter-spin-left var(--rotation-speed, 3s) linear infinite;
+  animation-play-state: var(--play-state, running);
+}
+
+/* Saddle/Seat Assembly */
+.seat-assembly {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 12;
+}
+
+.seatpost {
+  position: absolute;
+  left: 215px;
+  bottom: 220px;
+  width: 4px;
+  height: 25px;
+  background-color: #222;
+  transform-origin: 0% 50%;
+  transform: rotate(-97.2deg);
+}
+
+.saddle {
+  position: absolute;
+  left: 202px;
+  bottom: 238px;
+  width: 28px;
+  height: 7px;
+  background-color: #222;
+  border-radius: 5px 2px 2px 5px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.theme-retro .saddle {
+  background-color: #8b5a2b;
+}
+
+/* Rider Character Base Positioning */
+.rider-back-leg,
+.rider-front {
+  position: absolute;
+  left: -140px;
+  bottom: 20px;
+  width: 840px;
+  height: auto;
+  pointer-events: none;
+  transform-origin: 0% 50%;
+  transform: rotate(0.5deg);
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* Sync each frame to bobbing and active pedaling cycle window (AUTO ANIMATE MODE) */
+.auto-animate .rider-back-leg-up,
+.auto-animate .rider-front-up {
+  animation: 
+    rider-bob var(--rotation-speed, 3s) ease-in-out infinite,
+    pedal-up-opacity var(--rotation-speed, 3s) linear infinite;
+  animation-play-state: var(--play-state, running);
+}
+
+.auto-animate .rider-back-leg-5,
+.auto-animate .rider-front-5 {
+  animation: 
+    rider-bob var(--rotation-speed, 3s) ease-in-out infinite,
+    pedal-5-opacity var(--rotation-speed, 3s) linear infinite;
+  animation-play-state: var(--play-state, running);
+}
+
+.auto-animate .rider-back-leg-down,
+.auto-animate .rider-front-down {
+  animation: 
+    rider-bob var(--rotation-speed, 3s) ease-in-out infinite,
+    pedal-down-opacity var(--rotation-speed, 3s) linear infinite;
+  animation-play-state: var(--play-state, running);
+}
+
+.auto-animate .rider-back-leg-8,
+.auto-animate .rider-front-8 {
+  animation: 
+    rider-bob var(--rotation-speed, 3s) ease-in-out infinite,
+    pedal-8-opacity var(--rotation-speed, 3s) linear infinite;
+  animation-play-state: var(--play-state, running);
+}
+
+.rider-back-leg {
+  z-index: 15;
+}
+
+.rider-front {
+  z-index: 5;
+}
+
+/* SCROLL DRIVEN MODE OVERRIDES */
+.scroll-driven .spokes,
+.scroll-driven .rim,
+.scroll-driven .cassette,
+.scroll-driven .chainring,
+.scroll-driven .crank-assembly,
+.scroll-driven .pedal {
+  animation: none !important;
+}
+
+.scroll-driven .rider-back-leg-up,
+.scroll-driven .rider-front-up,
+.scroll-driven .rider-back-leg-5,
+.scroll-driven .rider-front-5,
+.scroll-driven .rider-back-leg-down,
+.scroll-driven .rider-front-down,
+.scroll-driven .rider-back-leg-8,
+.scroll-driven .rider-front-8 {
+  animation: rider-bob var(--rotation-speed, 3s) ease-in-out infinite;
+  animation-play-state: var(--play-state, running);
+}
+
+.scroll-driven .force-visible {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.scroll-driven .force-hidden {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* Animation Keyframes */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes spin-right {
+  from { transform: rotate(80deg); }
+  to { transform: rotate(440deg); }
+}
+
+@keyframes spin-left {
+  from { transform: rotate(260deg); }
+  to { transform: rotate(620deg); }
+}
+
+@keyframes spin-chainring {
+  from { transform: translate(-50%, 50%) rotate(0deg); }
+  to { transform: translate(-50%, 50%) rotate(360deg); }
+}
+
+@keyframes spin-cassette {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes counter-spin-right {
+  from { transform: rotate(-80deg); }
+  to { transform: rotate(-440deg); }
+}
+
+@keyframes counter-spin-left {
+  from { transform: rotate(-260deg); }
+  to { transform: rotate(-620deg); }
+}
+
+@keyframes rider-bob {
+  0%, 100% {
+    transform: translateY(-8px) rotate(0.2deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(0.5deg);
+  }
+}
+
+/* Opacity cycles (AUTO ANIMATE mode) */
+@keyframes pedal-down-opacity {
+  0%, 15.3%, 90.3%, 100% {
+    opacity: 1;
+    visibility: visible;
+  }
+  15.4%, 90.2% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes pedal-8-opacity {
+  15.3%, 40.3% {
+    opacity: 1;
+    visibility: visible;
+  }
+  0%, 15.2%, 40.4%, 100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes pedal-up-opacity {
+  40.3%, 65.3% {
+    opacity: 1;
+    visibility: visible;
+  }
+  0%, 40.2%, 65.4%, 100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes pedal-5-opacity {
+  65.3%, 90.3% {
+    opacity: 1;
+    visibility: visible;
+  }
+  0%, 65.2%, 90.4%, 100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}

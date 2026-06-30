@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -7,10 +7,10 @@ import greenLayer from '../assets/jungle/web/l2_green.webp';
 import treeLayer from '../assets/jungle/web/l3_trees.webp';
 import roadLayer from '../assets/jungle/web/l4_road.webp';
 import foregroundLayer from '../assets/jungle/web/l5_foreground_blurred.webp';
-import biker from '../assets/jungle/web/biker2.webp';
 import projectsData from '../content/projects.json';
 import JourneyEnvironment from './JourneyEnvironment';
 import JungleFooter from './JungleFooter';
+import BikeCharacter from './BikeCharacter';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -112,7 +112,8 @@ function smoothProjectFocus(progress: number) {
 
 export default function JungleJourney() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const bikerRef = useRef<HTMLImageElement>(null);
+  const bikerRef = useRef<HTMLDivElement>(null);
+  const [rotationAngle, setRotationAngle] = useState(0);
   const featuredProjects = projectsData.filter((project) => project.featured);
 
   useLayoutEffect(() => {
@@ -453,6 +454,7 @@ export default function JungleJourney() {
                   : Math.min(1, (self.progress - introThreshold) / (journeyEnd - introThreshold));
                 const travelledDistance = journeyProgress * SCROLL_DISTANCE;
                 setBikerY(getBikerRideY(travelledDistance, 1));
+                setRotationAngle((travelledDistance / 120) * 360); // 120px of scroll per pedal rotation
               }
             }
           },
@@ -860,15 +862,15 @@ export default function JungleJourney() {
           );
         })}
 
-      <img
+      <div
         ref={bikerRef}
-        src={biker}
-        alt="Biker travelling through the project landscape"
         className="jj-biker"
-        decoding="async"
-        fetchPriority="high"
-        draggable={false}
-      />
+      >
+        <BikeCharacter 
+          rotationAngle={rotationAngle} 
+          theme="retro" 
+        />
+      </div>
 
       <JungleFooter />
     </main>
