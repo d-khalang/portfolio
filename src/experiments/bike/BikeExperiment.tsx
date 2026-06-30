@@ -1,7 +1,13 @@
 import React, { useState } from 'react';
 import './BikeExperiment.css';
-import riderFullImg from './images/right-up-full.webp';
-import riderBackLegImg from './images/right-up-right-leg.webp';
+import riderFullUp from './images/right-up-full.webp';
+import riderLegUp from './images/right-up-right-leg.webp';
+import riderFull5 from './images/right-5-full.webp';
+import riderLeg5 from './images/right-5-right-leg.webp';
+import riderFullDown from './images/right-down-full.webp';
+import riderLegDown from './images/right-down-right-leg.webp';
+import riderFull8 from './images/right-8-full.webp';
+import riderLeg8 from './images/right-8-right-leg.webp';
 
 const BikeExperiment: React.FC = () => {
   const [speed, setSpeed] = useState<number>(3); // 0 (paused) to 5 (fast)
@@ -68,12 +74,32 @@ const BikeExperiment: React.FC = () => {
 
             {/* Rider Back Leg (Layered behind frame stays and drivetrain) */}
             {showRider && (
-              <img 
-                src={riderBackLegImg} 
-                className="rider-back-leg" 
-                data-label="rider-back-leg" 
-                alt="Rider Back Leg"
-              />
+              <>
+                <img 
+                  src={riderLegUp} 
+                  className="rider-back-leg rider-back-leg-up" 
+                  data-label="rider-back-leg" 
+                  alt="Rider Back Leg Up"
+                />
+                <img 
+                  src={riderLeg5} 
+                  className="rider-back-leg rider-back-leg-5" 
+                  data-label="rider-back-leg" 
+                  alt="Rider Back Leg 5"
+                />
+                <img 
+                  src={riderLegDown} 
+                  className="rider-back-leg rider-back-leg-down" 
+                  data-label="rider-back-leg" 
+                  alt="Rider Back Leg Down"
+                />
+                <img 
+                  src={riderLeg8} 
+                  className="rider-back-leg rider-back-leg-8" 
+                  data-label="rider-back-leg" 
+                  alt="Rider Back Leg 8"
+                />
+              </>
             )}
 
             {/* Bike Frame Tubes */}
@@ -125,12 +151,32 @@ const BikeExperiment: React.FC = () => {
 
             {/* Rider Front (Full torso + front leg) */}
             {showRider && (
-              <img 
-                src={riderFullImg} 
-                className="rider-front" 
-                data-label="rider-character" 
-                alt="Rider"
-              />
+              <>
+                <img 
+                  src={riderFullUp} 
+                  className="rider-front rider-front-up" 
+                  data-label="rider-character" 
+                  alt="Rider Up"
+                />
+                <img 
+                  src={riderFull5} 
+                  className="rider-front rider-front-5" 
+                  data-label="rider-character" 
+                  alt="Rider 5"
+                />
+                <img 
+                  src={riderFullDown} 
+                  className="rider-front rider-front-down" 
+                  data-label="rider-character" 
+                  alt="Rider Down"
+                />
+                <img 
+                  src={riderFull8} 
+                  className="rider-front rider-front-8" 
+                  data-label="rider-character" 
+                  alt="Rider 8"
+                />
+              </>
             )}
           </div>
         </div>

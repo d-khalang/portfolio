@@ -1017,10 +1017,43 @@
   height: auto;
   pointer-events: none;
   /* Ignore clicks so controls remain interactive */
-  animation: rider-bob var(--rotation-speed, 3s) ease-in-out infinite;
-  animation-play-state: var(--play-state, running);
   transform-origin: 0% 50%;
   transform: rotate(0.5deg);
+  opacity: 0;
+  visibility: hidden; /* Hide by default, toggled by opacity cycles */
+}
+
+/* Sync each frame to bobbing and its active pedaling cycle window */
+.rider-back-leg-up,
+.rider-front-up {
+  animation: 
+    rider-bob var(--rotation-speed, 3s) ease-in-out infinite,
+    pedal-up-opacity var(--rotation-speed, 3s) linear infinite;
+  animation-play-state: var(--play-state, running);
+}
+
+.rider-back-leg-5,
+.rider-front-5 {
+  animation: 
+    rider-bob var(--rotation-speed, 3s) ease-in-out infinite,
+    pedal-5-opacity var(--rotation-speed, 3s) linear infinite;
+  animation-play-state: var(--play-state, running);
+}
+
+.rider-back-leg-down,
+.rider-front-down {
+  animation: 
+    rider-bob var(--rotation-speed, 3s) ease-in-out infinite,
+    pedal-down-opacity var(--rotation-speed, 3s) linear infinite;
+  animation-play-state: var(--play-state, running);
+}
+
+.rider-back-leg-8,
+.rider-front-8 {
+  animation: 
+    rider-bob var(--rotation-speed, 3s) ease-in-out infinite,
+    pedal-8-opacity var(--rotation-speed, 3s) linear infinite;
+  animation-play-state: var(--play-state, running);
 }
 
 .rider-back-leg {
@@ -1034,7 +1067,6 @@
 }
 
 @keyframes rider-bob {
-
   0%,
   100% {
     transform: translateY(-8) rotate(0.2deg);
@@ -1042,5 +1074,50 @@
 
   50% {
     transform: translateY(-10px) rotate(0.5deg);
+  }
+}
+
+/* Opacity keyframes to display the correct cyclist frame during pedaling cycle */
+@keyframes pedal-down-opacity {
+  0%, 15.3%, 90.3%, 100% {
+    opacity: 1;
+    visibility: visible;
+  }
+  15.4%, 90.2% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes pedal-8-opacity {
+  15.3%, 40.3% {
+    opacity: 1;
+    visibility: visible;
+  }
+  0%, 15.2%, 40.4%, 100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes pedal-up-opacity {
+  40.3%, 65.3% {
+    opacity: 1;
+    visibility: visible;
+  }
+  0%, 40.2%, 65.4%, 100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes pedal-5-opacity {
+  65.3%, 90.3% {
+    opacity: 1;
+    visibility: visible;
+  }
+  0%, 65.2%, 90.4%, 100% {
+    opacity: 0;
+    visibility: hidden;
   }
 }
