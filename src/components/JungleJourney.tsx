@@ -454,7 +454,7 @@ export default function JungleJourney() {
                   : Math.min(1, (self.progress - introThreshold) / (journeyEnd - introThreshold));
                 const travelledDistance = journeyProgress * SCROLL_DISTANCE;
                 setBikerY(getBikerRideY(travelledDistance, 1));
-                setRotationAngle((travelledDistance / 120) * 360); // 120px of scroll per pedal rotation
+                setRotationAngle((travelledDistance / 1800) * 360); // 480px of scroll per pedal rotation
               }
             }
           },
@@ -866,9 +866,9 @@ export default function JungleJourney() {
         ref={bikerRef}
         className="jj-biker"
       >
-        <BikeCharacter 
-          rotationAngle={rotationAngle} 
-          theme="retro" 
+        <BikeCharacter
+          rotationAngle={rotationAngle}
+          theme="retro"
         />
       </div>
 

@@ -32,11 +32,11 @@ const BikeCharacter: React.FC<BikeCharacterProps> = ({
 
   if (isScrollDriven) {
     const angleNormalized = ((rotationAngle % 360) + 360) % 360;
-    if (angleNormalized >= 345 || angleNormalized < 75) {
+    if (angleNormalized >= 0 && angleNormalized < 75) {
       activeFrame = '5';
-    } else if (angleNormalized >= 75 && angleNormalized < 120) {
+    } else if (angleNormalized >= 75 && angleNormalized < 105) {
       activeFrame = 'down';
-    } else if (angleNormalized >= 120 && angleNormalized < 210) {
+    } else if (angleNormalized >= 105 && angleNormalized < 210) {
       activeFrame = '8';
     } else {
       activeFrame = 'up';
