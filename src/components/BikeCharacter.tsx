@@ -17,14 +17,20 @@ interface BikeCharacterProps {
   bikeColor?: string;
   wheelColor?: string;
   showRider?: boolean;
+  rotationSpeed?: string; // Optional custom rotation speed (e.g. "3s" or "0s" for paused)
+  playState?: string; // Optional custom animation-play-state (e.g. "running" or "paused")
+  showLabels?: boolean; // Optional flag to show debug labels overlay
 }
 
 const BikeCharacter: React.FC<BikeCharacterProps> = ({
   rotationAngle,
   theme = 'neon',
-  bikeColor = '#e63946',
-  wheelColor = '#1d3557',
+  bikeColor,
+  wheelColor,
   showRider = true,
+  rotationSpeed,
+  playState,
+  showLabels = false,
 }) => {
   // Determine which frame is active if rotationAngle is provided
   let activeFrame: 'up' | '5' | 'down' | '8' = 'down';
@@ -79,15 +85,29 @@ const BikeCharacter: React.FC<BikeCharacterProps> = ({
     return activeFrame === frameName ? 'force-visible' : 'force-hidden';
   };
 
+  // Dynamically compile style variables to preserve default theme stylesheets
+  const containerStyle: React.CSSProperties = {
+    width: '100%',
+    height: '100%',
+  };
+
+  if (bikeColor) {
+    (containerStyle as any)['--bike-color'] = bikeColor;
+  }
+  if (wheelColor) {
+    (containerStyle as any)['--wheel-color'] = wheelColor;
+  }
+  if (rotationSpeed) {
+    (containerStyle as any)['--rotation-speed'] = rotationSpeed;
+  }
+  if (playState) {
+    (containerStyle as any)['--play-state'] = playState;
+  }
+
   return (
     <div 
       className={`bike-container theme-${theme} ${isScrollDriven ? 'scroll-driven' : 'auto-animate'}`}
-      style={{
-        '--bike-color': bikeColor,
-        '--wheel-color': wheelColor,
-        width: '100%',
-        height: '100%',
-      } as React.CSSProperties}
+      style={containerStyle}
     >
       <svg 
         viewBox="0 0 500 380" 
@@ -96,7 +116,7 @@ const BikeCharacter: React.FC<BikeCharacterProps> = ({
         style={{ display: 'block', overflow: 'visible' }}
       >
         <foreignObject width="500" height="380" x="0" y="0" style={{ overflow: 'visible' }}>
-          <div className="bike" style={{ position: 'absolute', width: '500px', height: '380px', left: 0, top: 0 }}>
+          <div className={`bike ${showLabels ? 'show-debug-labels' : ''}`} style={{ position: 'absolute', width: '500px', height: '380px', left: 0, top: 0 }}>
             {/* Rear Wheel */}
             <div className="wheel rear-wheel" data-label="rear-wheel">
               <div className="tire"></div>

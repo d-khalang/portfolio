@@ -1,13 +1,6 @@
 import React, { useState } from 'react';
 import './BikeExperiment.css';
-import riderFullUp from './images/right-up-full.webp';
-import riderLegUp from './images/right-up-right-leg.webp';
-import riderFull5 from './images/right-5-full.webp';
-import riderLeg5 from './images/right-5-right-leg.webp';
-import riderFullDown from './images/right-down-full.webp';
-import riderLegDown from './images/right-down-right-leg.webp';
-import riderFull8 from './images/right-8-full.webp';
-import riderLeg8 from './images/right-8-right-leg.webp';
+import BikeCharacter from '../../components/BikeCharacter';
 
 const BikeExperiment: React.FC = () => {
   const [speed, setSpeed] = useState<number>(3); // 0 (paused) to 5 (fast)
@@ -46,139 +39,15 @@ const BikeExperiment: React.FC = () => {
             <div className="road"></div>
           </div>
 
-          <div 
-            className={`bike ${showLabels ? 'show-debug-labels' : ''}`} 
-            style={{ 
-              ['--bike-color' as any]: bikeColor,
-              ['--wheel-color' as any]: wheelColor,
-              ['--rotation-speed' as any]: getRotationDuration(),
-              ['--play-state' as any]: speed === 0 ? 'paused' : 'running'
-            }}
-          >
-            {/* Rear Wheel */}
-            <div className="wheel rear-wheel" data-label="rear-wheel">
-              <div className="tire"></div>
-              <div className="rim"></div>
-              <div className="spokes"></div>
-              <div className="hub"></div>
-              <div className="cassette"></div>
-            </div>
-
-            {/* Front Wheel */}
-            <div className="wheel front-wheel" data-label="front-wheel">
-              <div className="tire"></div>
-              <div className="rim"></div>
-              <div className="spokes"></div>
-              <div className="hub"></div>
-            </div>
-
-            {/* Rider Back Leg (Layered behind frame stays and drivetrain) */}
-            {showRider && (
-              <>
-                <img 
-                  src={riderLegUp} 
-                  className="rider-back-leg rider-back-leg-up" 
-                  data-label="rider-back-leg" 
-                  alt="Rider Back Leg Up"
-                />
-                <img 
-                  src={riderLeg5} 
-                  className="rider-back-leg rider-back-leg-5" 
-                  data-label="rider-back-leg" 
-                  alt="Rider Back Leg 5"
-                />
-                <img 
-                  src={riderLegDown} 
-                  className="rider-back-leg rider-back-leg-down" 
-                  data-label="rider-back-leg" 
-                  alt="Rider Back Leg Down"
-                />
-                <img 
-                  src={riderLeg8} 
-                  className="rider-back-leg rider-back-leg-8" 
-                  data-label="rider-back-leg" 
-                  alt="Rider Back Leg 8"
-                />
-              </>
-            )}
-
-            {/* Bike Frame Tubes */}
-            <div className="frame">
-              <div className="tube chain-stay" data-label="chain-stay"></div>
-              <div className="tube seat-stay" data-label="seat-stay"></div>
-              <div className="tube seat-tube" data-label="seat-tube"></div>
-              <div className="tube down-tube" data-label="down-tube"></div>
-              <div className="tube top-tube" data-label="top-tube"></div>
-              
-              {/* Bottom Bracket (Crank center) */}
-              <div className="bottom-bracket" data-label="bottom-bracket"></div>
-            </div>
-
-            {/* Fork & Steerer */}
-            <div className="fork-assembly">
-              <div className="fork" data-label="fork"></div>
-              <div className="head-tube" data-label="head-tube"></div>
-              <div className="stem" data-label="stem"></div>
-              <div className="handlebars" data-label="handlebars">
-                <div className="bar-drop"></div>
-              </div>
-            </div>
-
-            {/* Drivetrain (Crankset, pedals, chain) */}
-            <div className="drivetrain">
-              <div className="chainring" data-label="chainring"></div>
-              <div className="chain-upper" data-label="chain-upper"></div>
-              <div className="chain-lower" data-label="chain-lower"></div>
-              
-              {/* Crank Arm & Pedal 1 */}
-              <div className="crank-assembly crank-left">
-                <div className="crank-arm" data-label="crank-arm"></div>
-                <div className="pedal" data-label="pedal"></div>
-              </div>
-              
-              {/* Crank Arm & Pedal 2 */}
-              <div className="crank-assembly crank-right">
-                <div className="crank-arm" data-label="crank-arm"></div>
-                <div className="pedal" data-label="pedal"></div>
-              </div>
-            </div>
-
-            {/* Saddle / Seat Assembly */}
-            <div className="seat-assembly">
-              <div className="seatpost" data-label="seatpost"></div>
-              <div className="saddle" data-label="saddle"></div>
-            </div>
-
-            {/* Rider Front (Full torso + front leg) */}
-            {showRider && (
-              <>
-                <img 
-                  src={riderFullUp} 
-                  className="rider-front rider-front-up" 
-                  data-label="rider-character" 
-                  alt="Rider Up"
-                />
-                <img 
-                  src={riderFull5} 
-                  className="rider-front rider-front-5" 
-                  data-label="rider-character" 
-                  alt="Rider 5"
-                />
-                <img 
-                  src={riderFullDown} 
-                  className="rider-front rider-front-down" 
-                  data-label="rider-character" 
-                  alt="Rider Down"
-                />
-                <img 
-                  src={riderFull8} 
-                  className="rider-front rider-front-8" 
-                  data-label="rider-character" 
-                  alt="Rider 8"
-                />
-              </>
-            )}
-          </div>
+          <BikeCharacter
+            theme={theme}
+            bikeColor={bikeColor}
+            wheelColor={wheelColor}
+            showRider={showRider}
+            rotationSpeed={getRotationDuration()}
+            playState={speed === 0 ? 'paused' : 'running'}
+            showLabels={showLabels}
+          />
         </div>
 
         {/* The Controls Panel */}
