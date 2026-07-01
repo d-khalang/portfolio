@@ -27,7 +27,7 @@ const PROJECT_CARD_MOTION = {
 const BIKER_RIDE = {
   startYOffset: -15,
   bumpAmplitude: 9,
-  bumpWavelength: 850,
+  bumpWavelength: 1200,
   vibrationAmplitude: 0.1,
   vibrationWavelength: 48,
 };
@@ -130,6 +130,7 @@ export default function JungleJourney() {
     const context = gsap.context(() => {
       gsap.set(bikerElement, { xPercent: -50 });
       const setBikerY = gsap.quickSetter(bikerElement, 'y', 'px');
+      const setBikerRotation = gsap.quickSetter(bikerElement, 'rotation', 'deg');
 
       const reduceMotion = window.matchMedia(
         '(prefers-reduced-motion: reduce)',
@@ -458,6 +459,10 @@ export default function JungleJourney() {
                 const travelledDistance = journeyProgress * SCROLL_DISTANCE;
                 setBikerY(getBikerRideY(travelledDistance, 1));
                 setRotationAngle((travelledDistance / 1800) * 360); // 480px of scroll per pedal rotation
+
+                // Tilt bike upward (negative degrees) when climbing, and downward (positive degrees) when descending
+                const tiltAngle = Math.cos((travelledDistance / BIKER_RIDE.bumpWavelength) * Math.PI * 2) * 4; // Max 4 degrees tilt
+                setBikerRotation(tiltAngle);
               }
             }
           },
@@ -876,26 +881,26 @@ export default function JungleJourney() {
             bikeColor={bikeColor}
             wheelColor={wheelColor}
           />
-          
+
           {/* Small Customizer Pop-up Panel */}
           <div className={`jj-biker-popup ${isHovered ? 'visible' : ''}`}>
             <div className="popup-title">Bike Customizer</div>
-            
+
             <div className="popup-control">
               <label>Frame Color:</label>
               <div className="popup-presets">
                 {['#d94e34', '#e63946', '#457b9d', '#ffb703', '#2a9d8f'].map((color) => (
-                  <button 
-                    key={color} 
+                  <button
+                    key={color}
                     className={`popup-color-preset ${bikeColor === color ? 'active' : ''}`}
                     style={{ backgroundColor: color }}
                     onClick={() => setBikeColor(color)}
                   />
                 ))}
-                <input 
-                  type="color" 
-                  value={bikeColor || '#d94e34'} 
-                  onChange={(e) => setBikeColor(e.target.value)} 
+                <input
+                  type="color"
+                  value={bikeColor || '#d94e34'}
+                  onChange={(e) => setBikeColor(e.target.value)}
                   className="popup-color-picker"
                 />
               </div>
@@ -905,24 +910,24 @@ export default function JungleJourney() {
               <label>Wheels Accent:</label>
               <div className="popup-presets">
                 {['#2b2d42', '#1d3557', '#e63946', '#2a9d8f', '#a8dadc'].map((color) => (
-                  <button 
-                    key={color} 
+                  <button
+                    key={color}
                     className={`popup-color-preset ${wheelColor === color ? 'active' : ''}`}
                     style={{ backgroundColor: color }}
                     onClick={() => setWheelColor(color)}
                   />
                 ))}
-                <input 
-                  type="color" 
-                  value={wheelColor || '#2b2d42'} 
-                  onChange={(e) => setWheelColor(e.target.value)} 
+                <input
+                  type="color"
+                  value={wheelColor || '#2b2d42'}
+                  onChange={(e) => setWheelColor(e.target.value)}
                   className="popup-color-picker"
                 />
               </div>
             </div>
-            
+
             {(bikeColor !== undefined || wheelColor !== undefined) && (
-              <button 
+              <button
                 className="popup-reset-btn"
                 onClick={() => {
                   setBikeColor(undefined);
