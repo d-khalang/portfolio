@@ -5,7 +5,9 @@ import BikeExperiment from './experiments/bike/BikeExperiment';
 import projectsData from './content/projects.json';
 
 const App: React.FC = () => {
-  const path = window.location.pathname;
+  const base = import.meta.env.BASE_URL;
+  // Strip base path (e.g. '/portfolio/') and ensure it starts with '/'
+  const path = window.location.pathname.replace(new RegExp(`^${base.replace(/\/$/, '')}`), '') || '/';
 
   if (path === '/experiments/bike' || path === '/bike') {
     return <BikeExperiment />;
