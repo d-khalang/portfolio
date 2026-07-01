@@ -1445,7 +1445,7 @@ export default function ProjectDetail({ project }: ProjectDetailProps) {
   return (
     <main className="pd-page">
       <nav className="pd-nav" aria-label="Project navigation">
-        <a href={`/#${project.slug}`}>portfolio</a>
+        <a href={`${import.meta.env.BASE_URL}#${project.slug}`}>portfolio</a>
         <span>{project.core.dateLabel}</span>
       </nav>
 

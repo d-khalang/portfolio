@@ -854,7 +854,7 @@ export default function JungleJourney() {
             key={project.id}
             className="jj-project"
             data-journey-left={left}
-            href={`/projects/${project.slug}`}
+            href={`${import.meta.env.BASE_URL}projects/${project.slug}`}
             style={{ left: `${left}vw` }}
           >
             <article className="jj-card">
