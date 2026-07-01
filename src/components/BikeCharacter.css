@@ -102,7 +102,7 @@
   background: repeating-conic-gradient(
     from 0deg,
     transparent 0deg 1.5deg,
-    rgba(255, 255, 255, 0.25) 1.5deg 2deg,
+    rgba(255, 255, 255, 0.55) 1.5deg 2deg,
     transparent 2deg 15deg
   );
   animation: spin var(--rotation-speed, 3s) linear infinite;
@@ -113,7 +113,7 @@
   background: repeating-conic-gradient(
     from 0deg,
     transparent 0deg 1.5deg,
-    rgba(43, 45, 66, 0.2) 1.5deg 2.2deg,
+    rgba(26, 26, 26, 0.65) 1.5deg 2.2deg,
     transparent 2.2deg 15deg
   );
 }
