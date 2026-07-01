@@ -641,3 +641,466 @@
     visibility: hidden;
   }
 }
+
+/* ==========================================================================
+   STYLIZED DUST & DIRT EFFECTS (JUNGLE JOURNEY / PORTFOLIO BIKE)
+   ========================================================================== */
+
+/* Dust Cloud Containers */
+.dust-cloud {
+  position: absolute;
+  pointer-events: none;
+  z-index: 2; /* Positioned behind the wheels */
+  opacity: 0;
+  transition: opacity 0.4s ease-in-out;
+  overflow: visible;
+}
+
+.dust-cloud.is-moving {
+  opacity: 1;
+}
+
+.rear-wheel-dust {
+  left: 70px;
+  bottom: 50px;
+  width: 150px;
+  height: 50px;
+}
+
+.front-wheel-dust {
+  left: 335px;
+  bottom: 50px;
+  width: 150px;
+  height: 50px;
+}
+
+/* Dust Puffs and Dirt Specks Base */
+.dust-puff {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0;
+  transform-origin: center bottom;
+}
+
+.dirt-speck {
+  position: absolute;
+  opacity: 0;
+  transform-origin: center center;
+}
+
+/* Pedal Dust Containers */
+.pedal-dust {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+  z-index: 5;
+}
+
+.pedal-dust.is-moving {
+  opacity: 1;
+}
+
+.pedal-particle {
+  position: absolute;
+  opacity: 0;
+  transform-origin: center center;
+}
+
+/* --------------------------------------------------------------------------
+   THEME STYLING: RETRO (Jungle Journey) - Linocut Style
+   -------------------------------------------------------------------------- */
+.theme-retro .dust-puff {
+  background-color: #c2a688; /* Soil sand/dust */
+  border: 2px solid #1a1a1a;
+  box-shadow: none;
+}
+
+/* Variety in dust colors to match Jungle Journey palette */
+.theme-retro .rear-wheel-dust .puff-1 { background-color: #B35A44; } /* Terracotta */
+.theme-retro .rear-wheel-dust .puff-3 { background-color: #7B8F7B; } /* Sage Green */
+.theme-retro .rear-wheel-dust .puff-5 { background-color: #8B5A2B; } /* Dark Earth */
+
+.theme-retro .front-wheel-dust .puff-2 { background-color: #7B8F7B; }
+
+.theme-retro .dirt-speck {
+  background-color: #2b2d42; /* Slate dark pebble */
+  border: 1.5px solid #1a1a1a;
+  border-radius: 40% 60% 30% 70% / 60% 30% 70% 40%; /* Jagged linocut rock */
+}
+
+/* Leaves flying off the pedals! */
+.theme-retro .pedal-particle {
+  background-color: #7B8F7B; /* Sage leaf */
+  border: 1.5px solid #1a1a1a;
+  border-radius: 0 80% 0 80%; /* Classic leaf shape */
+  width: 8px;
+  height: 12px;
+}
+
+.theme-retro .pedal-particle.p-2 {
+  background-color: #B35A44; /* Terracotta leaf */
+  border-radius: 80% 0 80% 0;
+}
+
+.theme-retro .pedal-particle.p-3 {
+  background-color: #c2a688; /* Small sand speck */
+  border-radius: 50% 30% 60% 40%;
+  width: 6px;
+  height: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   THEME STYLING: NEON - Glow Sparkles Style
+   -------------------------------------------------------------------------- */
+.theme-neon .dust-puff {
+  background-color: transparent;
+  border: 2px solid var(--wheel-color);
+  box-shadow: 0 0 8px var(--wheel-color), inset 0 0 4px var(--wheel-color);
+}
+
+.theme-neon .rear-wheel-dust .puff-2,
+.theme-neon .rear-wheel-dust .puff-4 {
+  border-color: var(--bike-color);
+  box-shadow: 0 0 8px var(--bike-color), inset 0 0 4px var(--bike-color);
+}
+
+.theme-neon .dirt-speck {
+  background-color: var(--wheel-color);
+  border-radius: 50%;
+  box-shadow: 0 0 6px var(--wheel-color);
+}
+
+.theme-neon .pedal-particle {
+  background-color: var(--bike-color);
+  border-radius: 50%;
+  width: 6px;
+  height: 6px;
+  box-shadow: 0 0 6px var(--bike-color);
+}
+
+/* --------------------------------------------------------------------------
+   THEME STYLING: CYBER - Digital Glitch / Pixels Style
+   -------------------------------------------------------------------------- */
+.theme-cyber .dust-puff {
+  background-color: var(--bike-color);
+  border: 1px solid #000;
+  border-radius: 0; /* Square pixels */
+  box-shadow: 0 0 4px var(--bike-color);
+}
+
+.theme-cyber .rear-wheel-dust .puff-2,
+.theme-cyber .rear-wheel-dust .puff-4 {
+  background-color: var(--wheel-color);
+  box-shadow: 0 0 4px var(--wheel-color);
+}
+
+.theme-cyber .dirt-speck {
+  background-color: #ffffff;
+  border-radius: 0;
+  border: 1px solid #1f2833;
+}
+
+.theme-cyber .pedal-particle {
+  background-color: var(--bike-color);
+  border-radius: 0;
+  width: 5px;
+  height: 5px;
+  box-shadow: 0 0 4px var(--bike-color);
+}
+
+/* --------------------------------------------------------------------------
+   PARTICLE POSITIONING & SIZES
+   -------------------------------------------------------------------------- */
+
+/* Rear Wheel Dust */
+.rear-wheel-dust .puff-1 { width: 14px; height: 14px; bottom: 0px; left: 45px; }
+.rear-wheel-dust .puff-2 { width: 18px; height: 18px; bottom: 2px; left: 25px; }
+.rear-wheel-dust .puff-3 { width: 22px; height: 22px; bottom: 4px; left: 55px; }
+.rear-wheel-dust .puff-4 { width: 12px; height: 12px; bottom: 1px; left: 15px; }
+.rear-wheel-dust .puff-5 { width: 16px; height: 16px; bottom: 3px; left: 35px; }
+
+.rear-wheel-dust .speck-1 { width: 6px; height: 6px; bottom: 0px; left: 60px; }
+.rear-wheel-dust .speck-2 { width: 5px; height: 5px; bottom: 4px; left: 30px; }
+.rear-wheel-dust .speck-3 { width: 7px; height: 7px; bottom: 2px; left: 50px; }
+
+/* Front Wheel Dust */
+.front-wheel-dust .puff-1 { width: 10px; height: 10px; bottom: 0px; left: 40px; }
+.front-wheel-dust .puff-2 { width: 14px; height: 14px; bottom: 2px; left: 55px; }
+.front-wheel-dust .puff-3 { width: 8px; height: 8px; bottom: 1px; left: 30px; }
+
+.front-wheel-dust .speck-1 { width: 5px; height: 5px; bottom: 0px; left: 50px; }
+.front-wheel-dust .speck-2 { width: 4px; height: 4px; bottom: 3px; left: 45px; }
+
+/* --------------------------------------------------------------------------
+   ANIMATION TRIGGERS & PLAY STATE
+   -------------------------------------------------------------------------- */
+
+.dust-puff, .dirt-speck, .pedal-particle {
+  animation-play-state: paused !important;
+}
+
+/* Trigger animations when container is moving */
+.is-moving.rear-wheel-dust .puff-1 { animation: puff-anim-1 0.7s linear infinite; }
+.is-moving.rear-wheel-dust .puff-2 { animation: puff-anim-2 0.8s linear infinite 0.15s; }
+.is-moving.rear-wheel-dust .puff-3 { animation: puff-anim-3 0.9s linear infinite 0.3s; }
+.is-moving.rear-wheel-dust .puff-4 { animation: puff-anim-4 0.65s linear infinite 0.45s; }
+.is-moving.rear-wheel-dust .puff-5 { animation: puff-anim-5 0.85s linear infinite 0.6s; }
+
+.is-moving.rear-wheel-dust .speck-1 { animation: speck-anim-1 0.4s linear infinite 0.05s; }
+.is-moving.rear-wheel-dust .speck-2 { animation: speck-anim-2 0.45s linear infinite 0.22s; }
+.is-moving.rear-wheel-dust .speck-3 { animation: speck-anim-3 0.5s linear infinite 0.38s; }
+
+.is-moving.front-wheel-dust .puff-1 { animation: front-puff-1 0.75s linear infinite; }
+.is-moving.front-wheel-dust .puff-2 { animation: front-puff-2 0.85s linear infinite 0.2s; }
+.is-moving.front-wheel-dust .puff-3 { animation: front-puff-3 0.65s linear infinite 0.4s; }
+
+.is-moving.front-wheel-dust .speck-1 { animation: front-speck-1 0.45s linear infinite 0.1s; }
+.is-moving.front-wheel-dust .speck-2 { animation: front-speck-2 0.5s linear infinite 0.3s; }
+
+.is-moving.pedal-dust .p-1 { animation: pedal-anim-1 0.6s linear infinite; }
+.is-moving.pedal-dust .p-2 { animation: pedal-anim-2 0.7s linear infinite 0.2s; }
+.is-moving.pedal-dust .p-3 { animation: pedal-anim-3 0.8s linear infinite 0.4s; }
+
+/* Apply custom play state (for auto-animate pause integration) */
+.is-moving .dust-puff,
+.is-moving .dirt-speck,
+.is-moving .pedal-particle {
+  animation-play-state: var(--play-state, running) !important;
+}
+
+/* --------------------------------------------------------------------------
+   KEYFRAME DEFINITIONS
+   -------------------------------------------------------------------------- */
+
+/* Rear Wheel Dust */
+@keyframes puff-anim-1 {
+  0% {
+    transform: translate(0, 0) scale(0.4);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate(-90px, -45px) scale(1.6);
+    opacity: 0;
+  }
+}
+
+@keyframes puff-anim-2 {
+  0% {
+    transform: translate(0, 0) scale(0.3);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(-120px, -30px) scale(1.4);
+    opacity: 0;
+  }
+}
+
+@keyframes puff-anim-3 {
+  0% {
+    transform: translate(0, 0) scale(0.5);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.75;
+  }
+  100% {
+    transform: translate(-100px, -60px) scale(2.0);
+    opacity: 0;
+  }
+}
+
+@keyframes puff-anim-4 {
+  0% {
+    transform: translate(0, 0) scale(0.3);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-80px, -25px) scale(1.2);
+    opacity: 0;
+  }
+}
+
+@keyframes puff-anim-5 {
+  0% {
+    transform: translate(0, 0) scale(0.4);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate(-110px, -50px) scale(1.7);
+    opacity: 0;
+  }
+}
+
+@keyframes speck-anim-1 {
+  0% {
+    transform: translate(0, 0) rotate(0deg) scale(0.5);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-130px, -70px) rotate(270deg) scale(0.8);
+    opacity: 0;
+  }
+}
+
+@keyframes speck-anim-2 {
+  0% {
+    transform: translate(0, 0) rotate(0deg) scale(0.6);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-150px, -50px) rotate(-180deg) scale(0.9);
+    opacity: 0;
+  }
+}
+
+@keyframes speck-anim-3 {
+  0% {
+    transform: translate(0, 0) rotate(0deg) scale(0.4);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-110px, -90px) rotate(360deg) scale(0.7);
+    opacity: 0;
+  }
+}
+
+/* Front Wheel Dust */
+@keyframes front-puff-1 {
+  0% {
+    transform: translate(0, 0) scale(0.4);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate(-60px, -25px) scale(1.3);
+    opacity: 0;
+  }
+}
+
+@keyframes front-puff-2 {
+  0% {
+    transform: translate(0, 0) scale(0.4);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.75;
+  }
+  100% {
+    transform: translate(-80px, -35px) scale(1.5);
+    opacity: 0;
+  }
+}
+
+@keyframes front-puff-3 {
+  0% {
+    transform: translate(0, 0) scale(0.3);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate(-50px, -15px) scale(1.1);
+    opacity: 0;
+  }
+}
+
+@keyframes front-speck-1 {
+  0% {
+    transform: translate(0, 0) rotate(0deg) scale(0.5);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(-90px, -45px) rotate(180deg) scale(0.7);
+    opacity: 0;
+  }
+}
+
+@keyframes front-speck-2 {
+  0% {
+    transform: translate(0, 0) rotate(0deg) scale(0.4);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-70px, -30px) rotate(-180deg) scale(0.6);
+    opacity: 0;
+  }
+}
+
+/* Pedal Trails */
+@keyframes pedal-anim-1 {
+  0% {
+    transform: translate(-50%, -50%) translate(0, 0) rotate(0deg) scale(0.3);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate(-50%, -50%) translate(-40px, 10px) rotate(120deg) scale(1.2);
+    opacity: 0;
+  }
+}
+
+@keyframes pedal-anim-2 {
+  0% {
+    transform: translate(-50%, -50%) translate(0, 0) rotate(0deg) scale(0.4);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(-50%, -50%) translate(-35px, -15px) rotate(-180deg) scale(1.0);
+    opacity: 0;
+  }
+}
+
+@keyframes pedal-anim-3 {
+  0% {
+    transform: translate(-50%, -50%) translate(0, 0) rotate(0deg) scale(0.3);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.75;
+  }
+  100% {
+    transform: translate(-50%, -50%) translate(-50px, -5px) rotate(90deg) scale(1.1);
+    opacity: 0;
+  }
+}

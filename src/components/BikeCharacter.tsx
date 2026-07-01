@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './BikeCharacter.css';
 
 // Import images
@@ -35,6 +35,34 @@ const BikeCharacter: React.FC<BikeCharacterProps> = ({
   // Determine which frame is active if rotationAngle is provided
   let activeFrame: 'up' | '5' | 'down' | '8' = 'down';
   const isScrollDriven = rotationAngle !== undefined;
+
+  // Track if the bike is actively moving
+  const [isMoving, setIsMoving] = useState(false);
+  const prevAngleRef = useRef(rotationAngle);
+  const timerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (rotationAngle !== undefined) {
+      if (rotationAngle !== prevAngleRef.current) {
+        setIsMoving(true);
+        prevAngleRef.current = rotationAngle;
+
+        if (timerRef.current !== null) {
+          window.clearTimeout(timerRef.current);
+        }
+        timerRef.current = window.setTimeout(() => {
+          setIsMoving(false);
+        }, 200); // Set moving to false after 200ms of no scrolling
+      }
+    }
+    return () => {
+      if (timerRef.current !== null) {
+        window.clearTimeout(timerRef.current);
+      }
+    };
+  }, [rotationAngle]);
+
+  const isCurrentlyMoving = isScrollDriven ? isMoving : (playState !== 'paused');
 
   if (isScrollDriven) {
     const physicalAngle = rotationAngle + 50;
@@ -117,6 +145,18 @@ const BikeCharacter: React.FC<BikeCharacterProps> = ({
       >
         <foreignObject width="500" height="380" x="0" y="0" style={{ overflow: 'visible' }}>
           <div className={`bike ${showLabels ? 'show-debug-labels' : ''}`} style={{ position: 'absolute', width: '500px', height: '380px', left: 0, top: 0 }}>
+            {/* Rear Wheel Dust */}
+            <div className={`dust-cloud rear-wheel-dust ${isCurrentlyMoving ? 'is-moving' : ''}`}>
+              <div className="dust-puff puff-1"></div>
+              <div className="dust-puff puff-2"></div>
+              <div className="dust-puff puff-3"></div>
+              <div className="dust-puff puff-4"></div>
+              <div className="dust-puff puff-5"></div>
+              <div className="dirt-speck speck-1"></div>
+              <div className="dirt-speck speck-2"></div>
+              <div className="dirt-speck speck-3"></div>
+            </div>
+
             {/* Rear Wheel */}
             <div className="wheel rear-wheel" data-label="rear-wheel">
               <div className="tire"></div>
@@ -124,6 +164,15 @@ const BikeCharacter: React.FC<BikeCharacterProps> = ({
               <div className="spokes" style={getRotationStyle()}></div>
               <div className="hub"></div>
               <div className="cassette" style={getCassetteStyle()}></div>
+            </div>
+
+            {/* Front Wheel Dust */}
+            <div className={`dust-cloud front-wheel-dust ${isCurrentlyMoving ? 'is-moving' : ''}`}>
+              <div className="dust-puff puff-1"></div>
+              <div className="dust-puff puff-2"></div>
+              <div className="dust-puff puff-3"></div>
+              <div className="dirt-speck speck-1"></div>
+              <div className="dirt-speck speck-2"></div>
             </div>
 
             {/* Front Wheel */}
@@ -195,13 +244,25 @@ const BikeCharacter: React.FC<BikeCharacterProps> = ({
               {/* Crank Arm & Pedal 1 */}
               <div className="crank-assembly crank-left" style={getRotationStyle(230)}>
                 <div className="crank-arm" data-label="crank-arm"></div>
-                <div className="pedal" data-label="pedal" style={getCounterRotationStyle(230)}></div>
+                <div className="pedal" data-label="pedal" style={getCounterRotationStyle(230)}>
+                  <div className={`pedal-dust ${isCurrentlyMoving ? 'is-moving' : ''}`}>
+                    <div className="pedal-particle p-1"></div>
+                    <div className="pedal-particle p-2"></div>
+                    <div className="pedal-particle p-3"></div>
+                  </div>
+                </div>
               </div>
               
               {/* Crank Arm & Pedal 2 */}
               <div className="crank-assembly crank-right" style={getRotationStyle(50)}>
                 <div className="crank-arm" data-label="crank-arm"></div>
-                <div className="pedal" data-label="pedal" style={getCounterRotationStyle(50)}></div>
+                <div className="pedal" data-label="pedal" style={getCounterRotationStyle(50)}>
+                  <div className={`pedal-dust ${isCurrentlyMoving ? 'is-moving' : ''}`}>
+                    <div className="pedal-particle p-1"></div>
+                    <div className="pedal-particle p-2"></div>
+                    <div className="pedal-particle p-3"></div>
+                  </div>
+                </div>
               </div>
             </div>
 

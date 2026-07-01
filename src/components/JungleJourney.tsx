@@ -117,6 +117,9 @@ export default function JungleJourney() {
   const [isHovered, setIsHovered] = useState(false);
   const [bikeColor, setBikeColor] = useState<string | undefined>(undefined);
   const [wheelColor, setWheelColor] = useState<string | undefined>(undefined);
+  const [showOverlay, setShowOverlay] = useState(() => {
+    return typeof window !== 'undefined' && !!window.location.hash;
+  });
   const featuredProjects = projectsData.filter((project) => project.featured);
 
   useLayoutEffect(() => {
@@ -670,6 +673,12 @@ export default function JungleJourney() {
       }, 0.88);
 
 
+      // Force initial layout/trigger refresh synchronously so that the document has its full scrollable height.
+      // This enables both:
+      // 1. Native browser scroll restoration (when navigating back via browser back button)
+      // 2. Hash-based scroll positioning (when landing on a specific project hash)
+      ScrollTrigger.refresh();
+
       // Detect URL hash on load to jump directly to a project
       const handleHashNavigation = () => {
         const hash = window.location.hash;
@@ -685,14 +694,38 @@ export default function JungleJourney() {
         const targetScrollTop = scrollProgress * SCROLL_DISTANCE;
 
         window.scrollTo(0, targetScrollTop);
-        ScrollTrigger.refresh();
       };
 
-      // Run immediately
+      // Run hash navigation check immediately (pre-paint)
       handleHashNavigation();
 
-      // Run on a tiny timeout just in case of DOM/rendering ticks
-      const timer = setTimeout(handleHashNavigation, 50);
+      // Run on a tiny timeout to override the browser's native scroll restoration,
+      // then run the CRT flicker/flash transition animation and remove the overlay.
+      const timer = setTimeout(() => {
+        handleHashNavigation();
+
+        if (window.location.hash) {
+          gsap.fromTo(
+            '.jj-transition-overlay',
+            { opacity: 0.94 },
+            {
+              opacity: 0.6,
+              duration: 0.1,
+              repeat: 3,
+              yoyo: true,
+              ease: 'none',
+              onComplete: () => {
+                gsap.to('.jj-transition-overlay', {
+                  opacity: 0,
+                  duration: 0.4,
+                  ease: 'power2.inOut',
+                  onComplete: () => setShowOverlay(false),
+                });
+              },
+            }
+          );
+        }
+      }, 50);
 
       return () => {
         clearTimeout(timer);
@@ -707,6 +740,14 @@ export default function JungleJourney() {
 
   return (
     <main ref={containerRef} className="jj-container">
+      {showOverlay && (
+        <div className="jj-transition-overlay">
+          <div className="jj-transition-overlay__content">
+            <span className="jj-transition-overlay__blink" />
+            <span>RESTORING SIGNAL...</span>
+          </div>
+        </div>
+      )}
       <JourneyEnvironment />
 
 
