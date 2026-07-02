@@ -181,25 +181,25 @@ export default function ScrollPerfTracker() {
         onClick={() => setIsVisible(!isVisible)}
         style={{
           position: 'fixed',
-          top: '20px',
-          right: '20px',
+          bottom: '12px',
+          right: '12px',
           zIndex: 10000,
           background: '#0f172a',
           color: '#38bdf8',
           border: '1px solid #38bdf8',
-          borderRadius: '4px',
-          padding: '6px 10px',
-          fontSize: '11px',
+          borderRadius: '3px',
+          padding: '3px 6px',
+          fontSize: '9px',
           fontFamily: 'monospace',
           cursor: 'pointer',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
-          opacity: 0.85,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
+          opacity: 0.6,
           transition: 'opacity 0.2s',
         }}
         onMouseEnter={(e) => { e.currentTarget.style.opacity = '1'; }}
-        onMouseLeave={(e) => { e.currentTarget.style.opacity = '0.85'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.opacity = '0.6'; }}
       >
-        {isVisible ? 'HIDE TELEMETRY' : 'SHOW TELEMETRY'}
+        {isVisible ? '📊 HIDE HUD' : '📊 SHOW HUD'}
       </button>
 
       {isVisible && (
