@@ -1,6 +1,7 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import ScrollPerfTracker from './ScrollPerfTracker';
 
 import mountainLayer from '../assets/jungle/web/l1_mountain.webp';
 import greenLayer from '../assets/jungle/web/l2_green.webp';
@@ -10,7 +11,7 @@ import foregroundLayer from '../assets/jungle/web/l5_foreground_blurred.webp';
 import projectsData from '../content/projects.json';
 import JourneyEnvironment from './JourneyEnvironment';
 import JungleFooter from './JungleFooter';
-import BikeCharacter from './BikeCharacter';
+import BikeCharacter, { type BikeCharacterHandle } from './BikeCharacter';
 import { ProjectBlueprint } from './ProjectBlueprint';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -112,16 +113,21 @@ function smoothProjectFocus(progress: number) {
 }
 
 export default function JungleJourney() {
+  if (typeof window !== 'undefined' && window.__scrollPerf) {
+    window.__scrollPerf.journeyRenders++;
+  }
+
   const containerRef = useRef<HTMLDivElement>(null);
   const bikerRef = useRef<HTMLDivElement>(null);
-  const [rotationAngle, setRotationAngle] = useState(0);
+  const bikeCharacterRef = useRef<BikeCharacterHandle>(null);
+  const nearestProjectIndexRef = useRef(0);
   const [isHovered, setIsHovered] = useState(false);
   const [bikeColor, setBikeColor] = useState<string | undefined>(undefined);
   const [wheelColor, setWheelColor] = useState<string | undefined>(undefined);
   const [showOverlay, setShowOverlay] = useState(() => {
     return typeof window !== 'undefined' && !!window.location.hash;
   });
-  const featuredProjects = projectsData.filter((project) => project.featured);
+  const featuredProjects = useMemo(() => projectsData.filter((project) => project.featured), []);
 
   useLayoutEffect(() => {
     const container = containerRef.current;
@@ -330,11 +336,64 @@ export default function JungleJourney() {
       };
 
       const setProjectStates = (scrollProgress: number) => {
+        const tStart = performance.now();
         const introThreshold = 0.15;
         const journeyEnd = 0.85;
-        const journeyProgress = scrollProgress < introThreshold
-          ? 0
-          : Math.min(1, (scrollProgress - introThreshold) / (journeyEnd - introThreshold));
+
+        // 1. Guard: Hero Landing Phase (cards are hidden, no layout queries needed)
+        if (scrollProgress < introThreshold) {
+          projectStates.forEach(({ element, setOpacity }) => {
+            setOpacity(0);
+            if (element.dataset.hidden !== '1') {
+              element.style.visibility = 'hidden';
+              element.style.pointerEvents = 'none';
+              element.dataset.hidden = '1';
+            }
+          });
+          cardRevealElements.forEach((element) => {
+            if (element.dataset.clipped !== '1') {
+              element.style.clipPath = 'inset(50% 50% 50% 50%)';
+              element.style.setProperty('-webkit-clip-path', 'inset(50% 50% 50% 50%)');
+              element.dataset.clipped = '1';
+            }
+          });
+          updateProgressHud(0);
+          
+          const tEnd = performance.now();
+          if (typeof window !== 'undefined' && window.__scrollPerf) {
+            window.__scrollPerf.lastProjectStatesTime = tEnd - tStart;
+          }
+          return;
+        }
+
+        // 2. Guard: Roots/Footer Phase (cards are off-screen left, no layout queries needed)
+        if (scrollProgress >= journeyEnd) {
+          projectStates.forEach(({ element, setOpacity }) => {
+            setOpacity(0);
+            if (element.dataset.hidden !== '1') {
+              element.style.visibility = 'hidden';
+              element.style.pointerEvents = 'none';
+              element.dataset.hidden = '1';
+            }
+          });
+          cardRevealElements.forEach((element) => {
+            if (element.dataset.clipped !== '1') {
+              element.style.clipPath = 'inset(50% 50% 50% 50%)';
+              element.style.setProperty('-webkit-clip-path', 'inset(50% 50% 50% 50%)');
+              element.dataset.clipped = '1';
+            }
+          });
+          updateProgressHud(featuredProjects.length - 1);
+
+          const tEnd = performance.now();
+          if (typeof window !== 'undefined' && window.__scrollPerf) {
+            window.__scrollPerf.lastProjectStatesTime = tEnd - tStart;
+          }
+          return;
+        }
+
+        // 3. Active Journey Scroll Phase (0.15 <= progress < 0.85)
+        const journeyProgress = (scrollProgress - introThreshold) / (journeyEnd - introThreshold);
 
         const hiddenYOffset =
           viewportHeight * PROJECT_CARD_MOTION.hiddenYOffsetRatio;
@@ -386,22 +445,25 @@ export default function JungleJourney() {
           const cardOpacity = gsap.utils.clamp(0, 1, focusProgress / 0.1);
           setOpacity(cardOpacity);
 
-          if (cardOpacity <= 0) {
-            element.style.visibility = 'hidden';
-            element.style.pointerEvents = 'none';
-          } else {
-            element.style.visibility = 'visible';
-            element.style.pointerEvents = 'auto';
+          const shouldHide = cardOpacity <= 0;
+          const wasHidden = element.dataset.hidden === '1';
+          if (shouldHide !== wasHidden) {
+            element.style.visibility = shouldHide ? 'hidden' : 'visible';
+            element.style.pointerEvents = shouldHide ? 'none' : 'auto';
+            element.dataset.hidden = shouldHide ? '1' : '0';
           }
         });
 
         const activeProject = projectElements[nearestProjectIndex];
 
         if (activeProject && cardRevealElements.length > 0) {
+          // Batch all DOM reads first to avoid layout thrashing
           const cardBounds = activeProject.getBoundingClientRect();
+          const layerBoundsArr = cardRevealElements.map(el => el.getBoundingClientRect());
 
-          cardRevealElements.forEach((element) => {
-            const layerBounds = element.getBoundingClientRect();
+          // Then batch all DOM writes
+          cardRevealElements.forEach((element, i) => {
+            const layerBounds = layerBoundsArr[i];
             const cardLeft = cardBounds.left - layerBounds.left;
             const cardTop = cardBounds.top - layerBounds.top;
             const cardRight = cardBounds.right - layerBounds.left;
@@ -421,20 +483,24 @@ export default function JungleJourney() {
             element.style.setProperty('--card-mask-top', `${cardTop}px`);
             element.style.setProperty('--card-mask-width', `${cardBounds.width}px`);
             element.style.setProperty('--card-mask-height', `${cardBounds.height}px`);
+            element.dataset.clipped = '0'; // Flag that it is active
           });
         }
 
         updateProgressHud(nearestProjectIndex);
+        nearestProjectIndexRef.current = nearestProjectIndex;
+
+        const tEnd = performance.now();
+        const duration = tEnd - tStart;
+        if (typeof window !== 'undefined' && window.__scrollPerf) {
+          window.__scrollPerf.lastProjectStatesTime = duration;
+          if (duration > window.__scrollPerf.maxProjectStatesTime) {
+            window.__scrollPerf.maxProjectStatesTime = duration;
+          }
+        }
       };
 
-      if (headerElement) {
-        gsap.set(headerElement, {
-          backgroundColor: 'rgba(219, 232, 228, 0)',
-          borderColor: 'rgba(18, 59, 69, 0)',
-          boxShadow: '0 8px 28px rgba(18, 59, 69, 0)',
-          color: '#123b45',
-        });
-      }
+
 
       if (progressHud) {
         gsap.set(progressHud, { autoAlpha: 0, y: -12 });
@@ -451,6 +517,52 @@ export default function JungleJourney() {
           pin: true,
           invalidateOnRefresh: true,
           onUpdate: (self) => {
+            if (typeof window !== 'undefined' && window.__scrollPerf) {
+              window.__scrollPerf.scrollUpdates++;
+              window.__scrollPerf.currentProgress = self.progress;
+              
+              if (self.progress < 0.15) {
+                window.__scrollPerf.currentPhase = 'Hero Landing Phase';
+              } else if (self.progress >= 0.82 && self.progress < 0.90) {
+                window.__scrollPerf.currentPhase = 'Roots Transition Phase';
+              } else if (self.progress >= 0.90) {
+                window.__scrollPerf.currentPhase = 'Deep Roots Footer';
+              } else {
+                const activeProject = featuredProjects[nearestProjectIndexRef.current];
+                window.__scrollPerf.currentPhase = activeProject 
+                  ? `Active Project: ${activeProject.core.title}`
+                  : 'Project Cards Scroll';
+              }
+            }
+
+            if (headerElement) {
+              if (self.progress >= 0.88) {
+                if (headerElement.className !== 'jj-header jj-header--dark') {
+                  headerElement.className = 'jj-header jj-header--dark';
+                }
+              } else if (self.progress >= 0.04) {
+                if (headerElement.className !== 'jj-header jj-header--scrolled') {
+                  headerElement.className = 'jj-header jj-header--scrolled';
+                }
+              } else {
+                if (headerElement.className !== 'jj-header') {
+                  headerElement.className = 'jj-header';
+                }
+              }
+            }
+
+            if (footerEl) {
+              const shouldBeActive = self.progress >= 0.95;
+              const isActive = footerEl.classList.contains('is-active');
+              if (shouldBeActive !== isActive) {
+                if (shouldBeActive) {
+                  footerEl.classList.add('is-active');
+                } else {
+                  footerEl.classList.remove('is-active');
+                }
+              }
+            }
+
             setProjectStates(self.progress);
 
             if (!reduceMotion) {
@@ -462,7 +574,8 @@ export default function JungleJourney() {
                   : Math.min(1, (self.progress - introThreshold) / (journeyEnd - introThreshold));
                 const travelledDistance = journeyProgress * SCROLL_DISTANCE;
                 setBikerY(getBikerRideY(travelledDistance, 1));
-                setRotationAngle((travelledDistance / 1800) * 360); // 480px of scroll per pedal rotation
+                // Update wheel rotation imperatively (no React re-render)
+                bikeCharacterRef.current?.updateRotation((travelledDistance / 1800) * 360);
 
                 // Tilt bike upward (negative degrees) when climbing, and downward (positive degrees) when descending
                 const tiltAngle = Math.cos((travelledDistance / BIKER_RIDE.bumpWavelength) * Math.PI * 2) * 4; // Max 4 degrees tilt
@@ -555,22 +668,11 @@ export default function JungleJourney() {
         ease: 'power2.inOut',
       }, 0);
 
-      timeline.to('.jj-hero', {
+      timeline.set('.jj-hero', {
         pointerEvents: 'none',
-        duration: 0.01,
       }, 0.12);
 
-      if (headerElement) {
-        timeline.to(headerElement, {
-          backgroundColor: 'rgba(219, 232, 228, 0.86)',
-          borderColor: 'rgba(18, 59, 69, 0.24)',
-          boxShadow: '0 8px 28px rgba(18, 59, 69, 0.1)',
-          backdropFilter: 'blur(8px)',
-          color: '#123b45',
-          duration: 0.08,
-          ease: 'power2.inOut',
-        }, 0.04);
-      }
+
 
       if (progressHud) {
         // Fade in HUD during the intro
@@ -606,72 +708,76 @@ export default function JungleJourney() {
         );
       });
 
-      // --- Transitions to Deep Roots Footer at Scroll End (progress 0.85 -> 1.0) ---
+      // --- Transitions to Deep Roots Footer at Scroll End ---
+      // Spread animations over 0.82 -> 0.98 to avoid 7+ simultaneous tweens
 
-      // 1. Biker exit: drives off-screen right with speed
+      const footerEl = container.querySelector<HTMLElement>('.jj-footer');
+
+      // 1. HUD slides out first (earliest signal the journey is ending)
+      if (progressHud) {
+        timeline.to(progressHud, {
+          y: -40,
+          autoAlpha: 0,
+          duration: 0.06,
+          ease: 'power1.inOut',
+        }, 0.82);
+      }
+
+      // 2. Biker exit: drives off-screen right
       if (!reduceMotion) {
         timeline.to(bikerElement, {
           xPercent: 200,
           opacity: 0,
           duration: 0.07,
           ease: 'power2.in',
-        }, 0.85);
+        }, 0.83);
       }
 
-      // 2. Landscape ascent: environment layers slide upward to occupy top half
-      timeline.to(['.jj-layer', '.journey-environment'], {
-        yPercent: -70,
-        duration: 0.10,
-        ease: 'power2.inOut',
-        stagger: 0.01,
-      }, 0.85);
-
-      // 3. Environment background transitions to deep roots charcoal teal
-      timeline.to(container, {
-        backgroundColor: '#08171a',
-        duration: 0.07,
+      // 3. Background overlay fades in (instead of animating container backgroundColor)
+      timeline.fromTo('.jj-bg-overlay', {
+        opacity: 0,
+      }, {
+        opacity: 1,
+        duration: 0.08,
         ease: 'power1.inOut',
       }, 0.85);
 
-      // 4. Subtle dimming of the landscape environment (instead of full fade-out)
+      // 4. Subtle dimming of the landscape environment
       timeline.to('.journey-environment', {
         opacity: 0.7,
         duration: 0.08,
         ease: 'power1.out',
       }, 0.85);
 
-      // 5. Header transitions to dark-mode styling
-      if (headerElement) {
-        timeline.to(headerElement, {
-          backgroundColor: 'rgba(8, 23, 26, 0.86)',
-          borderColor: 'rgba(16, 185, 129, 0.2)',
-          boxShadow: '0 8px 28px rgba(8, 23, 26, 0.5)',
-          color: '#c8dad4',
-          duration: 0.07,
-          ease: 'power1.inOut',
-        }, 0.88);
-      }
+      // 5. Landscape ascent: layers slide upward (after bg transition starts)
+      timeline.to(['.jj-layer', '.journey-environment'], {
+        yPercent: -70,
+        duration: 0.10,
+        ease: 'power2.inOut',
+        stagger: 0.008,
+      }, 0.87);
 
-      // 6. HUD slides out of view (and slides back in on reverse scroll)
-      if (progressHud) {
-        timeline.to(progressHud, {
-          y: -40,
-          autoAlpha: 0,
-          duration: 0.07,
-          ease: 'power1.inOut',
-        }, 0.85);
-      }
+      // 6. Hide landscape layers completely to save GPU resources at the end
+      timeline.to(['.jj-layer', '.journey-environment'], {
+        autoAlpha: 0,
+        duration: 0.08,
+        ease: 'power1.inOut',
+      }, 0.89);
 
-      // 7. Footer slides up into view
+
+
+      // 7. Footer slides up into view (latest, after landscape clears)
       timeline.fromTo('.jj-footer', {
         yPercent: 100,
         autoAlpha: 0,
       }, {
         yPercent: 0,
         autoAlpha: 1,
-        duration: 0.12,
+        duration: 0.10,
         ease: 'power2.out',
-      }, 0.88);
+        onStart: () => { footerEl?.classList.add('is-visible'); },
+        onReverseComplete: () => { footerEl?.classList.remove('is-visible'); },
+      }, 0.90);
 
 
       // Force initial layout/trigger refresh synchronously so that the document has its full scrollable height.
@@ -750,7 +856,8 @@ export default function JungleJourney() {
         </div>
       )}
       <JourneyEnvironment />
-
+      {/* Background overlay for dark transition — uses opacity instead of backgroundColor to avoid full-viewport repaint */}
+      <div className="jj-bg-overlay" aria-hidden="true" />
 
 
       <div className="jj-cloud-hud" aria-label="Journey Progress HUD">
@@ -934,7 +1041,8 @@ export default function JungleJourney() {
       >
         <div style={{ position: 'relative', width: '100%', height: '100%', pointerEvents: 'auto' }}>
           <BikeCharacter
-            rotationAngle={rotationAngle}
+            ref={bikeCharacterRef}
+            rotationAngle={0}
             theme="retro"
             bikeColor={bikeColor}
             wheelColor={wheelColor}
@@ -1000,6 +1108,7 @@ export default function JungleJourney() {
       </div>
 
       <JungleFooter />
+      <ScrollPerfTracker />
     </main>
 
   );

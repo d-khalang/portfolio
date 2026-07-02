@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef, useImperativeHandle, forwardRef, useLayoutEffect, useCallback } from 'react';
 import './BikeCharacter.css';
 
 // Import images
@@ -22,7 +22,23 @@ interface BikeCharacterProps {
   showLabels?: boolean; // Optional flag to show debug labels overlay
 }
 
-const BikeCharacter: React.FC<BikeCharacterProps> = ({
+export interface BikeCharacterHandle {
+  /** Imperatively update the wheel rotation angle — bypasses React rendering for scroll-driven perf */
+  updateRotation: (angle: number) => void;
+}
+
+type FrameName = 'up' | '5' | 'down' | '8';
+
+function getFrameForAngle(rotationAngle: number): FrameName {
+  const physicalAngle = rotationAngle + 50;
+  const angleNormalized = ((physicalAngle % 360) + 360) % 360;
+  if (angleNormalized >= 0 && angleNormalized < 75) return '5';
+  if (angleNormalized >= 75 && angleNormalized < 105) return 'down';
+  if (angleNormalized >= 105 && angleNormalized < 210) return '8';
+  return 'up';
+}
+
+const BikeCharacter = forwardRef<BikeCharacterHandle, BikeCharacterProps>(({
   rotationAngle,
   theme = 'neon',
   bikeColor,
@@ -31,54 +47,146 @@ const BikeCharacter: React.FC<BikeCharacterProps> = ({
   rotationSpeed,
   playState,
   showLabels = false,
-}) => {
-  // Determine which frame is active if rotationAngle is provided
-  let activeFrame: 'up' | '5' | 'down' | '8' = 'down';
-  const isScrollDriven = rotationAngle !== undefined;
-
-  // Track if the bike is actively moving
-  const [isMoving, setIsMoving] = useState(false);
-  const prevAngleRef = useRef(rotationAngle);
-  const timerRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    if (rotationAngle !== undefined) {
-      if (rotationAngle !== prevAngleRef.current) {
-        setIsMoving(true);
-        prevAngleRef.current = rotationAngle;
-
-        if (timerRef.current !== null) {
-          window.clearTimeout(timerRef.current);
-        }
-        timerRef.current = window.setTimeout(() => {
-          setIsMoving(false);
-        }, 200); // Set moving to false after 200ms of no scrolling
-      }
-    }
-    return () => {
-      if (timerRef.current !== null) {
-        window.clearTimeout(timerRef.current);
-      }
-    };
-  }, [rotationAngle]);
-
-  const isCurrentlyMoving = isScrollDriven ? isMoving : (playState !== 'paused');
-
-  if (isScrollDriven) {
-    const physicalAngle = rotationAngle + 50;
-    const angleNormalized = ((physicalAngle % 360) + 360) % 360;
-    if (angleNormalized >= 0 && angleNormalized < 75) {
-      activeFrame = '5';
-    } else if (angleNormalized >= 75 && angleNormalized < 105) {
-      activeFrame = 'down';
-    } else if (angleNormalized >= 105 && angleNormalized < 210) {
-      activeFrame = '8';
-    } else {
-      activeFrame = 'up';
-    }
+}, ref) => {
+  if (typeof window !== 'undefined' && window.__scrollPerf) {
+    window.__scrollPerf.bikeRenders++;
   }
 
-  // Create inline styles for rotation
+  const isScrollDriven = rotationAngle !== undefined;
+
+  // --- Refs for imperative DOM updates (scroll-driven mode) ---
+  const containerElRef = useRef<HTMLDivElement>(null);
+  const prevAngleRef = useRef(rotationAngle ?? 0);
+  const movingTimerRef = useRef<number | null>(null);
+  const currentFrameRef = useRef<FrameName>('down');
+
+  // Refs for all rotating elements — populated via callback refs
+  const rimEls = useRef<HTMLDivElement[]>([]);
+  const spokeEls = useRef<HTMLDivElement[]>([]);
+  const chainringEl = useRef<HTMLDivElement | null>(null);
+  const cassetteEl = useRef<HTMLDivElement | null>(null);
+  const crankLeftEl = useRef<HTMLDivElement | null>(null);
+  const crankRightEl = useRef<HTMLDivElement | null>(null);
+  const pedalLeftEl = useRef<HTMLDivElement | null>(null);
+  const pedalRightEl = useRef<HTMLDivElement | null>(null);
+  // Rider frame image refs (for visibility toggling)
+  const riderFrontEls = useRef<Map<FrameName, HTMLImageElement>>(new Map());
+  const riderBackLegEls = useRef<Map<FrameName, HTMLImageElement>>(new Map());
+  // Dust cloud refs
+  const dustEls = useRef<HTMLDivElement[]>([]);
+
+  // Non-scroll-driven mode still uses props directly for initial render
+  const [, setForceRender] = useState(0);
+
+  // Callback refs for rotating elements (collected once on mount)
+  const collectRim = useCallback((el: HTMLDivElement | null) => {
+    if (el && !rimEls.current.includes(el)) rimEls.current.push(el);
+  }, []);
+  const collectSpoke = useCallback((el: HTMLDivElement | null) => {
+    if (el && !spokeEls.current.includes(el)) spokeEls.current.push(el);
+  }, []);
+  const collectDust = useCallback((el: HTMLDivElement | null) => {
+    if (el && !dustEls.current.includes(el)) dustEls.current.push(el);
+  }, []);
+
+  // Imperative handle: parent calls this to update rotation without causing re-render
+  useImperativeHandle(ref, () => ({
+    updateRotation(angle: number) {
+      const tStart = performance.now();
+
+      // 1. Update rotating element transforms directly
+      const rimStyle = `rotate(${angle}deg)`;
+      for (const el of rimEls.current) el.style.transform = rimStyle;
+      for (const el of spokeEls.current) el.style.transform = rimStyle;
+
+      if (chainringEl.current) {
+        chainringEl.current.style.transform = `translate(-50%, 50%) rotate(${angle}deg)`;
+      }
+      if (cassetteEl.current) {
+        cassetteEl.current.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
+      }
+
+      // Crank assemblies
+      const crankLeftAngle = angle + 230;
+      const crankRightAngle = angle + 50;
+      if (crankLeftEl.current) {
+        crankLeftEl.current.style.transform = `rotate(${crankLeftAngle}deg)`;
+      }
+      if (crankRightEl.current) {
+        crankRightEl.current.style.transform = `rotate(${crankRightAngle}deg)`;
+      }
+      // Counter-rotate pedals to keep them level
+      if (pedalLeftEl.current) {
+        pedalLeftEl.current.style.transform = `rotate(${-crankLeftAngle}deg)`;
+      }
+      if (pedalRightEl.current) {
+        pedalRightEl.current.style.transform = `rotate(${-crankRightAngle}deg)`;
+      }
+
+      // 2. Determine active rider frame and toggle visibility
+      const newFrame = getFrameForAngle(angle);
+      if (newFrame !== currentFrameRef.current) {
+        // Hide previous frame
+        const prevFront = riderFrontEls.current.get(currentFrameRef.current);
+        const prevBack = riderBackLegEls.current.get(currentFrameRef.current);
+        if (prevFront) prevFront.classList.replace('force-visible', 'force-hidden');
+        if (prevBack) prevBack.classList.replace('force-visible', 'force-hidden');
+        // Show new frame
+        const nextFront = riderFrontEls.current.get(newFrame);
+        const nextBack = riderBackLegEls.current.get(newFrame);
+        if (nextFront) nextFront.classList.replace('force-hidden', 'force-visible');
+        if (nextBack) nextBack.classList.replace('force-hidden', 'force-visible');
+        currentFrameRef.current = newFrame;
+      }
+
+      // 3. Toggle dust/moving class via direct DOM (no React state)
+      if (angle !== prevAngleRef.current) {
+        // Add moving class
+        for (const el of dustEls.current) {
+          if (!el.classList.contains('is-moving')) el.classList.add('is-moving');
+        }
+        prevAngleRef.current = angle;
+
+        // Clear previous timer and set new one
+        if (movingTimerRef.current !== null) {
+          window.clearTimeout(movingTimerRef.current);
+        }
+        movingTimerRef.current = window.setTimeout(() => {
+          for (const el of dustEls.current) {
+            el.classList.remove('is-moving');
+          }
+        }, 200);
+      }
+
+      const tEnd = performance.now();
+      const duration = tEnd - tStart;
+      if (typeof window !== 'undefined' && window.__scrollPerf) {
+        window.__scrollPerf.lastBikeUpdateTime = duration;
+        if (duration > window.__scrollPerf.maxBikeUpdateTime) {
+          window.__scrollPerf.maxBikeUpdateTime = duration;
+        }
+      }
+    },
+  }), []);
+
+  // Cleanup timer on unmount
+  useLayoutEffect(() => {
+    return () => {
+      if (movingTimerRef.current !== null) {
+        window.clearTimeout(movingTimerRef.current);
+      }
+    };
+  }, []);
+
+  // For non-scroll-driven mode, compute values from props
+  let activeFrame: FrameName = 'down';
+  const isCurrentlyMoving = !isScrollDriven && playState !== 'paused';
+
+  if (isScrollDriven) {
+    activeFrame = getFrameForAngle(rotationAngle);
+  }
+
+  // Create inline styles for rotation (non-scroll-driven mode only — scroll mode uses imperative updates)
   const getRotationStyle = (offsetDeg: number = 0, speedFactor: number = 1) => {
     if (isScrollDriven) {
       return { transform: `rotate(${(rotationAngle * speedFactor) + offsetDeg}deg)` };
@@ -108,7 +216,7 @@ const BikeCharacter: React.FC<BikeCharacterProps> = ({
   };
 
   // Visibility classes for scroll-driven mode
-  const getFrameClass = (frameName: 'up' | '5' | 'down' | '8') => {
+  const getFrameClass = (frameName: FrameName) => {
     if (!isScrollDriven) return '';
     return activeFrame === frameName ? 'force-visible' : 'force-hidden';
   };
@@ -134,6 +242,7 @@ const BikeCharacter: React.FC<BikeCharacterProps> = ({
 
   return (
     <div 
+      ref={containerElRef}
       className={`bike-container theme-${theme} ${isScrollDriven ? 'scroll-driven' : 'auto-animate'}`}
       style={containerStyle}
     >
@@ -146,7 +255,7 @@ const BikeCharacter: React.FC<BikeCharacterProps> = ({
         <foreignObject width="500" height="380" x="0" y="0" style={{ overflow: 'visible' }}>
           <div className={`bike ${showLabels ? 'show-debug-labels' : ''}`} style={{ position: 'absolute', width: '500px', height: '380px', left: 0, top: 0 }}>
             {/* Rear Wheel Dust */}
-            <div className={`dust-cloud rear-wheel-dust ${isCurrentlyMoving ? 'is-moving' : ''}`}>
+            <div ref={collectDust} className={`dust-cloud rear-wheel-dust ${isCurrentlyMoving ? 'is-moving' : ''}`}>
               <div className="dust-puff puff-1"></div>
               <div className="dust-puff puff-2"></div>
               <div className="dust-puff puff-3"></div>
@@ -160,14 +269,14 @@ const BikeCharacter: React.FC<BikeCharacterProps> = ({
             {/* Rear Wheel */}
             <div className="wheel rear-wheel" data-label="rear-wheel">
               <div className="tire"></div>
-              <div className="rim" style={getRotationStyle()}></div>
-              <div className="spokes" style={getRotationStyle()}></div>
+              <div className="rim" ref={collectRim} style={getRotationStyle()}></div>
+              <div className="spokes" ref={collectSpoke} style={getRotationStyle()}></div>
               <div className="hub"></div>
-              <div className="cassette" style={getCassetteStyle()}></div>
+              <div className="cassette" ref={el => { cassetteEl.current = el; }} style={getCassetteStyle()}></div>
             </div>
 
             {/* Front Wheel Dust */}
-            <div className={`dust-cloud front-wheel-dust ${isCurrentlyMoving ? 'is-moving' : ''}`}>
+            <div ref={collectDust} className={`dust-cloud front-wheel-dust ${isCurrentlyMoving ? 'is-moving' : ''}`}>
               <div className="dust-puff puff-1"></div>
               <div className="dust-puff puff-2"></div>
               <div className="dust-puff puff-3"></div>
@@ -178,8 +287,8 @@ const BikeCharacter: React.FC<BikeCharacterProps> = ({
             {/* Front Wheel */}
             <div className="wheel front-wheel" data-label="front-wheel">
               <div className="tire"></div>
-              <div className="rim" style={getRotationStyle()}></div>
-              <div className="spokes" style={getRotationStyle()}></div>
+              <div className="rim" ref={collectRim} style={getRotationStyle()}></div>
+              <div className="spokes" ref={collectSpoke} style={getRotationStyle()}></div>
               <div className="hub"></div>
             </div>
 
@@ -188,24 +297,28 @@ const BikeCharacter: React.FC<BikeCharacterProps> = ({
               <>
                 <img 
                   src={riderLegUp} 
+                  ref={el => { if (el) riderBackLegEls.current.set('up', el); }}
                   className={`rider-back-leg rider-back-leg-up ${getFrameClass('up')}`} 
                   data-label="rider-back-leg" 
                   alt="Rider Back Leg Up"
                 />
                 <img 
                   src={riderLeg5} 
+                  ref={el => { if (el) riderBackLegEls.current.set('5', el); }}
                   className={`rider-back-leg rider-back-leg-5 ${getFrameClass('5')}`} 
                   data-label="rider-back-leg" 
                   alt="Rider Back Leg 5"
                 />
                 <img 
                   src={riderLegDown} 
+                  ref={el => { if (el) riderBackLegEls.current.set('down', el); }}
                   className={`rider-back-leg rider-back-leg-down ${getFrameClass('down')}`} 
                   data-label="rider-back-leg" 
                   alt="Rider Back Leg Down"
                 />
                 <img 
                   src={riderLeg8} 
+                  ref={el => { if (el) riderBackLegEls.current.set('8', el); }}
                   className={`rider-back-leg rider-back-leg-8 ${getFrameClass('8')}`} 
                   data-label="rider-back-leg" 
                   alt="Rider Back Leg 8"
@@ -237,15 +350,15 @@ const BikeCharacter: React.FC<BikeCharacterProps> = ({
 
             {/* Drivetrain (Crankset, chain, pedals) */}
             <div className="drivetrain">
-              <div className="chainring" data-label="chainring" style={getChainringStyle()}></div>
+              <div className="chainring" data-label="chainring" ref={el => { chainringEl.current = el; }} style={getChainringStyle()}></div>
               <div className="chain-upper" data-label="chain-upper"></div>
               <div className="chain-lower" data-label="chain-lower"></div>
 
               {/* Crank Arm & Pedal 1 */}
-              <div className="crank-assembly crank-left" style={getRotationStyle(230)}>
+              <div className="crank-assembly crank-left" ref={el => { crankLeftEl.current = el; }} style={getRotationStyle(230)}>
                 <div className="crank-arm" data-label="crank-arm"></div>
-                <div className="pedal" data-label="pedal" style={getCounterRotationStyle(230)}>
-                  <div className={`pedal-dust ${isCurrentlyMoving ? 'is-moving' : ''}`}>
+                <div className="pedal" data-label="pedal" ref={el => { pedalLeftEl.current = el; }} style={getCounterRotationStyle(230)}>
+                  <div ref={collectDust} className={`pedal-dust ${isCurrentlyMoving ? 'is-moving' : ''}`}>
                     <div className="pedal-particle p-1"></div>
                     <div className="pedal-particle p-2"></div>
                     <div className="pedal-particle p-3"></div>
@@ -254,10 +367,10 @@ const BikeCharacter: React.FC<BikeCharacterProps> = ({
               </div>
               
               {/* Crank Arm & Pedal 2 */}
-              <div className="crank-assembly crank-right" style={getRotationStyle(50)}>
+              <div className="crank-assembly crank-right" ref={el => { crankRightEl.current = el; }} style={getRotationStyle(50)}>
                 <div className="crank-arm" data-label="crank-arm"></div>
-                <div className="pedal" data-label="pedal" style={getCounterRotationStyle(50)}>
-                  <div className={`pedal-dust ${isCurrentlyMoving ? 'is-moving' : ''}`}>
+                <div className="pedal" data-label="pedal" ref={el => { pedalRightEl.current = el; }} style={getCounterRotationStyle(50)}>
+                  <div ref={collectDust} className={`pedal-dust ${isCurrentlyMoving ? 'is-moving' : ''}`}>
                     <div className="pedal-particle p-1"></div>
                     <div className="pedal-particle p-2"></div>
                     <div className="pedal-particle p-3"></div>
@@ -277,24 +390,28 @@ const BikeCharacter: React.FC<BikeCharacterProps> = ({
               <>
                 <img 
                   src={riderFullUp} 
+                  ref={el => { if (el) riderFrontEls.current.set('up', el); }}
                   className={`rider-front rider-front-up ${getFrameClass('up')}`} 
                   data-label="rider-character" 
                   alt="Rider Up"
                 />
                 <img 
                   src={riderFull5} 
+                  ref={el => { if (el) riderFrontEls.current.set('5', el); }}
                   className={`rider-front rider-front-5 ${getFrameClass('5')}`} 
                   data-label="rider-character" 
                   alt="Rider 5"
                 />
                 <img 
                   src={riderFullDown} 
+                  ref={el => { if (el) riderFrontEls.current.set('down', el); }}
                   className={`rider-front rider-front-down ${getFrameClass('down')}`} 
                   data-label="rider-character" 
                   alt="Rider Down"
                 />
                 <img 
                   src={riderFull8} 
+                  ref={el => { if (el) riderFrontEls.current.set('8', el); }}
                   className={`rider-front rider-front-8 ${getFrameClass('8')}`} 
                   data-label="rider-character" 
                   alt="Rider 8"
@@ -306,6 +423,8 @@ const BikeCharacter: React.FC<BikeCharacterProps> = ({
       </svg>
     </div>
   );
-};
+});
+
+BikeCharacter.displayName = 'BikeCharacter';
 
 export default BikeCharacter;
