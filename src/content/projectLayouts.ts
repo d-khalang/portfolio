@@ -60,6 +60,176 @@ export const projectLayoutOverrides: ProjectLayouts = {
       'lesson-1': { col: 4, row: 41, cols: 2, rows: 2 },
       'next-0': { col: 10, row: 38, cols: 2, rows: 2 },
     },
+    "mobile": {
+      "role": {
+        "col": 1,
+        "row": 2,
+        "cols": 2,
+        "rows": 4
+      },
+      "metric-Scale": {
+        "col": 1,
+        "row": 7,
+        "cols": 3,
+        "rows": 2
+      },
+      "atlas-asset-0": {
+        "col": 1,
+        "row": 10,
+        "cols": 4,
+        "rows": 3
+      },
+      "atlas-asset-4": {
+        "col": 1,
+        "row": 16,
+        "cols": 4,
+        "rows": 4
+      },
+      "atlas-asset-2": {
+        "col": 1,
+        "row": 41,
+        "cols": 4,
+        "rows": 3
+      },
+      "highlight-1": {
+        "col": 1,
+        "row": 28,
+        "cols": 3,
+        "rows": 2
+      },
+      "atlas-asset-1": {
+        "col": 1,
+        "row": 30,
+        "cols": 4,
+        "rows": 5
+      },
+      "lesson-0": {
+        "col": 3,
+        "row": 37,
+        "cols": 2,
+        "rows": 3
+      },
+      "atlas-asset-6": {
+        "col": 1,
+        "row": 21,
+        "cols": 4,
+        "rows": 6
+      },
+      "summary": {
+        "col": 1,
+        "row": 44,
+        "cols": 4,
+        "rows": 4
+      },
+      "highlight-3": {
+        "col": 1,
+        "row": 36,
+        "cols": 2,
+        "rows": 3
+      },
+      "stack": {
+        "col": 1,
+        "row": 49,
+        "cols": 4,
+        "rows": 4
+      },
+      "highlight-2": {
+        "col": 2,
+        "row": 54,
+        "cols": 3,
+        "rows": 2
+      },
+      "challenge": {
+        "col": 1,
+        "row": 60,
+        "cols": 2,
+        "rows": 3
+      },
+      "glyph": {
+        "col": 3,
+        "row": 5,
+        "cols": 2,
+        "rows": 2
+      },
+      "status": {
+        "col": 1,
+        "row": 53,
+        "cols": 2,
+        "rows": 1
+      },
+      "highlight-0": {
+        "col": 3,
+        "row": 61,
+        "cols": 2,
+        "rows": 2
+      },
+      "lesson-1": {
+        "col": 1,
+        "row": 64,
+        "cols": 4,
+        "rows": 3
+      },
+      "atlas-asset-5": {
+        "col": 1,
+        "row": 77,
+        "cols": 4,
+        "rows": 4
+      },
+      "next-0": {
+        "col": 1,
+        "row": 68,
+        "cols": 3,
+        "rows": 2
+      },
+      "atlas-asset-3": {
+        "col": 3,
+        "row": 70,
+        "cols": 2,
+        "rows": 6
+      },
+      "response": {
+        "col": 1,
+        "row": 71,
+        "cols": 2,
+        "rows": 5
+      },
+      "metric-Performance": {
+        "col": 2,
+        "row": 56,
+        "cols": 2,
+        "rows": 3
+      },
+      "metric-Data pipeline": {
+        "col": 3,
+        "row": 82,
+        "cols": 2,
+        "rows": 3
+      },
+      "result": {
+        "col": 1,
+        "row": 86,
+        "cols": 4,
+        "rows": 3
+      },
+      "domain": {
+        "col": 2,
+        "row": 14,
+        "cols": 2,
+        "rows": 2
+      },
+      "link-https://atlas.resiliage-ecosystem.eu": {
+        "col": 3,
+        "row": 1,
+        "cols": 2,
+        "rows": 2
+      },
+      "metric-Delivery": {
+        "col": 1,
+        "row": 83,
+        "cols": 2,
+        "rows": 2
+      }
+    }
   },
   kartino: {
     desktop: {
@@ -87,6 +257,152 @@ export const projectLayoutOverrides: ProjectLayouts = {
       'kartino-asset-5': { col: 7, row: 30, cols: 4, rows: 5 },
       'lesson-0': { col: 5, row: 28, cols: 3, rows: 2 },
     },
+    "mobile": {
+      "role": {
+        "col": 2,
+        "row": 1,
+        "cols": 3,
+        "rows": 3
+      },
+      "metric-Flashcard creation latency": {
+        "col": 3,
+        "row": 13,
+        "cols": 2,
+        "rows": 2
+      },
+      "kartino-asset-0": {
+        "col": 1,
+        "row": 8,
+        "cols": 4,
+        "rows": 3
+      },
+      "stack": {
+        "col": 1,
+        "row": 12,
+        "cols": 2,
+        "rows": 4
+      },
+      "metric-Test suite": {
+        "col": 3,
+        "row": 5,
+        "cols": 2,
+        "rows": 3
+      },
+      "kartino-asset-4": {
+        "col": 1,
+        "row": 18,
+        "cols": 4,
+        "rows": 6
+      },
+      "response": {
+        "col": 2,
+        "row": 29,
+        "cols": 3,
+        "rows": 3
+      },
+      "kartino-asset-5": {
+        "col": 1,
+        "row": 32,
+        "cols": 4,
+        "rows": 6
+      },
+      "domain": {
+        "col": 1,
+        "row": 4,
+        "cols": 2,
+        "rows": 2
+      },
+      "lesson-0": {
+        "col": 1,
+        "row": 25,
+        "cols": 2,
+        "rows": 3
+      },
+      "status": {
+        "col": 1,
+        "row": 39,
+        "cols": 3,
+        "rows": 1
+      },
+      "link-https://github.com/d-khalang/FlashCard_ecosystem": {
+        "col": 3,
+        "row": 26,
+        "cols": 2,
+        "rows": 2
+      },
+      "kartino-asset-1": {
+        "col": 1,
+        "row": 44,
+        "cols": 4,
+        "rows": 4
+      },
+      "result": {
+        "col": 3,
+        "row": 56,
+        "cols": 2,
+        "rows": 3
+      },
+      "highlight-1": {
+        "col": 1,
+        "row": 55,
+        "cols": 2,
+        "rows": 3
+      },
+      "link-https://kartino.it": {
+        "col": 3,
+        "row": 15,
+        "cols": 2,
+        "rows": 2
+      },
+      "summary": {
+        "col": 1,
+        "row": 59,
+        "cols": 4,
+        "rows": 4
+      },
+      "highlight-0": {
+        "col": 1,
+        "row": 64,
+        "cols": 2,
+        "rows": 3
+      },
+      "kartino-asset-3": {
+        "col": 2,
+        "row": 67,
+        "cols": 3,
+        "rows": 6
+      },
+      "kartino-asset-6": {
+        "col": 1,
+        "row": 49,
+        "cols": 4,
+        "rows": 5
+      },
+      "glyph": {
+        "col": 1,
+        "row": 41,
+        "cols": 2,
+        "rows": 2
+      },
+      "kartino-asset-2": {
+        "col": 1,
+        "row": 74,
+        "cols": 4,
+        "rows": 7
+      },
+      "challenge": {
+        "col": 1,
+        "row": 82,
+        "cols": 4,
+        "rows": 3
+      },
+      "metric-Rating flow latency": {
+        "col": 3,
+        "row": 40,
+        "cols": 2,
+        "rows": 2
+      }
+    }
   },
   recore: {
     desktop: {
