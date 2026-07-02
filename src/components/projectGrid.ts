@@ -55,11 +55,11 @@ function normalizeTileShape(tile: GridTileShape, columns: number): GridTileShape
   };
 }
 
-function getPositionBottom(position: GridPosition) {
+export function getPositionBottom(position: GridPosition) {
   return position.row + position.rows - 1;
 }
 
-function getLayoutBottomRow(layout: GridLayout, fallbackRow = 1) {
+export function getLayoutBottomRow(layout: GridLayout, fallbackRow = 1) {
   return Object.values(layout).reduce(
     (lastRow, position) => Math.max(lastRow, getPositionBottom(position)),
     fallbackRow,

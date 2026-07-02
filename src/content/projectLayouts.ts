@@ -410,6 +410,134 @@ export const projectLayoutOverrides: ProjectLayouts = {
         "cols": 3,
         "rows": 2
       }
+    },
+    "mobile": {
+      "role": {
+        "col": 1,
+        "row": 1,
+        "cols": 4,
+        "rows": 3
+      },
+      "metric-Orchestrated services": {
+        "col": 3,
+        "row": 5,
+        "cols": 2,
+        "rows": 3
+      },
+      "smart-plant-care-asset-0": {
+        "col": 1,
+        "row": 12,
+        "cols": 4,
+        "rows": 5
+      },
+      "stack": {
+        "col": 1,
+        "row": 21,
+        "cols": 4,
+        "rows": 3
+      },
+      "metric-Provisioning latency": {
+        "col": 1,
+        "row": 4,
+        "cols": 2,
+        "rows": 3
+      },
+      "metric-Closed-loop automation": {
+        "col": 2,
+        "row": 9,
+        "cols": 3,
+        "rows": 2
+      },
+      "lesson-1": {
+        "col": 1,
+        "row": 31,
+        "cols": 4,
+        "rows": 3
+      },
+      "challenge": {
+        "col": 3,
+        "row": 27,
+        "cols": 2,
+        "rows": 3
+      },
+      "highlight-0": {
+        "col": 1,
+        "row": 25,
+        "cols": 2,
+        "rows": 3
+      },
+      "highlight-2": {
+        "col": 1,
+        "row": 36,
+        "cols": 2,
+        "rows": 3
+      },
+      "metric-Data throughput": {
+        "col": 3,
+        "row": 18,
+        "cols": 2,
+        "rows": 2
+      },
+      "glyph": {
+        "col": 1,
+        "row": 19,
+        "cols": 2,
+        "rows": 2
+      },
+      "result": {
+        "col": 3,
+        "row": 38,
+        "cols": 2,
+        "rows": 5
+      },
+      "domain": {
+        "col": 1,
+        "row": 34,
+        "cols": 4,
+        "rows": 1
+      },
+      "response": {
+        "col": 1,
+        "row": 44,
+        "cols": 3,
+        "rows": 5
+      },
+      "highlight-1": {
+        "col": 2,
+        "row": 49,
+        "cols": 3,
+        "rows": 3
+      },
+      "link-https://github.com/d-khalang/smart-care": {
+        "col": 1,
+        "row": 41,
+        "cols": 2,
+        "rows": 2
+      },
+      "lesson-0": {
+        "col": 1,
+        "row": 57,
+        "cols": 4,
+        "rows": 3
+      },
+      "status": {
+        "col": 1,
+        "row": 7,
+        "cols": 2,
+        "rows": 2
+      },
+      "summary": {
+        "col": 1,
+        "row": 52,
+        "cols": 4,
+        "rows": 4
+      },
+      "highlight-3": {
+        "col": 1,
+        "row": 63,
+        "cols": 4,
+        "rows": 3
+      }
     }
   },
 };

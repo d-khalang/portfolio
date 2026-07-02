@@ -1,4 +1,4 @@
-import React, { useState, useRef, useImperativeHandle, forwardRef, useLayoutEffect, useCallback } from 'react';
+import React, { useRef, useImperativeHandle, forwardRef, useLayoutEffect, useCallback } from 'react';
 import './BikeCharacter.css';
 
 // Import images
@@ -75,8 +75,6 @@ const BikeCharacter = forwardRef<BikeCharacterHandle, BikeCharacterProps>(({
   // Dust cloud refs
   const dustEls = useRef<HTMLDivElement[]>([]);
 
-  // Non-scroll-driven mode still uses props directly for initial render
-  const [, setForceRender] = useState(0);
 
   // Callback refs for rotating elements (collected once on mount)
   const collectRim = useCallback((el: HTMLDivElement | null) => {

@@ -14,6 +14,7 @@ import { getProjectLayoutOverrides } from '../content/projectLayouts';
 import {
   createDefaultGridLayout,
   createGridLayout,
+  getLayoutBottomRow,
   getMoveOptions,
   moveTile,
   resizeTile,
@@ -31,7 +32,7 @@ type TileKind = 'fact' | 'story' | 'metric' | 'stack' | 'media' | 'glyph' | 'lin
 type MediaShape = 'wide' | 'landscape' | 'portrait' | 'square';
 type LayoutBreakpoint = 'desktop' | 'tablet' | 'mobile';
 
-const showLayoutExportTools = false;
+const showLayoutExportTools = true;
 
 interface ProjectDetailProps {
   project: Project;
@@ -682,6 +683,82 @@ interface ResizeDragState {
 const resizeDirections: ResizeDirection[] = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw'];
 type CardinalDirection = 'n' | 'e' | 's' | 'w';
 
+function adjustTileSizes(tile: ProjectTile, columns: number): { cols: number; rows: number } {
+  if (columns >= 12) {
+    return { cols: tile.cols, rows: tile.rows };
+  }
+
+  let cols = tile.cols;
+
+  if (columns <= 4) {
+    // Mobile layout: mostly 2-column or 4-column tiles
+    if (tile.kind === 'media' && tile.asset) {
+      if (tile.asset.shape === 'wide' || tile.asset.shape === 'landscape') {
+        cols = 4;
+      } else {
+        cols = 2;
+      }
+    } else if (tile.id === 'summary' || tile.id === 'challenge' || tile.id === 'response') {
+      cols = 4;
+    } else if (tile.kind === 'story') {
+      const length = (tile.title?.length ?? 0) + (tile.body?.length ?? 0);
+      cols = length > 120 ? 4 : 2;
+    } else if (tile.kind === 'stack') {
+      cols = 4;
+    } else {
+      cols = 2;
+    }
+  } else {
+    // Tablet layout (columns = 8)
+    if (tile.kind === 'media' && tile.asset) {
+      if (tile.asset.shape === 'wide') {
+        cols = 6;
+      } else if (tile.asset.shape === 'landscape') {
+        cols = 4;
+      } else if (tile.asset.shape === 'portrait') {
+        cols = 3;
+      } else {
+        cols = 4;
+      }
+    } else if (tile.id === 'summary') {
+      cols = 6;
+    } else if (tile.kind === 'story') {
+      cols = Math.min(tile.cols, 4);
+    } else if (tile.kind === 'metric') {
+      cols = Math.min(tile.cols, 3);
+    } else if (tile.kind === 'fact') {
+      cols = Math.min(tile.cols, 3);
+    } else if (tile.kind === 'stack') {
+      cols = Math.min(tile.cols, 4);
+    } else {
+      cols = Math.min(tile.cols, 3);
+    }
+  }
+
+  // Ensure cols does not exceed the grid columns
+  cols = Math.min(cols, columns);
+
+  // Recalculate rows based on the new width (cols)
+  let rows = tile.rows;
+  if (tile.kind === 'media' && tile.asset) {
+    rows = getMediaRows(tile.asset, cols);
+  } else if (tile.kind === 'story') {
+    rows = getTextRows(tile.title, tile.body, cols, 1);
+  } else if (tile.kind === 'fact') {
+    rows = getTextRows(tile.title, tile.body, cols, tile.tone === 'red' ? 2 : 1);
+  } else if (tile.kind === 'metric') {
+    rows = getTextRows(tile.title, tile.body, cols, 2);
+  } else if (tile.kind === 'stack') {
+    rows = getTextRows(tile.title, tile.body, cols, 2);
+  } else if (tile.kind === 'glyph') {
+    rows = 2; // Keep glyph compact on mobile/tablet
+  } else if (tile.kind === 'links') {
+    rows = 2;
+  }
+
+  return { cols, rows };
+}
+
 function getTileMinimumSize(tile: ProjectTile, columns: number) {
   if (tile.kind === 'media') {
     const isPortrait = tile.asset?.shape === 'portrait';
@@ -859,7 +936,20 @@ function InteractiveProjectGrid({
   setSeed: (seed: number | null) => void;
 }) {
   const columns = useBoardColumns();
-  const editorialGroups = useMemo(() => createEditorialTileGroups(tiles), [tiles]);
+
+  // Dynamically scale/adjust tile dimensions for mobile/tablet
+  const adjustedTiles = useMemo(() => {
+    return tiles.map((tile) => {
+      const { cols, rows } = adjustTileSizes(tile, columns);
+      return {
+        ...tile,
+        cols,
+        rows,
+      };
+    });
+  }, [tiles, columns]);
+
+  const editorialGroups = useMemo(() => createEditorialTileGroups(adjustedTiles), [adjustedTiles]);
   const defaultOverrides = useMemo(
     () => getProjectLayoutOverrides(project.id, columns),
     [columns, project.id],
@@ -867,8 +957,8 @@ function InteractiveProjectGrid({
   const initialBoard = useMemo(
     () => seed === null
       ? createDefaultGridLayout(editorialGroups, columns, defaultOverrides)
-      : createGridLayout(tiles, columns, seed),
-    [columns, defaultOverrides, editorialGroups, tiles, seed],
+      : createGridLayout(adjustedTiles, columns, seed),
+    [columns, defaultOverrides, editorialGroups, adjustedTiles, seed],
   );
   const [board, setBoard] = useState(initialBoard);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -886,6 +976,11 @@ function InteractiveProjectGrid({
   const resizeRef = useRef<ResizeDragState | null>(null);
   const [isPanelVisible, setIsPanelVisible] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+
+  // Touch drag gesture refs to allow scroll-safety
+  const touchDragTimerRef = useRef<any>(null);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const isDraggingActiveRef = useRef(false);
 
   useEffect(() => {
     const target = boardRef.current;
@@ -932,7 +1027,7 @@ function InteractiveProjectGrid({
         deltaColumn * direction,
         deltaRow * direction,
         columns,
-        board.rows,
+        500, // Capped at MAX_LAYOUT_ROWS to allow growing dynamically
       );
 
       if (movedLayout === nextLayout) {
@@ -945,7 +1040,14 @@ function InteractiveProjectGrid({
 
     if (nextLayout !== layoutRef.current) {
       layoutRef.current = nextLayout;
-      setBoard((current) => ({ ...current, layout: nextLayout }));
+      setBoard((current) => {
+        const newRows = getLayoutBottomRow(nextLayout) + 2; // Keep TRAILING_BOARD_ROWS = 2
+        return {
+          ...current,
+          layout: nextLayout,
+          rows: newRows,
+        };
+      });
     }
 
     return movedSteps;
@@ -957,7 +1059,7 @@ function InteractiveProjectGrid({
     requestedColumns: number,
     requestedRows: number,
   ) => {
-    const tile = tiles.find((item) => item.id === id);
+    const tile = adjustedTiles.find((item) => item.id === id);
 
     if (!tile) {
       return { columns: 0, rows: 0 };
@@ -979,7 +1081,7 @@ function InteractiveProjectGrid({
         0,
         minimum,
         columns,
-        board.rows,
+        500, // Capped at MAX_LAYOUT_ROWS
       );
 
       if (resizedLayout === nextLayout) {
@@ -999,7 +1101,7 @@ function InteractiveProjectGrid({
         rowDirection,
         minimum,
         columns,
-        board.rows,
+        500, // Capped at MAX_LAYOUT_ROWS
       );
 
       if (resizedLayout === nextLayout) {
@@ -1012,7 +1114,14 @@ function InteractiveProjectGrid({
 
     if (nextLayout !== layoutRef.current) {
       layoutRef.current = nextLayout;
-      setBoard((current) => ({ ...current, layout: nextLayout }));
+      setBoard((current) => {
+        const newRows = getLayoutBottomRow(nextLayout) + 2; // Keep TRAILING_BOARD_ROWS = 2
+        return {
+          ...current,
+          layout: nextLayout,
+          rows: newRows,
+        };
+      });
     }
 
     return { columns: resizedColumns, rows: resizedRows };
@@ -1025,24 +1134,69 @@ function InteractiveProjectGrid({
       return;
     }
 
-    event.preventDefault();
-    event.currentTarget.focus({ preventScroll: true });
-    event.currentTarget.setPointerCapture(event.pointerId);
-    dragRef.current = {
-      id,
-      pointerId: event.pointerId,
-      startX: event.clientX,
-      startY: event.clientY,
-      appliedSteps: 0,
-      axis: null,
+    const pointerType = event.pointerType;
+    const clientX = event.clientX;
+    const clientY = event.clientY;
+    const pointerId = event.pointerId;
+    const currentTarget = event.currentTarget;
+
+    const startDragSetup = () => {
+      currentTarget.focus({ preventScroll: true });
+      currentTarget.setPointerCapture(pointerId);
+      dragRef.current = {
+        id,
+        pointerId,
+        startX: clientX,
+        startY: clientY,
+        appliedSteps: 0,
+        axis: null,
+      };
+      setActiveId(id);
+      setDraggingId(id);
+      setMoveOrigin(layoutRef.current[id] ? { ...layoutRef.current[id] } : null);
+      setMoveBlocked(null);
+      isDraggingActiveRef.current = true;
+
+      if (navigator.vibrate) {
+        navigator.vibrate(40);
+      }
     };
-    setActiveId(id);
-    setDraggingId(id);
-    setMoveOrigin(layoutRef.current[id] ? { ...layoutRef.current[id] } : null);
-    setMoveBlocked(null);
+
+    isDraggingActiveRef.current = false;
+
+    if (pointerType === 'mouse') {
+      event.preventDefault();
+      startDragSetup();
+    } else {
+      // Touch drag setup with long press (250ms)
+      touchStartRef.current = { x: clientX, y: clientY };
+      touchDragTimerRef.current = setTimeout(() => {
+        startDragSetup();
+      }, 250);
+    }
   };
 
   const handlePointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const pointerType = event.pointerType;
+
+    if (pointerType === 'touch' && !isDraggingActiveRef.current) {
+      // We are waiting for a long press. If they moved their finger too far, cancel the timer so it scrolls.
+      if (touchStartRef.current) {
+        const deltaX = event.clientX - touchStartRef.current.x;
+        const deltaY = event.clientY - touchStartRef.current.y;
+        const dist = Math.hypot(deltaX, deltaY);
+
+        if (dist > 8) {
+          if (touchDragTimerRef.current) {
+            clearTimeout(touchDragTimerRef.current);
+            touchDragTimerRef.current = null;
+          }
+          touchStartRef.current = null;
+        }
+      }
+      return;
+    }
+
     const drag = dragRef.current;
     const element = boardRef.current;
 
@@ -1094,6 +1248,13 @@ function InteractiveProjectGrid({
   };
 
   const endDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (touchDragTimerRef.current) {
+      clearTimeout(touchDragTimerRef.current);
+      touchDragTimerRef.current = null;
+    }
+    touchStartRef.current = null;
+    isDraggingActiveRef.current = false;
+
     if (dragRef.current?.pointerId === event.pointerId) {
       dragRef.current = null;
       setDraggingId(null);
@@ -1232,7 +1393,7 @@ function InteractiveProjectGrid({
     project.id,
     layoutBreakpoint,
     board.layout,
-    tiles,
+    adjustedTiles,
   );
 
   const logCurrentLayout = () => {
@@ -1320,14 +1481,14 @@ function InteractiveProjectGrid({
             aria-hidden="true"
           />
         )}
-        {tiles.map((tile) => {
+        {adjustedTiles.map((tile) => {
           const position = board.layout[tile.id];
 
           if (!position) {
             return null;
           }
 
-          const directions = getMoveOptions(board.layout, tile.id, columns, board.rows);
+          const directions = getMoveOptions(board.layout, tile.id, columns, 500);
           const isActive = activeId === tile.id;
           const isResizing = resizingId === tile.id;
           const blockedResizeDirection = resizeBlocked?.id === tile.id ? resizeBlocked.direction : null;
@@ -1416,6 +1577,7 @@ function InteractiveProjectGrid({
           <span className="pd-grid-panel__arrow">◀</span>
         </div>
         <div className="pd-grid-panel__body" onClick={(e) => e.stopPropagation()}>
+
           <button
             type="button"
             className="pd-grid-panel__btn"
