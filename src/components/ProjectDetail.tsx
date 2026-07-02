@@ -7,6 +7,8 @@ import {
   useRef,
   useState,
 } from 'react';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import projectsData from '../content/projects.json';
 import { getProjectLayoutOverrides } from '../content/projectLayouts';
 import {
@@ -21,13 +23,15 @@ import {
 } from './projectGrid';
 import './ProjectDetail.css';
 
+gsap.registerPlugin(ScrollTrigger);
+
 type Project = (typeof projectsData)[number];
 type TileTone = 'white' | 'dark' | 'red' | 'soft' | 'line' | 'ghost';
 type TileKind = 'fact' | 'story' | 'metric' | 'stack' | 'media' | 'glyph' | 'links';
 type MediaShape = 'wide' | 'landscape' | 'portrait' | 'square';
 type LayoutBreakpoint = 'desktop' | 'tablet' | 'mobile';
 
-const showLayoutExportTools = true;
+const showLayoutExportTools = false;
 
 interface ProjectDetailProps {
   project: Project;
@@ -1442,6 +1446,22 @@ export default function ProjectDetail({ project }: ProjectDetailProps) {
   const tiles = useMemo(() => getProjectTiles(project, assets, seed), [assets, project, seed]);
   const visualLabel = visualLabels[project.id] ?? 'project signal';
 
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.to('.pd-hero__scroll', {
+        opacity: 0,
+        y: 20,
+        scrollTrigger: {
+          trigger: '.pd-hero',
+          start: 'top top',
+          end: '30% top',
+          scrub: true,
+        },
+      });
+    });
+    return () => ctx.revert();
+  }, [project.id]);
+
   return (
     <main className="pd-page">
       <nav className="pd-nav" aria-label="Project navigation">
@@ -1478,6 +1498,11 @@ export default function ProjectDetail({ project }: ProjectDetailProps) {
               </a>
             ))}
           </div>
+        </div>
+
+        <div className="pd-hero__scroll">
+          <span className="pd-hero__scroll-indicator" />
+          <span className="pd-hero__scroll-text">[00 // SCROLL TO EXPLORE]</span>
         </div>
       </header>
 

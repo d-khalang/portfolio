@@ -1062,3 +1062,65 @@
     transform: translateY(0) translateX(0);
   }
 }
+
+/* --- Scroll Indicator --------------------------------------------- */
+.pd-hero__scroll {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  pointer-events: none;
+  z-index: 2;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.pd-hero__scroll-indicator {
+  position: relative;
+  width: 22px;
+  height: 36px;
+  border: 2px solid var(--pd-ink);
+  border-radius: 11px;
+}
+
+.pd-hero__scroll-indicator::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  width: 4px;
+  height: 6px;
+  background: var(--pd-ink);
+  border-radius: 2px;
+  translate: -50% 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .pd-hero__scroll-indicator::after {
+    animation: jj-scroll-dot-anim 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
+  }
+}
+
+.pd-hero__scroll-text {
+  color: var(--pd-muted);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 760px) {
+  .pd-hero__scroll {
+    display: none;
+  }
+}
+
+@media (max-height: 680px) {
+  .pd-hero__scroll {
+    display: none;
+  }
+}
+
