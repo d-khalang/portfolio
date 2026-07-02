@@ -1440,6 +1440,122 @@ function InteractiveProjectGrid({
   );
 }
 
+interface ProjectHeroVisualProps {
+  assets: ProjectAsset[];
+  project: Project;
+}
+
+function ProjectHeroVisual({ assets, project }: ProjectHeroVisualProps) {
+  const [activeAssetIndex, setActiveAssetIndex] = useState(0);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [isHovered, setIsHovered] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const handlePointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    const y = ((e.clientY - rect.top) / rect.height) * 2 - 1;
+    setMousePos({ x, y });
+  };
+
+  const handlePointerLeave = () => {
+    setIsHovered(false);
+  };
+
+  const handlePointerEnter = () => {
+    setIsHovered(true);
+  };
+
+  const bringBackToFront = () => {
+    if (assets.length > 1) {
+      setActiveAssetIndex((prev) => (prev + 1) % assets.length);
+    }
+  };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      bringBackToFront();
+    }
+  };
+
+  if (assets.length === 0) return null;
+
+  const firstAsset = assets[activeAssetIndex];
+  const secondAsset = assets.length > 1 ? assets[(activeAssetIndex + 1) % assets.length] : null;
+
+  const mainCardStyle: CSSProperties = {
+    transform: isHovered
+      ? `perspective(1200px) rotateY(${mousePos.x * 10}deg) rotateX(${-mousePos.y * 10}deg) translateZ(30px) translateX(${-15 + mousePos.x * 12}px) translateY(${10 - mousePos.y * 12}px) rotate(-1.5deg)`
+      : 'perspective(1200px) rotateY(-6deg) rotateX(4deg) translateZ(0) translateX(-15px) translateY(10px) rotate(-2deg)',
+    transition: isHovered ? 'transform 0.1s ease-out, box-shadow 0.3s ease' : 'transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.8s cubic-bezier(0.25, 1, 0.5, 1)',
+  };
+
+  const backCardStyle: CSSProperties = {
+    transform: isHovered
+      ? `perspective(1200px) rotateY(${mousePos.x * 6}deg) rotateX(${-mousePos.y * 6}deg) translateZ(-20px) translateX(${25 + mousePos.x * 8}px) translateY(${-20 - mousePos.y * 8}px) rotate(4deg)`
+      : 'perspective(1200px) rotateY(-3deg) rotateX(2deg) translateZ(-50px) translateX(25px) translateY(-20px) rotate(5deg)',
+    transition: isHovered ? 'transform 0.1s ease-out' : 'transform 0.8s cubic-bezier(0.25, 1, 0.5, 1)',
+  };
+
+  return (
+    <div
+      ref={containerRef}
+      className="pd-hero__visual-container"
+      onPointerMove={handlePointerMove}
+      onPointerEnter={handlePointerEnter}
+      onPointerLeave={handlePointerLeave}
+      onClick={bringBackToFront}
+      onKeyDown={handleKeyDown}
+      role="button"
+      tabIndex={0}
+      aria-label="Interactive project visual gallery. Click to flip cards."
+    >
+      <div className="pd-hero__visual-scene">
+        {/* Background HUD Grid */}
+        <div className="pd-hero__visual-hud" aria-hidden="true">
+          <div className="hud-line hud-line--h" />
+          <div className="hud-line hud-line--v" />
+          <span className="hud-coords">
+            [x: {isHovered ? mousePos.x.toFixed(2) : '0.00'}, y: {isHovered ? mousePos.y.toFixed(2) : '0.00'}]
+          </span>
+          <span className="hud-tag">{project.core.status.toUpperCase()} SIGNAL</span>
+        </div>
+
+        {/* Back Card (Layer 2) */}
+        {secondAsset && (
+          <div
+            className="pd-hero__visual-card pd-hero__visual-card--back"
+            style={backCardStyle}
+          >
+            {secondAsset.type === 'video' ? (
+              <video src={secondAsset.src} autoPlay loop muted playsInline />
+            ) : (
+              <img src={secondAsset.src} alt={secondAsset.title} />
+            )}
+            <div className="card-overlay" />
+            <div className="card-click-prompt">[CLICK TO FLIP]</div>
+          </div>
+        )}
+
+        {/* Main Card (Layer 1) */}
+        <div className="pd-hero__visual-card pd-hero__visual-card--main" style={mainCardStyle}>
+          {firstAsset.type === 'video' ? (
+            <video src={firstAsset.src} autoPlay loop muted playsInline />
+          ) : (
+            <img src={firstAsset.src} alt={firstAsset.title} />
+          )}
+          <div className="card-tag">
+            <span className="card-tag__dot" />
+            {firstAsset.title}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ProjectDetail({ project }: ProjectDetailProps) {
   const [seed, setSeed] = useState<number | null>(null);
   const assets = useMemo(() => getProjectAssets(project), [project]);
@@ -1499,6 +1615,8 @@ export default function ProjectDetail({ project }: ProjectDetailProps) {
             ))}
           </div>
         </div>
+
+        <ProjectHeroVisual assets={assets} project={project} />
 
         <div className="pd-hero__scroll">
           <span className="pd-hero__scroll-indicator" />
