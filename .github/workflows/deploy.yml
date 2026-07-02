@@ -39,6 +39,12 @@ jobs:
       - name: Duplicate index.html to 404.html for SPA fallback
         run: cp dist/index.html dist/404.html
 
+      - name: Delete existing artifact
+        uses: geekyeggo/delete-artifact@v6
+        with:
+          name: github-pages
+          failOnError: false
+
       - name: Setup Pages
         uses: actions/configure-pages@v6
 
