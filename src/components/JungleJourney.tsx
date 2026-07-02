@@ -11,6 +11,7 @@ import projectsData from '../content/projects.json';
 import JourneyEnvironment from './JourneyEnvironment';
 import JungleFooter from './JungleFooter';
 import BikeCharacter from './BikeCharacter';
+import { ProjectBlueprint } from './ProjectBlueprint';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -866,13 +867,29 @@ export default function JungleJourney() {
               </div>
 
               <div className="jj-card__hero">
-                <p className="jj-card__label">Project 0{index + 1}</p>
-                <h2>{project.core.title}</h2>
-                <p>{project.core.tagline}</p>
+                <div className="jj-card__hero-overlay" />
+                <div className="jj-card__hero-blueprint" aria-hidden="true">
+                  <ProjectBlueprint projectId={project.id} />
+                </div>
+                <div className="jj-card__hero-content">
+                  <p className="jj-card__label">Project 0{index + 1}</p>
+                  <h2>{project.core.title}</h2>
+                  <p className="jj-card__tagline">{project.core.tagline}</p>
+                </div>
               </div>
 
               <div className="jj-card__info">
                 <p>{project.story.summary}</p>
+                <div className="jj-card__stack">
+                  {project.core.stack.slice(0, 3).map((tech) => (
+                    <span key={tech} className="jj-card__tech-tag">{tech}</span>
+                  ))}
+                  {project.core.stack.length > 3 && (
+                    <span className="jj-card__tech-tag jj-card__tech-tag--more">
+                      +{project.core.stack.length - 3}
+                    </span>
+                  )}
+                </div>
               </div>
             </article>
           </a>
