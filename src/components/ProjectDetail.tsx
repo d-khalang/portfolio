@@ -763,7 +763,7 @@ function getTileMinimumSize(tile: ProjectTile, columns: number) {
   if (tile.kind === 'media') {
     const isPortrait = tile.asset?.shape === 'portrait';
     return {
-      minCols: Math.min(columns, isPortrait ? 2 : 3),
+      minCols: Math.min(columns, 2),
       minRows: isPortrait ? 3 : 2,
     };
   }
