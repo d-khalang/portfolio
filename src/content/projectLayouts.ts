@@ -115,6 +115,152 @@ export const projectLayoutOverrides: ProjectLayouts = {
       'recore-asset-2': { col: 7, row: 19, cols: 3, rows: 4 },
       'recore-asset-3': { col: 3, row: 27, cols: 6, rows: 3 },
     },
+    "mobile": {
+      "role": {
+        "col": 1,
+        "row": 1,
+        "cols": 2,
+        "rows": 4
+      },
+      "metric-Localization": {
+        "col": 3,
+        "row": 3,
+        "cols": 2,
+        "rows": 3
+      },
+      "recore-asset-0": {
+        "col": 1,
+        "row": 34,
+        "cols": 4,
+        "rows": 3
+      },
+      "status": {
+        "col": 3,
+        "row": 6,
+        "cols": 2,
+        "rows": 2
+      },
+      "domain": {
+        "col": 1,
+        "row": 6,
+        "cols": 2,
+        "rows": 3
+      },
+      "summary": {
+        "col": 1,
+        "row": 10,
+        "cols": 4,
+        "rows": 4
+      },
+      "challenge": {
+        "col": 1,
+        "row": 16,
+        "cols": 3,
+        "rows": 3
+      },
+      "response": {
+        "col": 2,
+        "row": 20,
+        "cols": 3,
+        "rows": 3
+      },
+      "result": {
+        "col": 1,
+        "row": 23,
+        "cols": 4,
+        "rows": 2
+      },
+      "stack": {
+        "col": 1,
+        "row": 31,
+        "cols": 4,
+        "rows": 2
+      },
+      "glyph": {
+        "col": 3,
+        "row": 14,
+        "cols": 2,
+        "rows": 2
+      },
+      "metric-Ecosystem integration": {
+        "col": 1,
+        "row": 26,
+        "cols": 2,
+        "rows": 2
+      },
+      "metric-Resource access": {
+        "col": 3,
+        "row": 26,
+        "cols": 2,
+        "rows": 2
+      },
+      "metric-Consortium scale": {
+        "col": 2,
+        "row": 28,
+        "cols": 2,
+        "rows": 3
+      },
+      "highlight-0": {
+        "col": 1,
+        "row": 37,
+        "cols": 2,
+        "rows": 2
+      },
+      "highlight-1": {
+        "col": 3,
+        "row": 44,
+        "cols": 2,
+        "rows": 2
+      },
+      "highlight-2": {
+        "col": 1,
+        "row": 51,
+        "cols": 4,
+        "rows": 2
+      },
+      "highlight-3": {
+        "col": 1,
+        "row": 58,
+        "cols": 3,
+        "rows": 2
+      },
+      "lesson-0": {
+        "col": 3,
+        "row": 60,
+        "cols": 2,
+        "rows": 3
+      },
+      "link-https://resiliage-ecosystem.eu": {
+        "col": 2,
+        "row": 66,
+        "cols": 2,
+        "rows": 2
+      },
+      "next-0": {
+        "col": 1,
+        "row": 63,
+        "cols": 4,
+        "rows": 2
+      },
+      "recore-asset-1": {
+        "col": 1,
+        "row": 40,
+        "cols": 4,
+        "rows": 4
+      },
+      "recore-asset-2": {
+        "col": 1,
+        "row": 46,
+        "cols": 3,
+        "rows": 5
+      },
+      "recore-asset-3": {
+        "col": 1,
+        "row": 54,
+        "cols": 4,
+        "rows": 3
+      }
+    }
   },
   'replication-toolbox': {
     "desktop": {
@@ -277,6 +423,170 @@ export const projectLayoutOverrides: ProjectLayouts = {
       "replication-toolbox-asset-5": {
         "col": 3,
         "row": 23,
+        "cols": 4,
+        "rows": 5
+      }
+    },
+    "mobile": {
+      "role": {
+        "col": 1,
+        "row": 1,
+        "cols": 4,
+        "rows": 4
+      },
+      "metric-Solutions indexed": {
+        "col": 3,
+        "row": 9,
+        "cols": 2,
+        "rows": 3
+      },
+      "replication-toolbox-asset-0": {
+        "col": 1,
+        "row": 20,
+        "cols": 4,
+        "rows": 4
+      },
+      "stack": {
+        "col": 1,
+        "row": 26,
+        "cols": 4,
+        "rows": 3
+      },
+      "metric-Content model depth": {
+        "col": 1,
+        "row": 6,
+        "cols": 2,
+        "rows": 3
+      },
+      "status": {
+        "col": 1,
+        "row": 10,
+        "cols": 2,
+        "rows": 1
+      },
+      "link-https://toolbox.resiliage-ecosystem.eu": {
+        "col": 1,
+        "row": 11,
+        "cols": 2,
+        "rows": 2
+      },
+      "replication-toolbox-asset-3": {
+        "col": 1,
+        "row": 14,
+        "cols": 4,
+        "rows": 5
+      },
+      "glyph": {
+        "col": 3,
+        "row": 7,
+        "cols": 2,
+        "rows": 2
+      },
+      "highlight-2": {
+        "col": 1,
+        "row": 30,
+        "cols": 3,
+        "rows": 3
+      },
+      "highlight-1": {
+        "col": 1,
+        "row": 41,
+        "cols": 4,
+        "rows": 3
+      },
+      "replication-toolbox-asset-4": {
+        "col": 1,
+        "row": 35,
+        "cols": 4,
+        "rows": 5
+      },
+      "metric-Stakeholder profiles": {
+        "col": 1,
+        "row": 44,
+        "cols": 2,
+        "rows": 3
+      },
+      "replication-toolbox-asset-1": {
+        "col": 1,
+        "row": 54,
+        "cols": 4,
+        "rows": 4
+      },
+      "result": {
+        "col": 1,
+        "row": 59,
+        "cols": 2,
+        "rows": 4
+      },
+      "metric-Delivery": {
+        "col": 3,
+        "row": 33,
+        "cols": 2,
+        "rows": 1
+      },
+      "lesson-0": {
+        "col": 3,
+        "row": 60,
+        "cols": 2,
+        "rows": 4
+      },
+      "replication-toolbox-asset-5": {
+        "col": 1,
+        "row": 65,
+        "cols": 4,
+        "rows": 6
+      },
+      "summary": {
+        "col": 1,
+        "row": 72,
+        "cols": 4,
+        "rows": 4
+      },
+      "replication-toolbox-asset-2": {
+        "col": 1,
+        "row": 48,
+        "cols": 4,
+        "rows": 6
+      },
+      "highlight-0": {
+        "col": 2,
+        "row": 24,
+        "cols": 3,
+        "rows": 2
+      },
+      "domain": {
+        "col": 3,
+        "row": 44,
+        "cols": 2,
+        "rows": 2
+      },
+      "challenge": {
+        "col": 2,
+        "row": 83,
+        "cols": 3,
+        "rows": 3
+      },
+      "next-0": {
+        "col": 1,
+        "row": 80,
+        "cols": 3,
+        "rows": 2
+      },
+      "lesson-1": {
+        "col": 2,
+        "row": 77,
+        "cols": 3,
+        "rows": 3
+      },
+      "highlight-3": {
+        "col": 1,
+        "row": 86,
+        "cols": 3,
+        "rows": 3
+      },
+      "response": {
+        "col": 1,
+        "row": 90,
         "cols": 4,
         "rows": 5
       }
