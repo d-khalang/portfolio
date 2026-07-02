@@ -32,7 +32,7 @@ type TileKind = 'fact' | 'story' | 'metric' | 'stack' | 'media' | 'glyph' | 'lin
 type MediaShape = 'wide' | 'landscape' | 'portrait' | 'square';
 type LayoutBreakpoint = 'desktop' | 'tablet' | 'mobile';
 
-const showLayoutExportTools = true;
+const showLayoutExportTools = false;
 
 interface ProjectDetailProps {
   project: Project;
