@@ -35,9 +35,9 @@ if (typeof window !== 'undefined') {
 }
 
 export default function ScrollPerfTracker() {
-  const [isVisible, setIsVisible] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
-  
+
   // Element refs for imperative direct DOM writes (avoids React rendering of the tracker itself)
   const fpsValRef = useRef<HTMLSpanElement>(null);
   const jRendersValRef = useRef<HTMLSpanElement>(null);
@@ -78,7 +78,7 @@ export default function ScrollPerfTracker() {
             fpsValRef.current.style.color = '#f59e0b'; // Yellow
           } else {
             fpsValRef.current.style.color = '#ef4444'; // Red
-            
+
             // Log frame drop
             const telemetry = window.__scrollPerf;
             const drop = {
@@ -98,7 +98,7 @@ export default function ScrollPerfTracker() {
               logEl.style.marginTop = '2px';
               logEl.textContent = `[${fps} FPS Drop] at ${telemetry.currentPhase} (${Math.round(telemetry.currentProgress * 100)}%)`;
               logContainerRef.current.appendChild(logEl);
-              
+
               // Keep only last 4 logs
               while (logContainerRef.current.childNodes.length > 4) {
                 logContainerRef.current.removeChild(logContainerRef.current.firstChild!);
@@ -110,17 +110,17 @@ export default function ScrollPerfTracker() {
 
       // Read from global telemetry object and update DOM directly
       const telemetry = window.__scrollPerf;
-      
+
       if (jRendersValRef.current) jRendersValRef.current.textContent = String(telemetry.journeyRenders);
       if (bRendersValRef.current) bRendersValRef.current.textContent = String(telemetry.bikeRenders);
       if (scrollUpdatesValRef.current) scrollUpdatesValRef.current.textContent = String(telemetry.scrollUpdates);
-      
+
       if (projTimeValRef.current) projTimeValRef.current.textContent = `${telemetry.lastProjectStatesTime.toFixed(2)}ms`;
       if (bikeTimeValRef.current) bikeTimeValRef.current.textContent = `${telemetry.lastBikeUpdateTime.toFixed(2)}ms`;
-      
+
       if (maxProjTimeValRef.current) maxProjTimeValRef.current.textContent = `${telemetry.maxProjectStatesTime.toFixed(2)}ms`;
       if (maxBikeTimeValRef.current) maxBikeTimeValRef.current.textContent = `${telemetry.maxBikeUpdateTime.toFixed(2)}ms`;
-      
+
       if (progressValRef.current) progressValRef.current.textContent = `${Math.round(telemetry.currentProgress * 100)}%`;
       if (phaseValRef.current) {
         phaseValRef.current.textContent = telemetry.currentPhase;
@@ -199,7 +199,7 @@ export default function ScrollPerfTracker() {
         onMouseEnter={(e) => { e.currentTarget.style.opacity = '1'; }}
         onMouseLeave={(e) => { e.currentTarget.style.opacity = '0.6'; }}
       >
-        {isVisible ? '📊 HIDE HUD' : '📊 SHOW HUD'}
+        {isVisible ? 'HIDE HUD' : 'SHOW HUD'}
       </button>
 
       {isVisible && (
