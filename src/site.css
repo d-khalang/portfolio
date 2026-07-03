@@ -1111,6 +1111,10 @@ body {
     gap: 12px;
   }
 
+  .jj-hero__statement {
+    font-size: clamp(3.2rem, 13vw, 5.5rem);
+  }
+
   .jj-hero__profile {
     flex-direction: column;
     align-items: flex-start;
