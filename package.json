@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "test": "node --experimental-strip-types --test tests/journey-motion.test.mjs",
+    "profile:journey": "node scripts/profile-journey.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
