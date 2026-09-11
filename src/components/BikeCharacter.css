@@ -14,6 +14,16 @@
 }
 
 /* Theme presets */
+.bike-design-space {
+  position: absolute;
+  width: 500px;
+  height: 380px;
+  left: 0;
+  top: 0;
+  transform: scale(var(--bike-scale, 1));
+  transform-origin: left top;
+}
+
 .bike-container.theme-neon {
   --bike-color: #ff007f;
   --wheel-color: #00f0ff;
@@ -538,8 +548,9 @@
 .scroll-driven .rider-front-down,
 .scroll-driven .rider-back-leg-8,
 .scroll-driven .rider-front-8 {
-  animation: rider-bob var(--rotation-speed, 3s) ease-in-out infinite;
-  animation-play-state: var(--play-state, running);
+  /* Road motion already moves the whole rider. An independent perpetual bob
+     kept all eight sprite layers animating even at rest and behind the footer. */
+  animation: none;
 }
 
 .scroll-driven .force-visible {

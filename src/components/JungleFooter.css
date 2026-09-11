@@ -632,3 +632,7 @@
     text-align: center;
   }
 }
+
+.jj-footer:not(.is-active) .jj-footer__email-cursor {
+  animation-play-state: paused;
+}

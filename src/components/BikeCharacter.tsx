@@ -58,7 +58,7 @@ const BikeCharacter = forwardRef<BikeCharacterHandle, BikeCharacterProps>(({
   const containerElRef = useRef<HTMLDivElement>(null);
   const prevAngleRef = useRef(rotationAngle ?? 0);
   const movingTimerRef = useRef<number | null>(null);
-  const currentFrameRef = useRef<FrameName>('down');
+  const currentFrameRef = useRef<FrameName>(getFrameForAngle(rotationAngle ?? 0));
 
   // Refs for all rotating elements — populated via callback refs
   const rimEls = useRef<HTMLDivElement[]>([]);
@@ -90,6 +90,7 @@ const BikeCharacter = forwardRef<BikeCharacterHandle, BikeCharacterProps>(({
   // Imperative handle: parent calls this to update rotation without causing re-render
   useImperativeHandle(ref, () => ({
     updateRotation(angle: number) {
+      if (angle === prevAngleRef.current) return;
       const tStart = performance.now();
 
       // 1. Update rotating element transforms directly
@@ -169,7 +170,16 @@ const BikeCharacter = forwardRef<BikeCharacterHandle, BikeCharacterProps>(({
 
   // Cleanup timer on unmount
   useLayoutEffect(() => {
+    const container = containerElRef.current;
+    if (!container) return;
+    const resize = () => {
+      container.style.setProperty('--bike-scale', String(container.clientWidth / 500));
+    };
+    resize();
+    const observer = new ResizeObserver(resize);
+    observer.observe(container);
     return () => {
+      observer.disconnect();
       if (movingTimerRef.current !== null) {
         window.clearTimeout(movingTimerRef.current);
       }
@@ -244,13 +254,7 @@ const BikeCharacter = forwardRef<BikeCharacterHandle, BikeCharacterProps>(({
       className={`bike-container theme-${theme} ${isScrollDriven ? 'scroll-driven' : 'auto-animate'}`}
       style={containerStyle}
     >
-      <svg 
-        viewBox="0 0 500 380" 
-        width="100%" 
-        height="100%" 
-        style={{ display: 'block', overflow: 'visible' }}
-      >
-        <foreignObject width="500" height="380" x="0" y="0" style={{ overflow: 'visible' }}>
+      <div className="bike-design-space">
           <div className={`bike ${showLabels ? 'show-debug-labels' : ''}`} style={{ position: 'absolute', width: '500px', height: '380px', left: 0, top: 0 }}>
             {/* Rear Wheel Dust */}
             <div ref={collectDust} className={`dust-cloud rear-wheel-dust ${isCurrentlyMoving ? 'is-moving' : ''}`}>
@@ -417,8 +421,7 @@ const BikeCharacter = forwardRef<BikeCharacterHandle, BikeCharacterProps>(({
               </>
             )}
           </div>
-        </foreignObject>
-      </svg>
+      </div>
     </div>
   );
 });
