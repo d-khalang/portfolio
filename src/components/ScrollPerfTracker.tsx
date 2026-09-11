@@ -13,14 +13,17 @@ declare global {
       maxBikeUpdateTime: number;
       currentProgress: number;
       currentPhase: string;
-      frameDrops: Array<{ phase: string; fps: number; time: number }>;
+      frameDrops: Array<{ phase: string; fps: number; time: number; durationMs?: number; progress?: number }>;
+      phaseFrames: Record<string, { frames: number; totalMs: number; maxMs: number; over33ms: number; over50ms: number }>;
+      longFrames: Array<{ type: string; startTime: number; duration: number }>;
+      environment: { width: number; height: number; dpr: number; userAgent: string };
     };
   }
 }
 
 // Initialize the global telemetry container if it doesn't exist
 if (typeof window !== 'undefined') {
-  window.__scrollPerf = window.__scrollPerf || {
+  window.__scrollPerf = Object.assign({
     journeyRenders: 0,
     bikeRenders: 0,
     scrollUpdates: 0,
@@ -30,8 +33,11 @@ if (typeof window !== 'undefined') {
     maxBikeUpdateTime: 0,
     currentProgress: 0,
     currentPhase: 'Initializing',
-    frameDrops: []
-  };
+    frameDrops: [],
+    phaseFrames: {},
+    longFrames: [],
+    environment: { width: innerWidth, height: innerHeight, dpr: devicePixelRatio, userAgent: navigator.userAgent },
+  }, window.__scrollPerf);
 }
 
 export default function ScrollPerfTracker() {
@@ -52,95 +58,87 @@ export default function ScrollPerfTracker() {
   const logContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!isVisible) return;
-
-    let lastTime = performance.now();
-    let frameCount = 0;
-    let fps = 60;
+    // ?perf=1 records without the HUD. Opening it also starts a recording.
+    if (!isVisible && !new URLSearchParams(window.location.search).has('perf')) return;
+    const telemetry = window.__scrollPerf;
+    telemetry.environment = { width: innerWidth, height: innerHeight, dpr: devicePixelRatio, userAgent: navigator.userAgent };
+    let lastFrame = 0;
+    let lastDisplay = 0;
+    let displayFrames = 0;
+    let frameElapsed = 0;
+    let previousPhase = telemetry.currentPhase;
+    let previousProgress = telemetry.currentProgress;
     let rAFId: number;
-
-    const updateMetrics = () => {
-      const now = performance.now();
-      frameCount++;
-
-      // Calculate FPS every 500ms
-      if (now >= lastTime + 500) {
-        fps = Math.round((frameCount * 1000) / (now - lastTime));
-        frameCount = 0;
-        lastTime = now;
-
-        // Visual indicator color based on FPS
-        if (fpsValRef.current) {
-          fpsValRef.current.textContent = `${fps} FPS`;
-          if (fps >= 55) {
-            fpsValRef.current.style.color = '#10b981'; // Green
-          } else if (fps >= 35) {
-            fpsValRef.current.style.color = '#f59e0b'; // Yellow
-          } else {
-            fpsValRef.current.style.color = '#ef4444'; // Red
-
-            // Log frame drop
-            const telemetry = window.__scrollPerf;
-            const drop = {
-              phase: telemetry.currentPhase,
-              fps,
-              time: Math.round(now)
-            };
-            telemetry.frameDrops.push(drop);
-
-            // Append to log container
-            if (logContainerRef.current) {
-              const logEl = document.createElement('div');
-              logEl.style.color = '#ef4444';
-              logEl.style.fontSize = '10px';
-              logEl.style.borderLeft = '2px solid #ef4444';
-              logEl.style.paddingLeft = '4px';
-              logEl.style.marginTop = '2px';
-              logEl.textContent = `[${fps} FPS Drop] at ${telemetry.currentPhase} (${Math.round(telemetry.currentProgress * 100)}%)`;
-              logContainerRef.current.appendChild(logEl);
-
-              // Keep only last 4 logs
-              while (logContainerRef.current.childNodes.length > 4) {
-                logContainerRef.current.removeChild(logContainerRef.current.firstChild!);
-              }
-            }
+    const observers: PerformanceObserver[] = [];
+    for (const type of ['longtask', 'long-animation-frame']) {
+      if (!PerformanceObserver.supportedEntryTypes.includes(type)) continue;
+      const observer = new PerformanceObserver(list => {
+        for (const entry of list.getEntries()) {
+          telemetry.longFrames.push({ type, startTime: entry.startTime, duration: entry.duration });
+          if (telemetry.longFrames.length > 200) telemetry.longFrames.shift();
+        }
+      });
+      observer.observe({ type });
+      observers.push(observer);
+    }
+    const write = (element: HTMLElement | null, value: string) => {
+      if (element && element.textContent !== value) element.textContent = value;
+    };
+    const updateMetrics = (now: number) => {
+      if (document.visibilityState === 'hidden') {
+        lastFrame = 0;
+        lastDisplay = now;
+        displayFrames = 0;
+        frameElapsed = 0;
+      } else {
+        if (lastFrame) {
+          const dt = now - lastFrame;
+          const stats = telemetry.phaseFrames[previousPhase] ||= { frames: 0, totalMs: 0, maxMs: 0, over33ms: 0, over50ms: 0 };
+          stats.frames++;
+          stats.totalMs += dt;
+          stats.maxMs = Math.max(stats.maxMs, dt);
+          if (dt > 33.4) stats.over33ms++;
+          if (dt > 50) stats.over50ms++;
+          if (dt > 33.4) {
+            telemetry.frameDrops.push({ phase: previousPhase, progress: previousProgress, durationMs: dt, fps: Math.round(1000 / dt), time: Math.round(now) });
+            if (telemetry.frameDrops.length > 300) telemetry.frameDrops.shift();
           }
+          frameElapsed += dt;
+          displayFrames++;
+        }
+        lastFrame = now;
+        previousPhase = telemetry.currentPhase;
+        previousProgress = telemetry.currentProgress;
+        // The HUD must not become a source of per-frame DOM/style work itself.
+        if (isVisible && now - lastDisplay >= 250) {
+          const fps = frameElapsed ? Math.round(displayFrames * 1000 / frameElapsed) : 0;
+          write(fpsValRef.current, `${fps} FPS`);
+          if (fpsValRef.current) fpsValRef.current.style.color = fps >= 55 ? '#10b981' : fps >= 35 ? '#f59e0b' : '#ef4444';
+          write(jRendersValRef.current, String(telemetry.journeyRenders));
+          write(bRendersValRef.current, String(telemetry.bikeRenders));
+          write(scrollUpdatesValRef.current, String(telemetry.scrollUpdates));
+          write(projTimeValRef.current, `${telemetry.lastProjectStatesTime.toFixed(2)}ms`);
+          write(bikeTimeValRef.current, `${telemetry.lastBikeUpdateTime.toFixed(2)}ms`);
+          write(maxProjTimeValRef.current, `${telemetry.maxProjectStatesTime.toFixed(2)}ms`);
+          write(maxBikeTimeValRef.current, `${telemetry.maxBikeUpdateTime.toFixed(2)}ms`);
+          write(progressValRef.current, `${Math.round(telemetry.currentProgress * 100)}%`);
+          write(phaseValRef.current, telemetry.currentPhase);
+          write(logContainerRef.current, telemetry.frameDrops.slice(-4).map(drop => `${drop.durationMs?.toFixed(1)}ms — ${drop.phase}`).join('\n'));
+          lastDisplay = now;
+          displayFrames = 0;
+          frameElapsed = 0;
         }
       }
-
-      // Read from global telemetry object and update DOM directly
-      const telemetry = window.__scrollPerf;
-
-      if (jRendersValRef.current) jRendersValRef.current.textContent = String(telemetry.journeyRenders);
-      if (bRendersValRef.current) bRendersValRef.current.textContent = String(telemetry.bikeRenders);
-      if (scrollUpdatesValRef.current) scrollUpdatesValRef.current.textContent = String(telemetry.scrollUpdates);
-
-      if (projTimeValRef.current) projTimeValRef.current.textContent = `${telemetry.lastProjectStatesTime.toFixed(2)}ms`;
-      if (bikeTimeValRef.current) bikeTimeValRef.current.textContent = `${telemetry.lastBikeUpdateTime.toFixed(2)}ms`;
-
-      if (maxProjTimeValRef.current) maxProjTimeValRef.current.textContent = `${telemetry.maxProjectStatesTime.toFixed(2)}ms`;
-      if (maxBikeTimeValRef.current) maxBikeTimeValRef.current.textContent = `${telemetry.maxBikeUpdateTime.toFixed(2)}ms`;
-
-      if (progressValRef.current) progressValRef.current.textContent = `${Math.round(telemetry.currentProgress * 100)}%`;
-      if (phaseValRef.current) {
-        phaseValRef.current.textContent = telemetry.currentPhase;
-        // Color code phases for high visibility
-        if (telemetry.currentPhase.includes('Landing')) {
-          phaseValRef.current.style.color = '#a855f7'; // Purple
-        } else if (telemetry.currentPhase.includes('Journey')) {
-          phaseValRef.current.style.color = '#3b82f6'; // Blue
-        } else if (telemetry.currentPhase.includes('Transition')) {
-          phaseValRef.current.style.color = '#f97316'; // Orange
-        } else {
-          phaseValRef.current.style.color = '#10b981'; // Green
-        }
-      }
-
       rAFId = requestAnimationFrame(updateMetrics);
     };
-
+    const resetFrame = () => { lastFrame = 0; };
+    document.addEventListener('visibilitychange', resetFrame);
     rAFId = requestAnimationFrame(updateMetrics);
-    return () => cancelAnimationFrame(rAFId);
+    return () => {
+      cancelAnimationFrame(rAFId);
+      observers.forEach(observer => observer.disconnect());
+      document.removeEventListener('visibilitychange', resetFrame);
+    };
   }, [isVisible]);
 
   const handleResetMax = () => {
@@ -148,6 +146,8 @@ export default function ScrollPerfTracker() {
       window.__scrollPerf.maxProjectStatesTime = 0;
       window.__scrollPerf.maxBikeUpdateTime = 0;
       window.__scrollPerf.frameDrops = [];
+      window.__scrollPerf.phaseFrames = {};
+      window.__scrollPerf.longFrames = [];
       if (logContainerRef.current) {
         logContainerRef.current.innerHTML = '';
       }
@@ -270,7 +270,7 @@ export default function ScrollPerfTracker() {
               <span ref={progressValRef}>--</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: '#94a3b8' }}>Scroll trigger ticks:</span>
+              <span style={{ color: '#94a3b8' }}>Animation frames:</span>
               <span ref={scrollUpdatesValRef}>0</span>
             </div>
 
@@ -321,7 +321,7 @@ export default function ScrollPerfTracker() {
                 RESET
               </button>
             </div>
-            <div ref={logContainerRef} style={{ display: 'flex', flexDirection: 'column', gap: '3px', minHeight: '60px', background: '#020617', padding: '6px', borderRadius: '4px', border: '1px solid #1e293b' }}>
+            <div ref={logContainerRef} style={{ whiteSpace: 'pre-line', display: 'flex', flexDirection: 'column', gap: '3px', minHeight: '60px', background: '#020617', padding: '6px', borderRadius: '4px', border: '1px solid #1e293b' }}>
               {/* Dynamic logging elements added here */}
             </div>
           </div>
