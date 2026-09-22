@@ -94,7 +94,7 @@ try {
   const errors = [];
   listeners.set('Runtime.exceptionThrown', value => errors.push(value));
   const loaded = new Promise(r => listeners.set('Page.loadEventFired', r));
-  await page('Page.navigate', { url: `http://127.0.0.1:${server.address().port}/portfolio/` });
+  await page('Page.navigate', { url: `http://127.0.0.1:${server.address().port}/portfolio/?perf=1` });
   await loaded;
   console.log('Production page loaded');
   await evaluate('document.fonts.ready.then(() => Promise.all(Array.from(document.images, i => i.decode().catch(() => {}))))');
@@ -107,6 +107,15 @@ try {
   })`);
   await new Promise(r => setTimeout(r, 800));
   if (process.env.PERF_CSS) await evaluate(`(() => { const s = document.createElement('style'); s.textContent = ${JSON.stringify(process.env.PERF_CSS)}; document.head.append(s); })()`);
+  if (process.env.PERF_HUD === '1') await evaluate(`Array.from(document.querySelectorAll('button')).find(b => b.textContent === 'SHOW HUD').click()`);
+  await evaluate(`(() => {
+    window.__profileLongFrames = [];
+    window.__profileObservers = ['long-animation-frame', 'longtask'].filter(type => PerformanceObserver.supportedEntryTypes.includes(type)).map(type => {
+      const observer = new PerformanceObserver(list => window.__profileLongFrames.push(...list.getEntries().map(entry => ({ ...entry.toJSON(), scripts: entry.scripts?.map(script => script.toJSON()) }))));
+      observer.observe({ type });
+      return observer;
+    });
+  })()`);
   const gpu = await send('SystemInfo.getInfo');
   if (process.env.PERF_WARMUP === '1') {
     console.log('Warming all journey phases before the repeat-scroll measurement');
@@ -121,20 +130,40 @@ try {
   const initial = await page('Performance.getMetrics');
   if (tracing) await send('Tracing.start', { categories: 'devtools.timeline,blink,cc,gpu,disabled-by-default-devtools.timeline', transferMode: 'ReturnAsStream' });
   const measurements = await evaluate(`new Promise(resolveRun => {
-    const frames = []; let last = 0; let start = 0;
+    const frames = []; let last = 0; let start = 0; let previousSegment = -1;
+    const transitions = ${process.env.PERF_TRANSITIONS === '1'};
+    const segments = Array.from({length: 3}, (_, pass) => [
+      { from: .06, to: .20, name: 'landing', pass },
+      { from: .20, to: .06, name: 'landing-return', pass },
+      { from: .82, to: 1, name: 'underground', pass },
+      { from: 1, to: .82, name: 'underground-return', pass },
+    ]).flat();
     function tick(now) {
       if (!start) start = now;
       const elapsed = now - start;
-      const progress = elapsed < 16000 ? elapsed / 16000 : 1 - (elapsed - 16000) / 10000;
-      if (last) frames.push({ dt: now - last, time: now, progress: window.__scrollPerf?.currentProgress || 0, direction: elapsed < 16000 ? 'down' : 'up' });
+      const segment = segments[Math.min(segments.length - 1, Math.floor(elapsed / 2400))];
+      const local = elapsed % 2400;
+      const segmentIndex = Math.floor(elapsed / 2400);
+      const renderedProgress = window.__scrollPerf?.currentProgress || 0;
+      const withinSegment = renderedProgress >= Math.min(segment.from, segment.to) - .005
+        && renderedProgress <= Math.max(segment.from, segment.to) + .005;
+      // Allow the scrub to settle after jumps between the two test sections.
+      const progress = transitions ? segment.from + (segment.to - segment.from) * Math.max(0, (local - 400) / 2000)
+        : elapsed < 16000 ? elapsed / 16000 : 1 - (elapsed - 16000) / 10000;
+      if (last) frames.push({ dt: now - last, time: now, progress: renderedProgress,
+        direction: transitions ? segment.to > segment.from ? 'down' : 'up' : elapsed < 16000 ? 'down' : 'up',
+        ...(transitions ? { segment: segment.name, pass: segment.pass,
+          settling: local < 650 || previousSegment !== segmentIndex || !withinSegment } : {}) });
+      previousSegment = segmentIndex;
       last = now;
       window.scrollTo(0, Math.max(0, Math.min(1, progress)) * 15000);
-      if (elapsed < ${process.env.PERF_CHECKS_ONLY === '1' ? 0 : 26000}) requestAnimationFrame(tick);
+      if (elapsed < ${process.env.PERF_CHECKS_ONLY === '1' ? 0 : process.env.PERF_TRANSITIONS === '1' ? 28800 : 26000}) requestAnimationFrame(tick);
       else setTimeout(() => resolveRun({ frames, telemetry: window.__scrollPerf, images: Array.from(document.images, i => ({ src: i.currentSrc.split('/').pop(), width: i.naturalWidth, height: i.naturalHeight })), tracks: Array.from(document.querySelectorAll('.jj-layer-track'), e => ({ width: e.offsetWidth, height: e.offsetHeight })) }), 650);
     }
     requestAnimationFrame(tick);
   })`);
   console.log('Scroll sweep completed');
+  measurements.longFrameDetails = await evaluate('window.__profileLongFrames');
   await writeFile(`${out}/measurements.json`, JSON.stringify(measurements));
   const final = await page('Performance.getMetrics');
   let trace = '{"traceEvents":[]}';
@@ -164,14 +193,52 @@ try {
     const times = measurements.frames.filter(f => f.progress >= lo && f.progress < hi).map(f => f.dt).sort((a,b) => a-b);
     phases[name] = { frames: times.length, p95ms: times[Math.floor(times.length * .95)], maxMs: times.at(-1), over33ms: times.filter(t => t > 33.4).length, over50ms: times.filter(t => t > 50).length };
   }
-  for (const progress of [0, .10, .15, .45, .85, .94, 1]) {
+  for (const progress of process.env.PERF_MEASURE_ONLY === '1' ? [] : [0, .10, .15, .45, .85, .94, 1]) {
     await evaluate(`window.scrollTo(0, ${progress * 15000})`);
     await new Promise(r => setTimeout(r, 650));
     const shot = await page('Page.captureScreenshot', { format: 'png' });
     await writeFile(`${out}/${Math.round(progress * 100)}.png`, Buffer.from(shot.data, 'base64'));
   }
   const checks = [];
-  if (await evaluate('!!document.querySelector(".jj-scenery")')) {
+  if (process.env.PERF_MEASURE_ONLY !== '1' && await evaluate('!!document.querySelector(".jj-scenery")')) {
+    const footerAtEnd = await evaluate(`(() => {
+      const footer = document.querySelector('.jj-footer');
+      const button = footer.querySelector('button');
+      button.focus({ preventScroll: true });
+      return { inert: footer.inert, focusable: document.activeElement === button,
+        imageReady: footer.querySelector('img').naturalWidth > 0 };
+    })()`);
+    assert.equal(footerAtEnd.inert, false, 'footer is interactive after the reveal');
+    assert.equal(footerAtEnd.focusable, true, 'footer controls accept keyboard focus');
+    assert.equal(footerAtEnd.imageReady, true, 'footer artwork loaded');
+    checks.push({ name: 'revealed footer artwork and keyboard access', ...footerAtEnd });
+    if (process.env.PERF_REDUCED !== '1') {
+      const launch = [];
+      for (const progress of [0, .145, .153, .19, .153, 0]) {
+        await evaluate(`window.scrollTo(0, ${progress * 15000})`);
+        // Allow both the 500ms numeric scrub and the 200ms dust idle period.
+        await new Promise(r => setTimeout(r, 850));
+        launch.push(await evaluate(`(() => {
+          const bike = document.querySelector('.jj-biker');
+          const front = document.querySelector('.jj-scenery--front');
+          return { bikeZ: getComputedStyle(bike).zIndex, frontZ: getComputedStyle(front).zIndex,
+            wheel: getComputedStyle(bike.querySelector('.rim')).transform,
+            crank: getComputedStyle(bike.querySelector('.crank-right')).transform,
+            heroFinished: document.querySelector('.jj-hero').classList.contains('is-finished'),
+            sprites: Array.from(bike.querySelectorAll('.force-visible'), e => e.getAttribute('src')),
+            dustIdle: !bike.querySelector('.is-moving') };
+        })()`));
+      }
+      assert.ok(launch.every(s => Number(s.frontZ) > Number(s.bikeZ)), 'foreground stays above the bike throughout launch and return');
+      assert.equal(launch[1].heroFinished, true, 'hero retires before launch');
+      assert.notEqual(launch[2].wheel, launch[0].wheel, 'wheels start first');
+      assert.equal(launch[2].crank, launch[0].crank, 'pedals wait through the initial coast');
+      assert.notEqual(launch[3].crank, launch[0].crank, 'pedals engage after coasting');
+      assert.deepEqual(launch[4], launch[2], 'reverse scrolling restores the same launch stage');
+      assert.deepEqual(launch[5], launch[0], 'return to hero resets bike and sprites');
+      assert.ok(launch.every(s => s.dustIdle), 'dust stops after scrolling settles');
+      checks.push({ name: 'staged launch, permanent foreground order, reverse and idle reset', launch });
+    }
     await evaluate('document.querySelector(".jj-cloud-hud__nav").click()');
     await new Promise(r => setTimeout(r, 1900));
     const card = await evaluate(`(() => {
@@ -209,14 +276,18 @@ try {
     checks.push({ name: 'resize recalculates bounded geometry', ...resized });
     const href = await evaluate('document.querySelectorAll(".jj-project")[2].getAttribute("href")');
     const slug = href.split('/').at(-1);
-    const hashLoaded = new Promise(r => listeners.set('Page.loadEventFired', r));
     await page('Page.navigate', { url: `http://127.0.0.1:${server.address().port}/portfolio/?perf=1#${slug}` });
+    // Changing only the hash is same-document navigation and emits no load
+    // event. Reload at that hash to exercise a genuine restoration on mount.
+    const hashLoaded = new Promise(r => listeners.set('Page.loadEventFired', r));
+    await page('Page.reload');
     await hashLoaded;
     await new Promise(r => setTimeout(r, 1100));
     const hash = await evaluate(`(() => { const bounds = document.querySelectorAll('.jj-project')[2].getBoundingClientRect(); return { center: bounds.left + bounds.width / 2, viewport: innerWidth, overlay: !!document.querySelector('.jj-transition-overlay'), telemetryFrames: Object.keys(window.__scrollPerf.phaseFrames).length }; })()`);
     assert.ok(Math.abs(hash.center - hash.viewport / 2) < 2, 'direct hash restores the chosen project');
     assert.equal(hash.overlay, false, 'restoration overlay is removed');
     assert.ok(hash.telemetryFrames > 0, 'hidden HUD records via ?perf=1');
+    assert.equal(await evaluate('document.querySelector(".jj-footer").inert'), true, 'covered footer does not capture keyboard focus');
     checks.push({ name: 'hash restoration and background telemetry', ...hash });
     if (process.env.PERF_FALLBACK === '1' || process.env.PERF_SHADER_FAILURE === '1') {
       const fallback = await evaluate(`Array.from(document.querySelectorAll('.jj-scenery'), c => c.dataset.renderer)`);
@@ -243,9 +314,13 @@ try {
     }
   }
   assert.equal(errors.length, 0, 'no runtime exceptions');
-  const report = { label, width, height, dpr, tracing, checksOnly: process.env.PERF_CHECKS_ONLY === '1', warmed: process.env.PERF_WARMUP === '1', cpuRaster: process.env.PERF_CPU_RASTER === '1', ablationCSS: process.env.PERF_CSS || null, externalFontsBlocked: true, checks, gpu: gpu.gpu, phases, timings, metrics, errors, ...measurements };
+  const transitions = Object.fromEntries([...new Set(measurements.frames.filter(f => f.segment && !f.settling).map(f => f.segment + ':' + f.pass))].map(key => {
+    const times = measurements.frames.filter(f => !f.settling && f.segment + ':' + f.pass === key).map(f => f.dt).sort((a,b) => a-b);
+    return [key, { frames: times.length, maxMs: times.at(-1), over33ms: times.filter(t => t > 33.4).length, over50ms: times.filter(t => t > 50).length }];
+  }));
+  const report = { label, width, height, dpr, tracing, transitions, checksOnly: process.env.PERF_CHECKS_ONLY === '1', warmed: process.env.PERF_WARMUP === '1', cpuRaster: process.env.PERF_CPU_RASTER === '1', ablationCSS: process.env.PERF_CSS || null, externalFontsBlocked: true, checks, gpu: gpu.gpu, phases, timings, metrics, errors, ...measurements };
   await writeFile(`${out}/report.json`, JSON.stringify(report, null, 2));
-  console.log(JSON.stringify({ label, phases, timings, checks, errors, tracks: measurements.tracks }, null, 2));
+  console.log(JSON.stringify({ label, phases, transitions, timings, checks, errors, tracks: measurements.tracks }, null, 2));
   await send('Browser.close');
 } finally {
   socket?.close();

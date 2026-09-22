@@ -16,7 +16,8 @@
   justify-content: space-between;
   padding: 40px 50px 20px;
   box-sizing: border-box;
-  z-index: 10;
+  z-index: 0;
+  /* Retain a cached surface while the landscape reveals this stationary panel. */
   will-change: transform, opacity;
   pointer-events: auto;
 }
@@ -33,6 +34,14 @@
   opacity: 0.10;
   z-index: 0;
   pointer-events: none;
+}
+
+.jj-footer__bg > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center bottom;
 }
 
 /* Linear-gradient cover overlay replaces mask-image to avoid CPU rasterization costs on scroll */

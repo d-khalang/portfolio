@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import './JungleFooter.css';
 import networkBg from '../assets/jungle/network.webp';
 
@@ -46,6 +46,12 @@ const ROOT_PATHS = [
 ];
 
 export default function JungleFooter() {
+  const backgroundRef = useRef<HTMLImageElement>(null);
+  useEffect(() => {
+    // A hidden CSS background was decoded only when the underground appeared.
+    // Prepare this image while the visitor is still in the introduction.
+    void backgroundRef.current?.decode().catch(() => {});
+  }, []);
   const [copied, setCopied] = useState(false);
   const [signalState, setSignalState] = useState<{ status: 'idle' | 'routing' | 'sent'; label: string }>({
     status: 'idle',
@@ -128,13 +134,14 @@ export default function JungleFooter() {
   };
 
   return (
-    <footer className="jj-footer">
+    <footer className="jj-footer" inert>
       {/* Gradual Transparency Mycelium Background Image */}
       <div
         className="jj-footer__bg"
-        style={{ backgroundImage: `url(${networkBg})` }}
         aria-hidden="true"
-      />
+      >
+        <img ref={backgroundRef} src={networkBg} alt="" decoding="async" loading="eager" />
+      </div>
 
       {/* Warm ambient glow */}
       <div className="jj-footer__glow" aria-hidden="true" />

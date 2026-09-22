@@ -1,5 +1,30 @@
 import { useEffect, useRef, useState } from 'react';
 
+interface FrameDetail {
+  type: string;
+  startTime: number;
+  duration: number;
+  renderStart?: number;
+  styleAndLayoutStart?: number;
+  blockingDuration?: number;
+  paintTime?: number;
+  presentationTime?: number;
+  scripts?: Array<{
+    duration: number;
+    invoker: string;
+    sourceURL: string;
+    sourceFunctionName: string;
+    forcedStyleAndLayoutDuration: number;
+  }>;
+}
+
+const recordingEnvironment = () => ({
+  width: innerWidth, height: innerHeight, dpr: devicePixelRatio,
+  userAgent: navigator.userAgent,
+  page: location.origin + location.pathname,
+  buildMode: import.meta.env.MODE,
+});
+
 // Declare global performance tracking object type
 declare global {
   interface Window {
@@ -15,8 +40,8 @@ declare global {
       currentPhase: string;
       frameDrops: Array<{ phase: string; fps: number; time: number; durationMs?: number; progress?: number }>;
       phaseFrames: Record<string, { frames: number; totalMs: number; maxMs: number; over33ms: number; over50ms: number }>;
-      longFrames: Array<{ type: string; startTime: number; duration: number }>;
-      environment: { width: number; height: number; dpr: number; userAgent: string };
+      longFrames: FrameDetail[];
+      environment: ReturnType<typeof recordingEnvironment>;
     };
   }
 }
@@ -36,7 +61,7 @@ if (typeof window !== 'undefined') {
     frameDrops: [],
     phaseFrames: {},
     longFrames: [],
-    environment: { width: innerWidth, height: innerHeight, dpr: devicePixelRatio, userAgent: navigator.userAgent },
+    environment: recordingEnvironment(),
   }, window.__scrollPerf);
 }
 
@@ -61,7 +86,7 @@ export default function ScrollPerfTracker() {
     // ?perf=1 records without the HUD. Opening it also starts a recording.
     if (!isVisible && !new URLSearchParams(window.location.search).has('perf')) return;
     const telemetry = window.__scrollPerf;
-    telemetry.environment = { width: innerWidth, height: innerHeight, dpr: devicePixelRatio, userAgent: navigator.userAgent };
+    telemetry.environment = recordingEnvironment();
     let lastFrame = 0;
     let lastDisplay = 0;
     let displayFrames = 0;
@@ -74,7 +99,22 @@ export default function ScrollPerfTracker() {
       if (!PerformanceObserver.supportedEntryTypes.includes(type)) continue;
       const observer = new PerformanceObserver(list => {
         for (const entry of list.getEntries()) {
-          telemetry.longFrames.push({ type, startTime: entry.startTime, duration: entry.duration });
+          // Duration alone cannot separate delayed frame scheduling from script
+          // and rendering work. Keep the browser's attribution where available.
+          const frame = entry as PerformanceEntry & Partial<FrameDetail>;
+          telemetry.longFrames.push({
+            type, startTime: entry.startTime, duration: entry.duration,
+            renderStart: frame.renderStart,
+            styleAndLayoutStart: frame.styleAndLayoutStart,
+            blockingDuration: frame.blockingDuration,
+            paintTime: frame.paintTime,
+            presentationTime: frame.presentationTime,
+            scripts: frame.scripts?.map(script => ({
+              duration: script.duration, invoker: script.invoker,
+              sourceURL: script.sourceURL, sourceFunctionName: script.sourceFunctionName,
+              forcedStyleAndLayoutDuration: script.forcedStyleAndLayoutDuration,
+            })),
+          });
           if (telemetry.longFrames.length > 200) telemetry.longFrames.shift();
         }
       });

@@ -63,7 +63,7 @@ body {
 .jj-scenery--back { z-index: 3; }
 .jj-scenery--reveal { z-index: 5; opacity: .22; transition: opacity 300ms ease; }
 .jj-scenery--road { z-index: 6; }
-.jj-scenery--front { z-index: 7; opacity: .7; }
+.jj-scenery--front { z-index: 13; opacity: .7; }
 .jj-container:not(.is-scrolling):has(.jj-project:hover) .jj-scenery--reveal { opacity: 0; }
 
 .jj-project {
@@ -263,7 +263,9 @@ body {
   position: absolute;
   bottom: 4%;
   left: 50%;
-  z-index: 6;
+  /* Keep the hero bike above its backdrop, with foreground trees always ahead.
+     No stacking-context swap at the landing/ride boundary. */
+  z-index: 12;
   display: block;
   width: clamp(210px, 24vw, 390px);
   aspect-ratio: 500 / 380;
@@ -381,11 +383,20 @@ body {
   pointer-events: none;
 }
 
+/* Reserve the cue's original flex space after lifting it above the scenery. */
+.jj-hero::after {
+  content: "";
+  flex-shrink: 0;
+  height: calc(48px + 1lh);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: .7rem;
+}
+
 .jj-hero.is-finished {
   visibility: hidden;
 }
 
-.jj-hero.is-finished .jj-hero__scroll-indicator::after {
+.jj-hero.is-finished ~ .jj-hero__footer .jj-hero__scroll-indicator::after {
   animation-play-state: paused;
 }
 
@@ -542,10 +553,16 @@ body {
 }
 
 .jj-hero__footer {
+  /* Keep the scroll cue legible above the permanent foreground layer. */
+  position: absolute;
+  bottom: 44px;
+  left: 50px;
+  right: 50px;
+  z-index: 14;
   will-change: transform, opacity;
   display: flex;
   justify-content: center;
-  width: 100%;
+  pointer-events: none;
 }
 
 .jj-hero__scroll {
@@ -1086,6 +1103,12 @@ body {
 @media (max-width: 640px) {
   .jj-hero {
     padding: 24px 20px;
+  }
+
+  .jj-hero__footer {
+    bottom: 24px;
+    left: 20px;
+    right: 20px;
   }
 
   .jj-hero__meta--center {

@@ -1,11 +1,12 @@
 import { forwardRef, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react';
 import { rideProgress, tileOffset } from './journeyMotion';
 import { scenerySurface, type SceneryTile, type ScenerySurface } from './scenerySurface';
-import mountain from '../assets/jungle/web/l1_mountain.webp';
-import hills from '../assets/jungle/web/l2_green.webp';
-import trees from '../assets/jungle/web/l3_trees.webp';
-import road from '../assets/jungle/web/l4_road.webp';
-import foreground from '../assets/jungle/web/l5_foreground_blurred.webp';
+import { sceneryCrops } from './sceneryCrops';
+import mountain from '../assets/jungle/web/l1_mountain_cropped.webp';
+import hills from '../assets/jungle/web/l2_green_cropped.webp';
+import trees from '../assets/jungle/web/l3_trees_cropped.webp';
+import road from '../assets/jungle/web/l4_road_cropped.webp';
+import foreground from '../assets/jungle/web/l5_foreground_blurred_cropped.webp';
 
 export interface CardWindow { left: number; top: number; width: number; height: number }
 export interface JourneySceneryHandle { render: (progress: number, card: CardWindow | null) => void }
@@ -65,12 +66,14 @@ const JourneyScenery = forwardRef<JourneySceneryHandle>((_, ref) => {
       return image;
     });
     const tile = (index: number, distance: number): SceneryTile => {
-      const original = images[index];
       const layer = scenery[index];
-      const h = height * layer.size;
-      const w = h * original.naturalWidth / original.naturalHeight;
-      return { id: index, image: bitmaps[index] || original, width: w, height: h,
-        top: height - h - layer.y, offset: tileOffset(distance * layer.speed, w) };
+      const crop = sceneryCrops[index];
+      const originalHeight = height * layer.size;
+      const w = originalHeight * crop.width / crop.height;
+      return { id: index, image: bitmaps[index] || images[index], width: w,
+        height: originalHeight * crop.croppedHeight / crop.height,
+        top: height - originalHeight - layer.y + originalHeight * crop.top / crop.height,
+        offset: tileOffset(distance * layer.speed, w) };
     };
     const draw = () => {
       if (!loaded || !width || !height) return;
@@ -112,7 +115,7 @@ const JourneyScenery = forwardRef<JourneySceneryHandle>((_, ref) => {
       // Resize once, not on every frame. In particular, don't repeatedly upload
       // 2752px source textures to a small, high-DPI phone viewport.
       const next = await Promise.all(images.map((image, i) => {
-        const scale = Math.min(1, 2048 / image.naturalWidth, height * scenery[i].size * dpr / image.naturalHeight);
+        const scale = Math.min(1, 2048 / image.naturalWidth, height * scenery[i].size * dpr / sceneryCrops[i].height);
         return createImageBitmap(image, {
           resizeWidth: Math.max(1, Math.round(image.naturalWidth * scale)),
           resizeHeight: Math.max(1, Math.round(image.naturalHeight * scale)),

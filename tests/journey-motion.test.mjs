@@ -1,16 +1,37 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { bikePose, projectPose, tileOffset } from '../src/components/journeyMotion.ts';
+import { bikePose, bikeDrive, rideProgress, projectPose, tileOffset } from '../src/components/journeyMotion.ts';
 
 test('bike position and tilt are continuous across landing, bounce and exit boundaries', () => {
   for (const width of [190, 346, 390]) {
-    for (const boundary of [.11, .135, .15, .17, .83, .85, .9]) {
+    for (const boundary of [.11, .125, .132, .14, .15, .156, .162, .17, .18, .83, .85, .9]) {
       const before = bikePose(boundary - 1e-8, { x: 180, y: -350 }, width);
       const after = bikePose(boundary + 1e-8, { x: 180, y: -350 }, width);
       for (const key of ['x', 'y', 'rotation', 'scale', 'opacity']) {
         assert.ok(Math.abs(before[key] - after[key]) < .01, `${boundary}: ${key}`);
       }
     }
+  }
+});
+
+test('launch coasts before pedalling and dust, then rejoins the original route', () => {
+  assert.deepEqual(bikeDrive(.15), { wheel: 0, pedals: 0, dust: false });
+  assert.ok(bikeDrive(.153).wheel > 0);
+  assert.equal(bikeDrive(.153).pedals, 0);
+  assert.ok(bikeDrive(.16).pedals > 0);
+  assert.equal(bikeDrive(.16).dust, false);
+  assert.equal(bikeDrive(.17).dust, true);
+  assert.equal(bikeDrive(.82).dust, false);
+  let previous = { wheel: 0, pedals: 0 };
+  for (let i = 0; i <= 1000; i++) {
+    const progress = i / 1000;
+    const drive = bikeDrive(progress);
+    assert.ok(drive.wheel >= previous.wheel && drive.pedals >= previous.pedals);
+    if (progress >= .18) assert.equal(drive.pedals, drive.wheel);
+    if (progress >= .17 && progress <= .85) {
+      assert.ok(Math.abs(rideProgress(progress) - (progress - .15) / .7) < 1e-12);
+    }
+    previous = drive;
   }
 });
 

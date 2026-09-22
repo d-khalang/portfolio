@@ -2,7 +2,7 @@ import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import ScrollPerfTracker from './ScrollPerfTracker';
-import { bikePose, projectPose, rideProgress, SCROLL_DISTANCE, CONTENT_TRAVEL } from './journeyMotion';
+import { bikePose, bikeDrive, projectPose, rideProgress, SCROLL_DISTANCE, CONTENT_TRAVEL } from './journeyMotion';
 
 import projectsData from '../content/projects.json';
 import JourneyEnvironment from './JourneyEnvironment';
@@ -268,14 +268,13 @@ export default function JungleJourney() {
       };
       const renderMotion = (progress: number) => {
         setProjectStates(progress);
-        const travelled = rideProgress(progress);
         const pose = bikePose(progress, origin, bikerWidth);
         if (!reduceMotion) {
           bikerElement.style.transform = `translateX(-50%) translate3d(${pose.x}px, ${pose.y}px, 0) rotate(${pose.rotation}deg) scale(${pose.scale})`;
           bikerElement.style.opacity = String(pose.opacity);
           bikerElement.style.visibility = pose.opacity === 0 ? 'hidden' : 'visible';
-          bikerElement.style.zIndex = progress < .15 ? '12' : '6';
-          bikeCharacterRef.current?.updateRotation(travelled * SCROLL_DISTANCE / 1800 * 360);
+          const drive = bikeDrive(progress);
+          bikeCharacterRef.current?.updateRotation(drive.wheel, drive.pedals, drive.dust);
         } else {
           bikerElement.style.transform = 'translate(-50%, -15px)';
           bikerElement.style.opacity = String(pose.opacity);
@@ -305,8 +304,9 @@ export default function JungleJourney() {
       function updateJourney(progress: number) {
         renderMotion(progress);
         if (heroElement) {
-          heroElement.inert = progress >= .15;
-          heroElement.classList.toggle('is-finished', progress >= .15);
+          // Retire the now-transparent hero before scenery and wheels launch.
+          heroElement.inert = progress >= .142;
+          heroElement.classList.toggle('is-finished', progress >= .142);
         }
         if (typeof window !== 'undefined' && window.__scrollPerf) {
           window.__scrollPerf.scrollUpdates++;
@@ -344,6 +344,7 @@ export default function JungleJourney() {
 
         if (footerEl) {
           const shouldBeActive = progress >= 0.95;
+          footerEl.inert = !shouldBeActive;
           const isActive = footerEl.classList.contains('is-active');
           if (shouldBeActive !== isActive) {
             if (shouldBeActive) {
@@ -362,7 +363,7 @@ export default function JungleJourney() {
       // Intro animations: Fade/translate hero elements and fade fog backdrop
       timeline.to('.jj-hero__backdrop', {
         opacity: 0,
-        duration: 0.15,
+        duration: 0.14,
         ease: 'power2.inOut',
       }, 0);
 
@@ -382,7 +383,7 @@ export default function JungleJourney() {
 
       timeline.to('.jj-hero__footer', {
         y: 30,
-        opacity: 0,
+        autoAlpha: 0,
         duration: 0.08,
         ease: 'power2.inOut',
       }, 0);
@@ -456,17 +457,10 @@ export default function JungleJourney() {
 
 
 
-      // 7. Footer slides up into view (latest, after landscape clears)
-      timeline.fromTo('.jj-footer', {
-        yPercent: 100,
-        autoAlpha: 0,
-      }, {
-        yPercent: 0,
-        autoAlpha: 1,
-        duration: 0.10,
-        ease: 'power2.out',
-
-      }, 0.90);
+      // The footer is already positioned beneath the opaque landscape. Lifting
+      // the landscape reveals it without rasterizing a second entering panel.
+      // Keep the normalized journey clock at exactly 1 after removing its tween.
+      timeline.to({}, { duration: 1 }, 0);
 
 
       // Force initial layout/trigger refresh synchronously so that the document has its full scrollable height.
@@ -586,13 +580,13 @@ export default function JungleJourney() {
           </div>
         </div>
 
+      </div>
         <div className="jj-hero__footer">
           <div className="jj-hero__scroll">
             <span className="jj-hero__scroll-indicator" />
             <span className="jj-hero__scroll-text">[00 // SCROLL TO RIDE]</span>
           </div>
         </div>
-      </div>
 
       <JourneyScenery ref={sceneryRef} />
 

@@ -24,7 +24,7 @@ interface BikeCharacterProps {
 
 export interface BikeCharacterHandle {
   /** Imperatively update the wheel rotation angle — bypasses React rendering for scroll-driven perf */
-  updateRotation: (angle: number) => void;
+  updateRotation: (angle: number, pedalAngle?: number, dustEnabled?: boolean) => void;
 }
 
 type FrameName = 'up' | '5' | 'down' | '8';
@@ -57,6 +57,9 @@ const BikeCharacter = forwardRef<BikeCharacterHandle, BikeCharacterProps>(({
   // --- Refs for imperative DOM updates (scroll-driven mode) ---
   const containerElRef = useRef<HTMLDivElement>(null);
   const prevAngleRef = useRef(rotationAngle ?? 0);
+  const prevPedalAngleRef = useRef(rotationAngle ?? 0);
+  const dustEnabledRef = useRef(true);
+  const lastMovementRef = useRef(0);
   const movingTimerRef = useRef<number | null>(null);
   const currentFrameRef = useRef<FrameName>(getFrameForAngle(rotationAngle ?? 0));
 
@@ -89,73 +92,89 @@ const BikeCharacter = forwardRef<BikeCharacterHandle, BikeCharacterProps>(({
 
   // Imperative handle: parent calls this to update rotation without causing re-render
   useImperativeHandle(ref, () => ({
-    updateRotation(angle: number) {
-      if (angle === prevAngleRef.current) return;
+    updateRotation(angle: number, pedalAngle = angle, dustEnabled = true) {
+      const wheelChanged = angle !== prevAngleRef.current;
+      const pedalsChanged = pedalAngle !== prevPedalAngleRef.current;
+      const dustChanged = dustEnabled !== dustEnabledRef.current;
+      if (!wheelChanged && !pedalsChanged && !dustChanged) return;
       const tStart = performance.now();
+      dustEnabledRef.current = dustEnabled;
 
       // 1. Update rotating element transforms directly
-      const rimStyle = `rotate(${angle}deg)`;
-      for (const el of rimEls.current) el.style.transform = rimStyle;
-      for (const el of spokeEls.current) el.style.transform = rimStyle;
-
-      if (chainringEl.current) {
-        chainringEl.current.style.transform = `translate(-50%, 50%) rotate(${angle}deg)`;
-      }
-      if (cassetteEl.current) {
-        cassetteEl.current.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
+      if (wheelChanged) {
+        const rimStyle = `rotate(${angle}deg)`;
+        for (const el of rimEls.current) el.style.transform = rimStyle;
+        for (const el of spokeEls.current) el.style.transform = rimStyle;
+        if (cassetteEl.current) {
+          cassetteEl.current.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
+        }
       }
 
       // Crank assemblies
-      const crankLeftAngle = angle + 230;
-      const crankRightAngle = angle + 50;
-      if (crankLeftEl.current) {
-        crankLeftEl.current.style.transform = `rotate(${crankLeftAngle}deg)`;
-      }
-      if (crankRightEl.current) {
-        crankRightEl.current.style.transform = `rotate(${crankRightAngle}deg)`;
-      }
-      // Counter-rotate pedals to keep them level
-      if (pedalLeftEl.current) {
-        pedalLeftEl.current.style.transform = `rotate(${-crankLeftAngle}deg)`;
-      }
-      if (pedalRightEl.current) {
-        pedalRightEl.current.style.transform = `rotate(${-crankRightAngle}deg)`;
+      if (pedalsChanged) {
+        if (chainringEl.current) {
+          chainringEl.current.style.transform = `translate(-50%, 50%) rotate(${pedalAngle}deg)`;
+        }
+        const crankLeftAngle = pedalAngle + 230;
+        const crankRightAngle = pedalAngle + 50;
+        if (crankLeftEl.current) {
+          crankLeftEl.current.style.transform = `rotate(${crankLeftAngle}deg)`;
+        }
+        if (crankRightEl.current) {
+          crankRightEl.current.style.transform = `rotate(${crankRightAngle}deg)`;
+        }
+        // Counter-rotate pedals to keep them level
+        if (pedalLeftEl.current) {
+          pedalLeftEl.current.style.transform = `rotate(${-crankLeftAngle}deg)`;
+        }
+        if (pedalRightEl.current) {
+          pedalRightEl.current.style.transform = `rotate(${-crankRightAngle}deg)`;
+        }
+
+        // 2. Determine active rider frame and toggle visibility
+        const newFrame = getFrameForAngle(pedalAngle);
+        if (newFrame !== currentFrameRef.current) {
+          // Hide previous frame
+          const prevFront = riderFrontEls.current.get(currentFrameRef.current);
+          const prevBack = riderBackLegEls.current.get(currentFrameRef.current);
+          if (prevFront) prevFront.classList.replace('force-visible', 'force-hidden');
+          if (prevBack) prevBack.classList.replace('force-visible', 'force-hidden');
+          // Show new frame
+          const nextFront = riderFrontEls.current.get(newFrame);
+          const nextBack = riderBackLegEls.current.get(newFrame);
+          if (nextFront) nextFront.classList.replace('force-hidden', 'force-visible');
+          if (nextBack) nextBack.classList.replace('force-hidden', 'force-visible');
+          currentFrameRef.current = newFrame;
+        }
       }
 
-      // 2. Determine active rider frame and toggle visibility
-      const newFrame = getFrameForAngle(angle);
-      if (newFrame !== currentFrameRef.current) {
-        // Hide previous frame
-        const prevFront = riderFrontEls.current.get(currentFrameRef.current);
-        const prevBack = riderBackLegEls.current.get(currentFrameRef.current);
-        if (prevFront) prevFront.classList.replace('force-visible', 'force-hidden');
-        if (prevBack) prevBack.classList.replace('force-visible', 'force-hidden');
-        // Show new frame
-        const nextFront = riderFrontEls.current.get(newFrame);
-        const nextBack = riderBackLegEls.current.get(newFrame);
-        if (nextFront) nextFront.classList.replace('force-hidden', 'force-visible');
-        if (nextBack) nextBack.classList.replace('force-hidden', 'force-visible');
-        currentFrameRef.current = newFrame;
-      }
-
-      // 3. Toggle dust/moving class via direct DOM (no React state)
-      if (angle !== prevAngleRef.current) {
-        // Add moving class
+      // One idle timer per movement burst, instead of cancelling/recreating a
+      // timer on every scroll frame. Dust starts after the rider is pedalling
+      // and stops before the underground camera transition.
+      if (!dustEnabled && dustChanged) {
+        for (const el of dustEls.current) el.classList.remove('is-moving');
+        if (movingTimerRef.current !== null) window.clearTimeout(movingTimerRef.current);
+        movingTimerRef.current = null;
+      } else if (dustEnabled && wheelChanged) {
+        lastMovementRef.current = tStart;
         for (const el of dustEls.current) {
           if (!el.classList.contains('is-moving')) el.classList.add('is-moving');
         }
-        prevAngleRef.current = angle;
-
-        // Clear previous timer and set new one
-        if (movingTimerRef.current !== null) {
-          window.clearTimeout(movingTimerRef.current);
+        if (movingTimerRef.current === null) {
+          const stopWhenIdle = () => {
+            const remaining = 200 - (performance.now() - lastMovementRef.current);
+            if (remaining > 0) {
+              movingTimerRef.current = window.setTimeout(stopWhenIdle, remaining);
+              return;
+            }
+            for (const el of dustEls.current) el.classList.remove('is-moving');
+            movingTimerRef.current = null;
+          };
+          movingTimerRef.current = window.setTimeout(stopWhenIdle, 200);
         }
-        movingTimerRef.current = window.setTimeout(() => {
-          for (const el of dustEls.current) {
-            el.classList.remove('is-moving');
-          }
-        }, 200);
       }
+      prevAngleRef.current = angle;
+      prevPedalAngleRef.current = pedalAngle;
 
       const tEnd = performance.now();
       const duration = tEnd - tStart;
@@ -172,6 +191,9 @@ const BikeCharacter = forwardRef<BikeCharacterHandle, BikeCharacterProps>(({
   useLayoutEffect(() => {
     const container = containerElRef.current;
     if (!container) return;
+    // Prepare every hidden pose during initial load, before its first pedal
+    // stroke asks the browser to display it.
+    container.querySelectorAll('img').forEach(image => { void image.decode().catch(() => {}); });
     const resize = () => {
       container.style.setProperty('--bike-scale', String(container.clientWidth / 500));
     };
