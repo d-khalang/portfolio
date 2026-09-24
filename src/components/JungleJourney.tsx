@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import ScrollPerfTracker from './ScrollPerfTracker';
@@ -10,8 +10,13 @@ import JourneyScenery, { type JourneySceneryHandle, type CardWindow } from './Jo
 import JungleFooter from './JungleFooter';
 import BikeCharacter, { type BikeCharacterHandle } from './BikeCharacter';
 import { ProjectBlueprint } from './ProjectBlueprint';
+import { hasCompletedTour, markTourComplete } from './tourStorage';
 
 gsap.registerPlugin(ScrollTrigger);
+
+const JOURNEY_TOUR_KEY = 'portfolio-journey-tour-v1';
+const BIKE_HINT_KEY = 'portfolio-bike-customizer-hint-v1';
+type JourneyTourStep = 'waiting' | 'clouds' | 'moving' | 'card' | null;
 
 export default function JungleJourney() {
   if (typeof window !== 'undefined' && window.__scrollPerf) {
@@ -24,12 +29,77 @@ export default function JungleJourney() {
   const bikeCharacterRef = useRef<BikeCharacterHandle>(null);
   const nearestProjectIndexRef = useRef(0);
   const [isHovered, setIsHovered] = useState(false);
+  const [showBikeHint, setShowBikeHint] = useState(() => !hasCompletedTour(BIKE_HINT_KEY));
   const [bikeColor, setBikeColor] = useState<string | undefined>(undefined);
   const [wheelColor, setWheelColor] = useState<string | undefined>(undefined);
+  const tourTimerRef = useRef<number | null>(null);
+  const [tourStep, setTourStep] = useState<JourneyTourStep>(() => (
+    hasCompletedTour(JOURNEY_TOUR_KEY) ? null : 'waiting'
+  ));
   const [showOverlay, setShowOverlay] = useState(() => {
     return typeof window !== 'undefined' && !!window.location.hash;
   });
   const featuredProjects = useMemo(() => projectsData.filter((project) => project.featured), []);
+
+  useEffect(() => {
+    if (tourStep !== 'waiting') {
+      return;
+    }
+
+    const revealCloudStep = () => {
+      const revealPoint = Math.min(520, window.innerHeight * 0.45);
+      if (window.scrollY >= revealPoint) {
+        setTourStep('clouds');
+      }
+    };
+
+    revealCloudStep();
+    window.addEventListener('scroll', revealCloudStep, { passive: true });
+    return () => window.removeEventListener('scroll', revealCloudStep);
+  }, [tourStep]);
+
+  useEffect(() => () => {
+    if (tourTimerRef.current !== null) {
+      window.clearTimeout(tourTimerRef.current);
+    }
+  }, []);
+
+  const completeJourneyTour = () => {
+    markTourComplete(JOURNEY_TOUR_KEY);
+    setTourStep(null);
+  };
+
+  const dismissBikeHint = () => {
+    if (!showBikeHint) {
+      return;
+    }
+
+    markTourComplete(BIKE_HINT_KEY);
+    setShowBikeHint(false);
+  };
+
+  const showCardTourStep = () => {
+    setTourStep('moving');
+    containerRef.current?.querySelector<HTMLButtonElement>('.jj-cloud-hud__nav')?.click();
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    tourTimerRef.current = window.setTimeout(() => {
+      setTourStep('card');
+      tourTimerRef.current = null;
+    }, reduceMotion ? 100 : 950);
+  };
+
+  const replayJourneyTour = () => {
+    if (tourTimerRef.current !== null) {
+      window.clearTimeout(tourTimerRef.current);
+      tourTimerRef.current = null;
+    }
+
+    setTourStep('clouds');
+    window.scrollTo({
+      top: SCROLL_DISTANCE * 0.11,
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+    });
+  };
 
   useLayoutEffect(() => {
     const container = containerRef.current;
@@ -271,12 +341,14 @@ export default function JungleJourney() {
         const pose = bikePose(progress, origin, bikerWidth);
         if (!reduceMotion) {
           bikerElement.style.transform = `translateX(-50%) translate3d(${pose.x}px, ${pose.y}px, 0) rotate(${pose.rotation}deg) scale(${pose.scale})`;
+          bikerElement.style.setProperty('--jj-bike-hint-rotation', `${-pose.rotation}deg`);
           bikerElement.style.opacity = String(pose.opacity);
           bikerElement.style.visibility = pose.opacity === 0 ? 'hidden' : 'visible';
           const drive = bikeDrive(progress);
           bikeCharacterRef.current?.updateRotation(drive.wheel, drive.pedals, drive.dust);
         } else {
           bikerElement.style.transform = 'translate(-50%, -15px)';
+          bikerElement.style.setProperty('--jj-bike-hint-rotation', '0deg');
           bikerElement.style.opacity = String(pose.opacity);
           bikerElement.style.visibility = pose.opacity === 0 ? 'hidden' : 'visible';
         }
@@ -548,7 +620,11 @@ export default function JungleJourney() {
               type="button"
               data-state={index === 0 ? 'active' : 'upcoming'}
               aria-label={`Jump to ${project.core.title}`}
-            />
+            >
+              <span className="jj-cloud-hud__nav-label" aria-hidden="true">
+                Jump to {project.core.title}
+              </span>
+            </button>
           ))}
         </div>
       </div>
@@ -604,6 +680,12 @@ export default function JungleJourney() {
             data-journey-left={left}
             href={`${import.meta.env.BASE_URL}projects/${project.slug}`}
             style={{ left: `${left}vw` }}
+            aria-label={`Open ${project.core.title} project`}
+            onClick={() => {
+              if (tourStep === 'card') {
+                completeJourneyTour();
+              }
+            }}
           >
             <article className="jj-card">
               <div className="jj-card__chrome">
@@ -637,6 +719,9 @@ export default function JungleJourney() {
                     </span>
                   )}
                 </div>
+                <span className="jj-card__open-cue" aria-hidden="true">
+                  Open project <span>↗</span>
+                </span>
               </div>
             </article>
           </a>
@@ -645,11 +730,47 @@ export default function JungleJourney() {
 
       <div
         ref={bikerRef}
-        className="jj-biker"
-        onMouseEnter={() => setIsHovered(true)}
+        className={`jj-biker${showBikeHint ? ' has-customizer-hint' : ''}`}
+        tabIndex={0}
+        role="group"
+        aria-label="Interactive bike color customizer"
+        onMouseEnter={() => {
+          dismissBikeHint();
+          setIsHovered(true);
+        }}
         onMouseLeave={() => setIsHovered(false)}
+        onFocus={() => {
+          dismissBikeHint();
+          setIsHovered(true);
+        }}
+        onBlur={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+            setIsHovered(false);
+          }
+        }}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            dismissBikeHint();
+            setIsHovered((visible) => !visible);
+          }
+        }}
+        onTouchStart={(event) => {
+          if ((event.target as HTMLElement).closest('.jj-biker-popup')) {
+            return;
+          }
+
+          dismissBikeHint();
+          setIsHovered((visible) => !visible);
+        }}
       >
         <div style={{ position: 'relative', width: '100%', height: '100%', pointerEvents: 'auto' }}>
+          {showBikeHint && (
+            <span className="jj-bike-hint" aria-hidden="true">
+              <span className="jj-bike-hint__pulse" />
+              Hover to customize your ride
+            </span>
+          )}
           <BikeCharacter
             ref={bikeCharacterRef}
             rotationAngle={0}
@@ -718,6 +839,38 @@ export default function JungleJourney() {
       </div>
 
       </div>
+      <button
+        type="button"
+        className="jj-tour-replay"
+        onClick={replayJourneyTour}
+        aria-label="Replay interaction tour"
+        title="Replay interaction tour"
+      >
+        ?
+      </button>
+
+      {tourStep === 'clouds' && (
+        <aside className="jj-tour jj-tour--clouds" aria-live="polite" aria-label="Journey tour, step 1 of 2">
+          <span className="jj-tour__eyebrow">01 / 02 · Navigation</span>
+          <strong>Each cloud is a shortcut.</strong>
+          <p>Select one to jump directly to its project.</p>
+          <div className="jj-tour__actions">
+            <button type="button" onClick={completeJourneyTour}>Skip</button>
+            <button type="button" className="is-primary" onClick={showCardTourStep}>Show me</button>
+          </div>
+        </aside>
+      )}
+
+      {tourStep === 'card' && (
+        <aside className="jj-tour jj-tour--card" aria-live="polite" aria-label="Journey tour, step 2 of 2">
+          <span className="jj-tour__eyebrow">02 / 02 · Projects</span>
+          <strong>Project cards open.</strong>
+          <p>Click or tap the card to enter the full project page.</p>
+          <div className="jj-tour__actions">
+            <button type="button" className="is-primary" onClick={completeJourneyTour}>Got it</button>
+          </div>
+        </aside>
+      )}
       <JungleFooter />
       <ScrollPerfTracker />
     </main>

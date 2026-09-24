@@ -22,6 +22,7 @@ import {
   type GridPosition,
   type ResizeDirection,
 } from './projectGrid';
+import { hasCompletedTour, markTourComplete } from './tourStorage';
 import './ProjectDetail.css';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -33,6 +34,8 @@ type MediaShape = 'wide' | 'landscape' | 'portrait' | 'square';
 type LayoutBreakpoint = 'desktop' | 'tablet' | 'mobile';
 
 const showLayoutExportTools = false;
+const PROJECT_TOUR_KEY = 'portfolio-project-tour-v1';
+type ProjectTourStep = 'gallery' | 'grid' | null;
 
 interface ProjectDetailProps {
   project: Project;
@@ -929,11 +932,15 @@ function InteractiveProjectGrid({
   project,
   seed,
   setSeed,
+  showTour,
+  onTourComplete,
 }: {
   tiles: ProjectTile[];
   project: Project;
   seed: number | null;
   setSeed: (seed: number | null) => void;
+  showTour: boolean;
+  onTourComplete: () => void;
 }) {
   const columns = useBoardColumns();
 
@@ -1411,7 +1418,15 @@ function InteractiveProjectGrid({
   };
 
   return (
-    <section className="pd-board-section" aria-labelledby="board-instructions">
+    <section id="project-grid" className="pd-board-section" aria-labelledby="board-instructions">
+      {showTour && (
+        <aside className="pd-tour pd-tour--grid" aria-live="polite" aria-label="Project tour, step 2 of 2">
+          <span className="pd-tour__eyebrow">02 / 02 · Playable grid</span>
+          <strong>This project page is interactive.</strong>
+          <p>Drag tiles to move them, pull an edge to resize, or open Remix Layout for a new arrangement.</p>
+          <button type="button" onClick={onTourComplete}>Got it</button>
+        </aside>
+      )}
       {showLayoutExportTools && (
         <div className="pd-board-tools" aria-label="Layout export tools">
           <label>
@@ -1565,18 +1580,25 @@ function InteractiveProjectGrid({
         className={`pd-grid-panel ${isPanelVisible ? 'is-visible' : ''} ${isExpanded ? 'is-expanded' : ''}`}
         onMouseEnter={() => setIsExpanded(true)}
         onMouseLeave={() => setIsExpanded(false)}
-        onClick={() => setIsExpanded(!isExpanded)}
       >
-        <div className="pd-grid-panel__tab">
+        <button
+          type="button"
+          className="pd-grid-panel__tab"
+          onClick={() => setIsExpanded((expanded) => !expanded)}
+          aria-expanded={isExpanded}
+          aria-controls="pd-remix-controls"
+          title="Remix layout"
+        >
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
             <rect x="3" y="3" width="7" height="7"></rect>
             <rect x="14" y="3" width="7" height="7"></rect>
             <rect x="14" y="14" width="7" height="7"></rect>
             <rect x="3" y="14" width="7" height="7"></rect>
           </svg>
+          <span className="pd-grid-panel__label">Remix<br />layout</span>
           <span className="pd-grid-panel__arrow">◀</span>
-        </div>
-        <div className="pd-grid-panel__body" onClick={(e) => e.stopPropagation()}>
+        </button>
+        <div id="pd-remix-controls" className="pd-grid-panel__body">
 
           <button
             type="button"
@@ -1674,6 +1696,11 @@ function ProjectHeroVisual({ assets, project }: ProjectHeroVisualProps) {
       tabIndex={0}
       aria-label="Interactive project visual gallery. Click to flip cards."
     >
+      {assets.length > 1 && (
+        <span className="pd-hero__interaction-badge" aria-hidden="true">
+          Click / tap to flip
+        </span>
+      )}
       <div className="pd-hero__visual-scene">
         {/* Background HUD Grid */}
         <div className="pd-hero__visual-hud" aria-hidden="true">
@@ -1720,9 +1747,35 @@ function ProjectHeroVisual({ assets, project }: ProjectHeroVisualProps) {
 
 export default function ProjectDetail({ project }: ProjectDetailProps) {
   const [seed, setSeed] = useState<number | null>(null);
+  const [tourStep, setTourStep] = useState<ProjectTourStep>(() => (
+    hasCompletedTour(PROJECT_TOUR_KEY) ? null : 'gallery'
+  ));
   const assets = useMemo(() => getProjectAssets(project), [project]);
   const tiles = useMemo(() => getProjectTiles(project, assets, seed), [assets, project, seed]);
   const visualLabel = visualLabels[project.id] ?? 'project signal';
+
+  const completeProjectTour = () => {
+    markTourComplete(PROJECT_TOUR_KEY);
+    setTourStep(null);
+  };
+
+  const showGridTourStep = () => {
+    setTourStep('grid');
+    window.requestAnimationFrame(() => {
+      document.getElementById('project-grid')?.scrollIntoView({
+        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+        block: 'start',
+      });
+    });
+  };
+
+  const replayProjectTour = () => {
+    setTourStep('gallery');
+    window.scrollTo({
+      top: 0,
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+    });
+  };
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -1744,7 +1797,18 @@ export default function ProjectDetail({ project }: ProjectDetailProps) {
     <main className="pd-page">
       <nav className="pd-nav" aria-label="Project navigation">
         <a href={`${import.meta.env.BASE_URL}#${project.slug}`}>portfolio</a>
-        <span>{project.core.dateLabel}</span>
+        <div className="pd-nav__meta">
+          <span>{project.core.dateLabel}</span>
+          <button
+            type="button"
+            className="pd-tour-replay"
+            onClick={replayProjectTour}
+            aria-label="Replay interaction tour"
+            title="Replay interaction tour"
+          >
+            ?
+          </button>
+        </div>
       </nav>
 
       <header className="pd-hero" aria-labelledby="project-title">
@@ -1780,13 +1844,32 @@ export default function ProjectDetail({ project }: ProjectDetailProps) {
 
         <ProjectHeroVisual assets={assets} project={project} />
 
+        {tourStep === 'gallery' && (
+          <aside className="pd-tour pd-tour--gallery" aria-live="polite" aria-label="Project tour, step 1 of 2">
+            <span className="pd-tour__eyebrow">01 / 02 · Visual gallery</span>
+            <strong>The project page is playable.</strong>
+            <p>Click or tap the stacked visuals to flip through the project media.</p>
+            <div className="pd-tour__actions">
+              <button type="button" className="is-secondary" onClick={completeProjectTour}>Skip</button>
+              <button type="button" onClick={showGridTourStep}>Next</button>
+            </div>
+          </aside>
+        )}
+
         <div className="pd-hero__scroll">
           <span className="pd-hero__scroll-indicator" />
           <span className="pd-hero__scroll-text">[00 // SCROLL TO EXPLORE]</span>
         </div>
       </header>
 
-      <InteractiveProjectGrid tiles={tiles} project={project} seed={seed} setSeed={setSeed} />
+      <InteractiveProjectGrid
+        tiles={tiles}
+        project={project}
+        seed={seed}
+        setSeed={setSeed}
+        showTour={tourStep === 'grid'}
+        onTourComplete={completeProjectTour}
+      />
     </main>
   );
 }
