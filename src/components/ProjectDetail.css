@@ -945,7 +945,9 @@
 
   .pd-board__item.is-active:not(.is-dragging):not(.is-resizing) .pd-move-affordance {
     opacity: 0.78;
+    pointer-events: auto;
     transform: translate(-50%, -50%) scale(0.92);
+    touch-action: none;
   }
 
   .pd-tile--media figure {

@@ -1136,6 +1136,7 @@ function InteractiveProjectGrid({
 
   const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>, id: string) => {
     const target = event.target as HTMLElement;
+    const isDedicatedMoveHandle = Boolean(target.closest('[data-move-handle]'));
 
     if (target.closest('a, button, video, input, textarea, select, [data-resize-handle]')) {
       return;
@@ -1171,11 +1172,13 @@ function InteractiveProjectGrid({
 
     isDraggingActiveRef.current = false;
 
-    if (pointerType === 'mouse') {
+    if (pointerType === 'mouse' || isDedicatedMoveHandle) {
       event.preventDefault();
       startDragSetup();
     } else {
       // Touch drag setup with long press (250ms)
+      currentTarget.focus({ preventScroll: true });
+      setActiveId(id);
       touchStartRef.current = { x: clientX, y: clientY };
       touchDragTimerRef.current = setTimeout(() => {
         startDragSetup();
@@ -1423,7 +1426,11 @@ function InteractiveProjectGrid({
         <aside className="pd-tour pd-tour--grid" aria-live="polite" aria-label="Project tour, step 2 of 2">
           <span className="pd-tour__eyebrow">02 / 02 · Playable grid</span>
           <strong>This project page is interactive.</strong>
-          <p>Drag tiles to move them, pull an edge to resize, or open Remix Layout for a new arrangement.</p>
+          <p>
+            {columns <= 4
+              ? 'Tap a tile, then drag its center control in any direction. Pull an edge to resize, or open Remix Layout.'
+              : 'Drag tiles to move them, pull an edge to resize, or open Remix Layout for a new arrangement.'}
+          </p>
           <button type="button" onClick={onTourComplete}>Got it</button>
         </aside>
       )}
@@ -1455,7 +1462,9 @@ function InteractiveProjectGrid({
         </div>
       )}
       <p id="board-instructions" className="pd-board-instructions">
-        Drag tiles to move. Pull an edge or corner to resize by grid cells. Arrow keys move; Shift + arrow grows and Alt + arrow shrinks.
+        {columns <= 4
+          ? 'Tap a tile, then drag the center control to move in any direction. Swipe elsewhere to scroll. Pull an edge or corner to resize.'
+          : 'Drag tiles to move. Pull an edge or corner to resize by grid cells. Arrow keys move; Shift + arrow grows and Alt + arrow shrinks.'}
       </p>
       <div
         ref={boardRef}
@@ -1543,7 +1552,7 @@ function InteractiveProjectGrid({
                 endResize(event);
               }}
             >
-              <span className="pd-move-affordance" aria-hidden="true">
+              <span className="pd-move-affordance" data-move-handle aria-hidden="true">
                 <span>↕</span>
                 <span>↔</span>
                 <small>drag</small>

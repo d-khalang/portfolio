@@ -1471,56 +1471,50 @@ body {
 
 .jj-bike-hint {
   position: absolute;
-  bottom: calc(100% + 12px);
-  left: 50%;
+  bottom: 23%;
+  left: 46%;
   z-index: 110;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  width: max-content;
-  max-width: min(230px, 78vw);
-  border: 1px solid rgb(179 90 68 / 38%);
-  border-radius: 999px;
-  padding: 8px 12px;
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 1px solid rgb(179 90 68 / 55%);
+  border-radius: 50%;
+  padding: 6px;
   color: #123b45;
   background: rgb(248 245 233 / 96%);
-  box-shadow: 0 8px 26px rgb(179 90 68 / 22%);
-  font: 700 0.66rem/1.25 "IBM Plex Mono", monospace;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  box-shadow: 0 0 0 0 rgb(217 125 98 / 55%), 0 8px 20px rgb(18 59 69 / 18%);
+  animation: jj-bike-palette-blink 1.55s ease-in-out infinite;
   rotate: var(--jj-bike-hint-rotation, 0deg);
   translate: -50% 0;
-  transform-origin: 50% calc(100% + 12px);
+  transform-origin: 50% 50%;
   pointer-events: none;
 }
 
-.jj-bike-hint::after {
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  width: 9px;
-  height: 9px;
-  border-right: 1px solid rgb(179 90 68 / 38%);
-  border-bottom: 1px solid rgb(179 90 68 / 38%);
-  background: #f8f5e9;
-  content: "";
-  rotate: 45deg;
-  translate: -50% -5px;
+.jj-bike-hint svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: #f8f5e9;
+  stroke: #123b45;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.35;
 }
 
-.jj-bike-hint__pulse {
-  flex: 0 0 auto;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #d97d62;
-  box-shadow: 0 0 0 0 rgb(217 125 98 / 55%);
-  animation: jj-bike-hint-pulse 1.8s ease-out infinite;
+.jj-bike-hint circle {
+  stroke: none;
 }
 
-@keyframes jj-bike-hint-pulse {
-  70%, 100% {
-    box-shadow: 0 0 0 10px rgb(217 125 98 / 0%);
+.jj-bike-hint .is-red { fill: #d95d4f; }
+.jj-bike-hint .is-yellow { fill: #e7b84b; }
+.jj-bike-hint .is-green { fill: #55a06a; }
+.jj-bike-hint .is-blue { fill: #4c82a8; }
+
+@keyframes jj-bike-palette-blink {
+  50% {
+    scale: 1.09;
+    box-shadow: 0 0 0 9px rgb(217 125 98 / 0%), 0 10px 24px rgb(18 59 69 / 22%);
   }
 }
 
@@ -1635,10 +1629,10 @@ body {
   }
 
   .jj-bike-hint {
-    bottom: calc(100% + 6px);
-    max-width: 190px;
-    padding: 7px 10px;
-    font-size: 0.6rem;
+    bottom: 21%;
+    width: 30px;
+    height: 30px;
+    padding: 5px;
   }
 
   .jj-cloud-hud__nav-label {
@@ -1652,8 +1646,8 @@ body {
     transition: none;
   }
 
-  .jj-bike-hint__pulse {
+  .jj-bike-hint {
     animation: none;
-    box-shadow: 0 0 0 4px rgb(217 125 98 / 18%);
+    box-shadow: 0 0 0 5px rgb(217 125 98 / 16%), 0 8px 20px rgb(18 59 69 / 18%);
   }
 }

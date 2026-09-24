@@ -767,8 +767,13 @@ export default function JungleJourney() {
         <div style={{ position: 'relative', width: '100%', height: '100%', pointerEvents: 'auto' }}>
           {showBikeHint && (
             <span className="jj-bike-hint" aria-hidden="true">
-              <span className="jj-bike-hint__pulse" />
-              Hover to customize your ride
+              <svg viewBox="0 0 24 24" focusable="false">
+                <path d="M12 3a9 9 0 1 0 0 18h1.1a1.9 1.9 0 0 0 0-3.8h-.5a1.6 1.6 0 0 1 0-3.2h2.5A5.9 5.9 0 0 0 21 8.1C21 4.8 16.9 3 12 3Z" />
+                <circle cx="7.5" cy="9" r="1.35" className="is-red" />
+                <circle cx="11.2" cy="6.8" r="1.35" className="is-yellow" />
+                <circle cx="15.3" cy="7.4" r="1.35" className="is-green" />
+                <circle cx="8.3" cy="13.2" r="1.35" className="is-blue" />
+              </svg>
             </span>
           )}
           <BikeCharacter
