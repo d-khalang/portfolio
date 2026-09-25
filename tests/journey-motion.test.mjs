@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { bikePose, bikeDrive, rideProgress, projectPose, tileOffset } from '../src/components/journeyMotion.ts';
+import { bikePose, bikeDrive, foregroundOpacity, rideProgress, projectPose, tileOffset } from '../src/components/journeyMotion.ts';
 
 test('bike position and tilt are continuous across landing, bounce and exit boundaries', () => {
   for (const width of [190, 346, 390]) {
@@ -32,6 +32,26 @@ test('launch coasts before pedalling and dust, then rejoins the original route',
       assert.ok(Math.abs(rideProgress(progress) - (progress - .15) / .7) < 1e-12);
     }
     previous = drive;
+  }
+});
+
+test('foreground plants fade in through the intro and restore on reverse', () => {
+  assert.equal(foregroundOpacity(0), 0);
+  assert.equal(foregroundOpacity(.15), .7);
+  assert.equal(foregroundOpacity(1), .7);
+
+  const forward = [];
+  let previous = 0;
+  for (let i = 0; i <= 150; i++) {
+    const opacity = foregroundOpacity(i / 1000);
+    assert.ok(opacity >= previous);
+    assert.ok(opacity >= 0 && opacity <= .7);
+    forward.push(opacity);
+    previous = opacity;
+  }
+
+  for (let i = 150; i >= 0; i--) {
+    assert.equal(foregroundOpacity(i / 1000), forward[i]);
   }
 });
 

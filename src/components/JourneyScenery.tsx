@@ -1,5 +1,5 @@
 import { forwardRef, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react';
-import { rideProgress, tileOffset } from './journeyMotion';
+import { foregroundOpacity, rideProgress, tileOffset } from './journeyMotion';
 import { scenerySurface, type SceneryTile, type ScenerySurface } from './scenerySurface';
 import { sceneryCrops } from './sceneryCrops';
 import mountain from '../assets/jungle/web/l1_mountain_cropped.webp';
@@ -77,6 +77,7 @@ const JourneyScenery = forwardRef<JourneySceneryHandle>((_, ref) => {
     };
     const draw = () => {
       if (!loaded || !width || !height) return;
+      surfaces[3].style.opacity = String(foregroundOpacity(state.current.progress));
       const distance = rideProgress(state.current.progress) * 10000;
       if (distance !== lastDistance) {
         for (const group of [0, 2, 3]) {

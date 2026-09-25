@@ -12,6 +12,10 @@ export function rideProgress(progress: number) {
   return linear * (2 * start - start * start);
 }
 
+export function foregroundOpacity(progress: number) {
+  return .7 * smoothStep(clamp01(progress / INTRO_END));
+}
+
 export function bikeDrive(progress: number) {
   const wheel = rideProgress(progress) * SCROLL_DISTANCE / 1800 * 360;
   // Coast into the launch before engaging the cranks and both rider sprites.
