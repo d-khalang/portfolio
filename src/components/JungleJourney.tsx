@@ -497,20 +497,21 @@ export default function JungleJourney() {
         }, 0.82);
       }
 
-      // 3. Background overlay fades in (instead of animating container backgroundColor)
+      // 3. Background overlay fades in (instead of animating container backgroundColor).
+      // 4. It also carries the landscape's 30% dim: dimming the environment only
+      // mixes it toward the same #08171a, but as a separate tween it repainted the
+      // full-screen scene every frame. Same darkness, one compositor-only opacity.
+      const overlayEase = gsap.parseEase('power1.inOut');
+      const dimEase = gsap.parseEase('power1.out');
       timeline.fromTo('.jj-bg-overlay', {
         opacity: 0,
       }, {
         opacity: 1,
         duration: 0.08,
-        ease: 'power1.inOut',
-      }, 0.85);
-
-      // 4. Subtle dimming of the landscape environment
-      timeline.to('.journey-environment', {
-        opacity: 0.7,
-        duration: 0.08,
-        ease: 'power1.out',
+        ease: (t: number) => {
+          const overlay = overlayEase(t);
+          return overlay + (1 - overlay) * 0.3 * dimEase(t);
+        },
       }, 0.85);
 
       // 5. One camera ascent instead of individually fading/moving every layer

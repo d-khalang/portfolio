@@ -885,6 +885,21 @@
   animation-play-state: var(--play-state, running) !important;
 }
 
+/* Scroll-driven bikes paint the same motion from script (bikeDust.ts) so the
+   particles, and the rotating parts above them, stay in the bike's one layer.
+   Compositor animations or opacity transitions here would split it apart. */
+.scroll-driven .dust-cloud,
+.scroll-driven .pedal-dust {
+  opacity: 1;
+  transition: none;
+}
+
+.scroll-driven .dust-puff,
+.scroll-driven .dirt-speck,
+.scroll-driven .pedal-particle {
+  animation: none !important;
+}
+
 /* --------------------------------------------------------------------------
    KEYFRAME DEFINITIONS
    -------------------------------------------------------------------------- */

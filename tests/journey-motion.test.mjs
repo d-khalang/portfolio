@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { bikePose, bikeDrive, foregroundOpacity, rideProgress, projectPose, tileOffset } from '../src/components/journeyMotion.ts';
+import { DUST_MOTIONS, dustPhase, dustPose } from '../src/components/bikeDust.ts';
 
 test('bike position and tilt are continuous across landing, bounce and exit boundaries', () => {
   for (const width of [190, 346, 390]) {
@@ -86,4 +88,52 @@ test('cards focus at their navigation destination and disappear outside the ride
     assert.equal(projectPose(0, baseLeft, 900).opacity, 0);
     assert.equal(projectPose(.85, baseLeft, 900).opacity, 0);
   }
+});
+
+test('scroll-driven dust reproduces the CSS dust keyframes and timings', () => {
+  const css = readFileSync(new URL('../src/components/BikeCharacter.css', import.meta.url), 'utf8');
+  const numbers = text => (text.match(/-?\d*\.?\d+/g) || []).map(Number);
+  const frames = name => {
+    const body = css.match(new RegExp(`@keyframes ${name} \\{([\\s\\S]*?)\\n\\}`))[1];
+    return Object.fromEntries([...body.matchAll(/(\d+)% \{([^}]*)\}/g)].map(([, at, rules]) => [at, rules]));
+  };
+  let checked = 0;
+  for (const [group, particles] of Object.entries(DUST_MOTIONS)) {
+    for (const [particle, motion] of Object.entries(particles)) {
+      const rule = css.match(new RegExp(`\\.is-moving\\.${group} \\.${particle} \\{ animation: ([\\w-]+) ([\\d.]+)s linear infinite(?: ([\\d.]+)s)?; \\}`));
+      assert.ok(rule, `${group} ${particle} animation`);
+      assert.equal(motion.duration, Number(rule[2]));
+      assert.equal(motion.delay, Number(rule[3] || 0));
+      const keyframes = frames(rule[1]);
+      const peakAt = Object.keys(keyframes).map(Number).find(at => at > 0 && at < 100);
+      assert.equal(motion.peakAt, peakAt / 100);
+      assert.equal(motion.peak, numbers(keyframes[peakAt].match(/opacity: ([\d.]+)/)[1])[0]);
+      // Compare the rendered start, peak and end transforms with the CSS endpoints.
+      const end = keyframes[100];
+      const [x, y] = numbers(end.match(/translate\((-?[\d.]+px, -?[\d.]+px)\)/)[1]);
+      const rotate = end.includes('rotate') ? numbers(end.match(/rotate\((-?[\d.]+)deg\)/)[1])[0] : 0;
+      const toScale = numbers(end.match(/scale\(([\d.]+)\)/)[1])[0];
+      const fromScale = numbers(keyframes[0].match(/scale\(([\d.]+)\)/)[1])[0];
+      assert.equal(dustPose(motion, 0).opacity, 0);
+      assert.ok(Math.abs(dustPose(motion, motion.peakAt).opacity - motion.peak) < 1e-9);
+      assert.ok(Math.abs(dustPose(motion, 1).opacity) < 1e-9);
+      assert.match(dustPose(motion, 0).transform, new RegExp(`translate\\(0px, 0px\\) rotate\\(0deg\\) scale\\(${fromScale}\\)$`));
+      assert.match(dustPose(motion, 1).transform, new RegExp(`translate\\(${x}px, ${y}px\\) rotate\\(${rotate}deg\\) scale\\(${toScale}\\)$`));
+      assert.equal(dustPose(motion, .5).transform.startsWith('translate(-50%, -50%)'), group === 'pedal-dust');
+      checked++;
+    }
+  }
+  assert.equal(checked, 16);
+});
+
+test('dust loops while riding, then each puff finishes and none restart', () => {
+  const puff = DUST_MOTIONS['rear-wheel-dust']['puff-2'];
+  assert.equal(dustPhase(puff, .1, null), null);
+  assert.ok(Math.abs(dustPhase(puff, .15 + .4, null) - .5) < 1e-9);
+  assert.ok(Math.abs(dustPhase(puff, .15 + 1.2, null) - .5) < 1e-9);
+  // Stopped mid-cycle: the current puff completes, the next never starts.
+  assert.ok(Math.abs(dustPhase(puff, .15 + 1.4, .15 + 1.2) - .75) < 1e-9);
+  assert.equal(dustPhase(puff, .15 + 1.7, .15 + 1.2), null);
+  // Stopped before its first delay elapsed: it never appears.
+  assert.equal(dustPhase(puff, .3, .1), null);
 });
