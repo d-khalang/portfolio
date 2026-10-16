@@ -14,7 +14,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 40px 50px 20px;
+  padding: 40px 50px calc(20px + var(--jj-browser-ui));
   box-sizing: border-box;
   z-index: 0;
   /* Retain a cached surface while the landscape reveals this stationary panel. */
@@ -101,7 +101,9 @@
   stroke-dasharray: 20 60;
   animation: root-flow-slow 12s infinite linear;
   animation-play-state: paused;
-  will-change: stroke-dashoffset, opacity;
+  /* No will-change: dash offset can't animate on the compositor, and promoting
+     the pulses split the network into ~10 overlap layers that were composited
+     beneath the landscape on every ride frame. */
 }
 
 .jj-footer.is-visible .jj-root-pulse {
@@ -613,7 +615,7 @@
   .jj-footer {
     height: auto;
     min-height: 50vh;
-    padding: 30px 24px 20px;
+    padding: 30px 24px calc(20px + var(--jj-browser-ui));
   }
 
   .jj-footer__content {

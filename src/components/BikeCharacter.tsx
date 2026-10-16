@@ -1,5 +1,6 @@
 import React, { useRef, useImperativeHandle, forwardRef, useLayoutEffect, useCallback } from 'react';
 import './BikeCharacter.css';
+import { DUST_MOTIONS, dustPhase, dustPose, type DustMotion } from './bikeDust';
 
 // Import images
 import riderFullUp from '../experiments/bike/images/right-up-full.webp';
@@ -77,6 +78,12 @@ const BikeCharacter = forwardRef<BikeCharacterHandle, BikeCharacterProps>(({
   const riderBackLegEls = useRef<Map<FrameName, HTMLImageElement>>(new Map());
   // Dust cloud refs
   const dustEls = useRef<HTMLDivElement[]>([]);
+  // Scroll-driven dust clock (see bikeDust.ts): start time, stop time in
+  // seconds since start (null while riding), and the frame request.
+  const dustParticles = useRef<Array<{ el: HTMLElement; motion: DustMotion; visible: boolean }>>([]);
+  const dustStartRef = useRef<number | null>(null);
+  const dustStopRef = useRef<number | null>(null);
+  const dustFrameRef = useRef<number | null>(null);
 
 
   // Callback refs for rotating elements (collected once on mount)
@@ -88,6 +95,55 @@ const BikeCharacter = forwardRef<BikeCharacterHandle, BikeCharacterProps>(({
   }, []);
   const collectDust = useCallback((el: HTMLDivElement | null) => {
     if (el && !dustEls.current.includes(el)) dustEls.current.push(el);
+  }, []);
+
+  const renderDust = useCallback((now: number) => {
+    dustFrameRef.current = null;
+    const start = dustStartRef.current;
+    if (start === null) return;
+    const elapsed = (now - start) / 1000;
+    let active = false;
+    for (const particle of dustParticles.current) {
+      const phase = dustPhase(particle.motion, elapsed, dustStopRef.current);
+      if (phase === null) {
+        if (particle.visible) {
+          particle.el.style.opacity = '0';
+          particle.visible = false;
+        }
+        // Not yet started counts as active while riding; after a stop it never will.
+        if (dustStopRef.current === null) active = true;
+        continue;
+      }
+      const pose = dustPose(particle.motion, phase);
+      particle.el.style.transform = pose.transform;
+      particle.el.style.opacity = String(pose.opacity);
+      particle.visible = true;
+      active = true;
+    }
+    if (active) {
+      dustFrameRef.current = requestAnimationFrame(renderDust);
+    } else {
+      dustStartRef.current = null;
+      dustStopRef.current = null;
+    }
+  }, []);
+
+  const startDust = useCallback((now: number) => {
+    if (dustStartRef.current === null) dustStartRef.current = now;
+    // Resuming during the drain continues the same clock, without a jump.
+    dustStopRef.current = null;
+    for (const el of dustEls.current) {
+      if (!el.classList.contains('is-moving')) el.classList.add('is-moving');
+    }
+    if (dustFrameRef.current === null) dustFrameRef.current = requestAnimationFrame(renderDust);
+  }, [renderDust]);
+
+  const stopDust = useCallback((now: number) => {
+    for (const el of dustEls.current) el.classList.remove('is-moving');
+    // Let each particle finish its current puff instead of cutting it off.
+    if (dustStartRef.current !== null && dustStopRef.current === null) {
+      dustStopRef.current = (now - dustStartRef.current) / 1000;
+    }
   }, []);
 
   // Imperative handle: parent calls this to update rotation without causing re-render
@@ -152,14 +208,12 @@ const BikeCharacter = forwardRef<BikeCharacterHandle, BikeCharacterProps>(({
       // timer on every scroll frame. Dust starts after the rider is pedalling
       // and stops before the underground camera transition.
       if (!dustEnabled && dustChanged) {
-        for (const el of dustEls.current) el.classList.remove('is-moving');
+        stopDust(tStart);
         if (movingTimerRef.current !== null) window.clearTimeout(movingTimerRef.current);
         movingTimerRef.current = null;
       } else if (dustEnabled && wheelChanged) {
         lastMovementRef.current = tStart;
-        for (const el of dustEls.current) {
-          if (!el.classList.contains('is-moving')) el.classList.add('is-moving');
-        }
+        startDust(tStart);
         if (movingTimerRef.current === null) {
           const stopWhenIdle = () => {
             const remaining = 200 - (performance.now() - lastMovementRef.current);
@@ -167,7 +221,7 @@ const BikeCharacter = forwardRef<BikeCharacterHandle, BikeCharacterProps>(({
               movingTimerRef.current = window.setTimeout(stopWhenIdle, remaining);
               return;
             }
-            for (const el of dustEls.current) el.classList.remove('is-moving');
+            stopDust(performance.now());
             movingTimerRef.current = null;
           };
           movingTimerRef.current = window.setTimeout(stopWhenIdle, 200);
@@ -185,7 +239,7 @@ const BikeCharacter = forwardRef<BikeCharacterHandle, BikeCharacterProps>(({
         }
       }
     },
-  }), []);
+  }), [startDust, stopDust]);
 
   // Cleanup timer on unmount
   useLayoutEffect(() => {
@@ -194,6 +248,16 @@ const BikeCharacter = forwardRef<BikeCharacterHandle, BikeCharacterProps>(({
     // Prepare every hidden pose during initial load, before its first pedal
     // stroke asks the browser to display it.
     container.querySelectorAll('img').forEach(image => { void image.decode().catch(() => {}); });
+    if (isScrollDriven) {
+      dustParticles.current = dustEls.current.flatMap(cloud => {
+        const group = Object.keys(DUST_MOTIONS).find(name => cloud.classList.contains(name));
+        if (!group) return [];
+        return Array.from(cloud.children as HTMLCollectionOf<HTMLElement>).flatMap(el => {
+          const key = Object.keys(DUST_MOTIONS[group]).find(name => el.classList.contains(name));
+          return key ? [{ el, motion: DUST_MOTIONS[group][key], visible: false }] : [];
+        });
+      });
+    }
     const resize = () => {
       container.style.setProperty('--bike-scale', String(container.clientWidth / 500));
     };
@@ -205,6 +269,7 @@ const BikeCharacter = forwardRef<BikeCharacterHandle, BikeCharacterProps>(({
       if (movingTimerRef.current !== null) {
         window.clearTimeout(movingTimerRef.current);
       }
+      if (dustFrameRef.current !== null) cancelAnimationFrame(dustFrameRef.current);
     };
   }, []);
 

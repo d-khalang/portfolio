@@ -16,6 +16,10 @@ gsap.registerPlugin(ScrollTrigger);
 
 const JOURNEY_TOUR_KEY = 'portfolio-journey-tour-v1';
 const BIKE_HINT_KEY = 'portfolio-bike-customizer-hint-v1';
+// How long a #project landing keeps its position after the page loads, and the
+// overall cap if load never arrives.
+const HASH_HOLD_MS = 2500;
+const HASH_HOLD_MAX_MS = 8000;
 type JourneyTourStep = 'waiting' | 'clouds' | 'moving' | 'card' | null;
 
 export default function JungleJourney() {
@@ -497,20 +501,21 @@ export default function JungleJourney() {
         }, 0.82);
       }
 
-      // 3. Background overlay fades in (instead of animating container backgroundColor)
+      // 3. Background overlay fades in (instead of animating container backgroundColor).
+      // 4. It also carries the landscape's 30% dim: dimming the environment only
+      // mixes it toward the same #08171a, but as a separate tween it repainted the
+      // full-screen scene every frame. Same darkness, one compositor-only opacity.
+      const overlayEase = gsap.parseEase('power1.inOut');
+      const dimEase = gsap.parseEase('power1.out');
       timeline.fromTo('.jj-bg-overlay', {
         opacity: 0,
       }, {
         opacity: 1,
         duration: 0.08,
-        ease: 'power1.inOut',
-      }, 0.85);
-
-      // 4. Subtle dimming of the landscape environment
-      timeline.to('.journey-environment', {
-        opacity: 0.7,
-        duration: 0.08,
-        ease: 'power1.out',
+        ease: (t: number) => {
+          const overlay = overlayEase(t);
+          return overlay + (1 - overlay) * 0.3 * dimEase(t);
+        },
       }, 0.85);
 
       // 5. One camera ascent instead of individually fading/moving every layer
@@ -560,9 +565,33 @@ export default function JungleJourney() {
         const targetScrollTop = scrollProgress * SCROLL_DISTANCE;
 
         window.scrollTo(0, targetScrollTop);
+
+        // Mobile browsers can still move the page back to the top while they
+        // finish setting up after this jump. Hold the destination until the page
+        // has loaded and settled, and hand over the moment the visitor acts.
+        let settleAt = document.readyState === 'complete' ? performance.now() + HASH_HOLD_MS : Infinity;
+        const giveUpAt = performance.now() + HASH_HOLD_MAX_MS;
+        const release = () => {
+          cancelAnimationFrame(hashHoldFrame);
+          hashHold.abort();
+        };
+        const hold = () => {
+          const now = performance.now();
+          if (now > settleAt || now > giveUpAt) return release();
+          if (Math.abs(window.scrollY - targetScrollTop) > 1) window.scrollTo(0, targetScrollTop);
+          hashHoldFrame = requestAnimationFrame(hold);
+        };
+        const options = { passive: true, signal: hashHold.signal };
+        window.addEventListener('load', () => { settleAt = performance.now() + HASH_HOLD_MS; }, options);
+        for (const type of ['wheel', 'touchstart', 'pointerdown', 'keydown']) {
+          window.addEventListener(type, release, { ...options, capture: true });
+        }
+        hashHoldFrame = requestAnimationFrame(hold);
       };
 
       // Run hash navigation check immediately (pre-paint)
+      let hashHoldFrame = 0;
+      const hashHold = new AbortController();
       handleHashNavigation();
 
       // The scroll position is already restored. Do not hide the page behind
@@ -570,6 +599,8 @@ export default function JungleJourney() {
       const timer = setTimeout(() => setShowOverlay(false), 50);
       return () => {
         clearTimeout(timer);
+        cancelAnimationFrame(hashHoldFrame);
+        hashHold.abort();
         listeners.abort();
         container.classList.remove('is-scrolling');
         navigationTween?.kill();

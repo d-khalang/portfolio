@@ -1,6 +1,9 @@
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap");
 
 :root {
+  /* Height of mobile browser chrome currently covering the bottom of the
+     large viewport (the address bar while it is shown), else 0. */
+  --jj-browser-ui: 0px;
   color: #123b45;
   background: #dbe8e4;
   font-family: "Manrope", sans-serif;
@@ -26,11 +29,23 @@ body {
   overflow-x: hidden;
 }
 
+@supports (height: 100dvh) {
+  :root {
+    --jj-browser-ui: calc(100lvh - 100dvh);
+  }
+}
+
 .jj-container {
   position: relative;
   width: 100%;
-  height: 100vh;
-  height: 100dvh;
+  /* The large viewport, not dvh. ScrollTrigger pins this element with its
+     measured pixel height and ignores mobile address-bar resizes, so a dvh
+     height measured with the bar shown left the page background exposed below
+     once the bar hid. !important keeps CSS in charge of the pinned height, so
+     any later viewport growth is still covered. */
+  height: 100vh !important;
+  height: 100lvh !important;
+  max-height: none !important;
   overflow: hidden;
   isolation: isolate;
   background: #08171a;
@@ -556,7 +571,7 @@ body {
 .jj-hero__footer {
   /* Keep the scroll cue legible above the permanent foreground layer. */
   position: absolute;
-  bottom: 44px;
+  bottom: calc(44px + var(--jj-browser-ui));
   left: 50px;
   right: 50px;
   z-index: 14;
@@ -1107,13 +1122,22 @@ body {
   }
 
   .jj-hero__footer {
-    bottom: 24px;
+    bottom: calc(24px + var(--jj-browser-ui));
     left: 20px;
     right: 20px;
   }
 
   .jj-hero__meta--center {
     display: none;
+  }
+
+  /* Name and role don't fit on one line beside the tour button: stack them
+     and keep the button's top-right corner clear. */
+  .jj-hero__header-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding-right: 36px;
   }
 
   .jj-hero__content {
@@ -1175,6 +1199,12 @@ body {
     justify-content: center;
     width: 100%;
     gap: 2vw;
+  }
+}
+
+@media (max-width: 360px) {
+  .jj-hero__header-role {
+    letter-spacing: 0.06em;
   }
 }
 
@@ -1462,9 +1492,10 @@ body {
   border: 1px solid rgb(18 59 69 / 28%);
   border-radius: 50%;
   color: #123b45;
-  background: rgb(248 245 233 / 88%);
+  /* Opaque instead of a backdrop blur: this button floats over the moving
+     scene, and a blur would be recomputed behind it on every scroll frame. */
+  background: rgb(248 245 233 / 96%);
   box-shadow: 0 8px 24px rgb(18 59 69 / 12%);
-  backdrop-filter: blur(8px);
   font: 700 0.92rem/1 "IBM Plex Mono", monospace;
   translate: 0 -50%;
   cursor: pointer;
@@ -1479,17 +1510,42 @@ body {
   width: 36px;
   height: 36px;
   place-items: center;
-  border: 1px solid rgb(179 90 68 / 55%);
+  border: 1px solid transparent;
   border-radius: 50%;
   padding: 6px;
   color: #123b45;
-  background: rgb(248 245 233 / 96%);
-  box-shadow: 0 0 0 0 rgb(217 125 98 / 55%), 0 8px 20px rgb(18 59 69 / 18%);
   animation: jj-bike-palette-blink 1.55s ease-in-out infinite;
   rotate: var(--jj-bike-hint-rotation, 0deg);
   translate: -50% 0;
   transform-origin: 50% 50%;
   pointer-events: none;
+  /* The 9px pulse ring as a scale of the 18px radius. */
+  --jj-bike-hint-ring: 1.5;
+}
+
+/* Face and pulse are separate static paintings animated only by scale and
+   opacity. Animating box-shadow ran this infinite pulse on the main thread,
+   repainting and re-rasterising the bubble on every frame of the ride. */
+.jj-bike-hint::before,
+.jj-bike-hint::after {
+  position: absolute;
+  inset: -1px;
+  border-radius: 50%;
+  content: "";
+}
+
+.jj-bike-hint::before {
+  z-index: -2;
+  background: rgb(217 125 98);
+  opacity: .55;
+  animation: jj-bike-palette-ring 1.55s ease-in-out infinite;
+}
+
+.jj-bike-hint::after {
+  z-index: -1;
+  border: 1px solid rgb(179 90 68 / 55%);
+  background: rgb(248 245 233 / 96%);
+  box-shadow: 0 8px 20px rgb(18 59 69 / 18%);
 }
 
 .jj-bike-hint svg {
@@ -1515,7 +1571,13 @@ body {
 @keyframes jj-bike-palette-blink {
   50% {
     scale: 1.09;
-    box-shadow: 0 0 0 9px rgb(217 125 98 / 0%), 0 10px 24px rgb(18 59 69 / 22%);
+  }
+}
+
+@keyframes jj-bike-palette-ring {
+  50% {
+    scale: var(--jj-bike-hint-ring);
+    opacity: 0;
   }
 }
 
@@ -1533,9 +1595,10 @@ body {
   border-radius: 14px;
   padding: 16px;
   color: #123b45;
-  background: rgb(248 245 233 / 96%);
+  /* Already near-opaque; a backdrop blur would re-filter the moving scene
+     behind the panel on every scroll frame. */
+  background: rgb(248 245 233 / 97%);
   box-shadow: 0 18px 54px rgb(18 59 69 / 22%);
-  backdrop-filter: blur(10px);
 }
 
 .jj-tour--clouds {
@@ -1634,6 +1697,7 @@ body {
     width: 30px;
     height: 30px;
     padding: 5px;
+    --jj-bike-hint-ring: 1.6;
   }
 
   .jj-cloud-hud__nav-label {
@@ -1649,6 +1713,13 @@ body {
 
   .jj-bike-hint {
     animation: none;
+  }
+
+  .jj-bike-hint::before {
+    display: none;
+  }
+
+  .jj-bike-hint::after {
     box-shadow: 0 0 0 5px rgb(217 125 98 / 16%), 0 8px 20px rgb(18 59 69 / 18%);
   }
 }

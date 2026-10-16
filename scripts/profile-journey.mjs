@@ -277,6 +277,9 @@ try {
     const href = await evaluate('document.querySelectorAll(".jj-project")[2].getAttribute("href")');
     const slug = href.split('/').at(-1);
     await page('Page.navigate', { url: `http://127.0.0.1:${server.address().port}/portfolio/?perf=1#${slug}` });
+    // The hash change can still be pending when navigate returns; reloading then
+    // reloads the old URL without the hash, which is not what this check tests.
+    for (let i = 0; i < 50 && await evaluate('location.hash') !== `#${slug}`; i++) await new Promise(r => setTimeout(r, 20));
     // Changing only the hash is same-document navigation and emits no load
     // event. Reload at that hash to exercise a genuine restoration on mount.
     const hashLoaded = new Promise(r => listeners.set('Page.loadEventFired', r));
