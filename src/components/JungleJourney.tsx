@@ -16,6 +16,10 @@ gsap.registerPlugin(ScrollTrigger);
 
 const JOURNEY_TOUR_KEY = 'portfolio-journey-tour-v1';
 const BIKE_HINT_KEY = 'portfolio-bike-customizer-hint-v1';
+// How long a #project landing keeps its position after the page loads, and the
+// overall cap if load never arrives.
+const HASH_HOLD_MS = 2500;
+const HASH_HOLD_MAX_MS = 8000;
 type JourneyTourStep = 'waiting' | 'clouds' | 'moving' | 'card' | null;
 
 export default function JungleJourney() {
@@ -561,9 +565,33 @@ export default function JungleJourney() {
         const targetScrollTop = scrollProgress * SCROLL_DISTANCE;
 
         window.scrollTo(0, targetScrollTop);
+
+        // Mobile browsers can still move the page back to the top while they
+        // finish setting up after this jump. Hold the destination until the page
+        // has loaded and settled, and hand over the moment the visitor acts.
+        let settleAt = document.readyState === 'complete' ? performance.now() + HASH_HOLD_MS : Infinity;
+        const giveUpAt = performance.now() + HASH_HOLD_MAX_MS;
+        const release = () => {
+          cancelAnimationFrame(hashHoldFrame);
+          hashHold.abort();
+        };
+        const hold = () => {
+          const now = performance.now();
+          if (now > settleAt || now > giveUpAt) return release();
+          if (Math.abs(window.scrollY - targetScrollTop) > 1) window.scrollTo(0, targetScrollTop);
+          hashHoldFrame = requestAnimationFrame(hold);
+        };
+        const options = { passive: true, signal: hashHold.signal };
+        window.addEventListener('load', () => { settleAt = performance.now() + HASH_HOLD_MS; }, options);
+        for (const type of ['wheel', 'touchstart', 'pointerdown', 'keydown']) {
+          window.addEventListener(type, release, { ...options, capture: true });
+        }
+        hashHoldFrame = requestAnimationFrame(hold);
       };
 
       // Run hash navigation check immediately (pre-paint)
+      let hashHoldFrame = 0;
+      const hashHold = new AbortController();
       handleHashNavigation();
 
       // The scroll position is already restored. Do not hide the page behind
@@ -571,6 +599,8 @@ export default function JungleJourney() {
       const timer = setTimeout(() => setShowOverlay(false), 50);
       return () => {
         clearTimeout(timer);
+        cancelAnimationFrame(hashHoldFrame);
+        hashHold.abort();
         listeners.abort();
         container.classList.remove('is-scrolling');
         navigationTween?.kill();
